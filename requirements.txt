@@ -1,0 +1,5 @@
+grpcio==1.80.0
+grpcio-tools==1.80.0
+supabase
+bcrypt==5.0.0
+python-dotenv
