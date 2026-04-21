@@ -11,3 +11,6 @@ frontend/.vite/
 
 # Generated cache
 generated/__pycache__/
+
+# Dokumentasi lokal
+docs/

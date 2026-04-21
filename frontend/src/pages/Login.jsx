@@ -27,8 +27,8 @@ function Login() {
       return;
     }
 
-    if (form.password.length < 6) {
-      setMessage({ text: "Password minimal 6 karakter.", type: "error" });
+    if (form.password.length < 8) {
+      setMessage({ text: "Password minimal 8 karakter.", type: "error" });
       return;
     }
 

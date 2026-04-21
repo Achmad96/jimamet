@@ -28,7 +28,6 @@ function Home() {
     try {
       await logoutUser(token);
     } catch {
-      // tetap logout meskipun server error
     }
     localStorage.removeItem("token");
     localStorage.removeItem("message");

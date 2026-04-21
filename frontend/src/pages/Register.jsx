@@ -32,8 +32,8 @@ function Register() {
       return;
     }
 
-    if (form.password.length < 6) {
-      setMessage({ text: "Password minimal 6 karakter.", type: "error" });
+    if (form.password.length < 8) {
+      setMessage({ text: "Password minimal 8 karakter.", type: "error" });
       return;
     }
 
@@ -89,7 +89,7 @@ function Register() {
               name="password"
               value={form.password}
               onChange={handleChange}
-              placeholder="Minimal 6 karakter"
+              placeholder="Minimal 8 karakter"
             />
           </div>
           <div className="form-group">
