@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+
+# Environment
+.env
+
+# Node
+node_modules/
+frontend/.vite/
+
+# Generated cache
+generated/__pycache__/
