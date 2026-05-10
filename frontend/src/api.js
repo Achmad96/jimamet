@@ -26,3 +26,14 @@ export async function logoutUser(token) {
   });
   return response.json();
 }
+
+const COACHBOT_URL = "http://localhost:8001";
+
+export async function chatWithBot(message) {
+  const response = await fetch(`${COACHBOT_URL}/api/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message }),
+  });
+  return response.json();
+}
