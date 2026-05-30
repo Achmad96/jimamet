@@ -2,15 +2,7 @@
 
 import { useState, useRef, useEffect, FormEvent } from "react";
 import styles from "./coach.module.css";
-import {
-  apiListCoachSessions,
-  apiGetCoachSession,
-  apiCreateCoachSession,
-  apiDeleteCoachSession,
-  apiSendCoachMessage,
-  apiCreateConsultation,
-  apiSendChat,
-} from "@/lib/api";
+import { apiListCoachSessions, apiGetCoachSession, apiCreateCoachSession, apiDeleteCoachSession, apiSendCoachMessage, apiCreateConsultation, apiSendChat } from "@/lib/api";
 
 interface CoachSession {
   id: string;
@@ -59,18 +51,13 @@ function formatRelativeTime(iso: string) {
   }
 }
 
-const quickReplies = [
-  "Analisis nutrisi hari ini",
-  "Rekomendasi makan malam",
-  "Tips diet sehat",
-  "Saya punya keluhan kesehatan",
-];
+const quickReplies = ["Analisis nutrisi hari ini", "Rekomendasi makan malam", "Tips diet sehat", "Saya punya keluhan kesehatan"];
 
 export default function NutriCoachPage() {
   const [sessions, setSessions] = useState<CoachSession[]>([]);
   const [activeSession, setActiveSession] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  
+
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -161,9 +148,9 @@ export default function NutriCoachPage() {
       sender: "user",
       message: text,
       needs_consultation: false,
-      sent_at: new Date().toISOString(),
+      sent_at: new Date().toISOString()
     };
-    
+
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setIsTyping(true);
@@ -177,14 +164,12 @@ export default function NutriCoachPage() {
           sender: "ai",
           message: res.data.reply,
           needs_consultation: res.data.needs_consultation,
-          sent_at: new Date().toISOString(),
+          sent_at: new Date().toISOString()
         };
         setMessages((prev) => [...prev, aiMsg]);
-        
+
         if (res.data.session) {
-          setSessions((prev) => 
-            prev.map(s => s.id === activeSession ? res.data.session : s)
-          );
+          setSessions((prev) => prev.map((s) => (s.id === activeSession ? res.data.session : s)));
         }
       } else {
         setMessages((prev) => [
@@ -195,8 +180,8 @@ export default function NutriCoachPage() {
             sender: "ai",
             message: "Maaf, sistem AI sedang mengalami kendala. Silakan coba beberapa saat lagi.",
             needs_consultation: false,
-            sent_at: new Date().toISOString(),
-          },
+            sent_at: new Date().toISOString()
+          }
         ]);
       }
     } catch (e) {
@@ -212,20 +197,20 @@ export default function NutriCoachPage() {
   };
 
   const handleKirimKonsultasi = async (msgId: string, contextMsgText: string) => {
-    setKonsultasiStatus(prev => ({ ...prev, [msgId]: "loading" }));
+    setKonsultasiStatus((prev) => ({ ...prev, [msgId]: "loading" }));
     const pesanCoachbot = `Pasien membutuhkan konsultasi terkait riwayat percakapan. Sistem NutriCoach AI menyarankan penanganan langsung dari ahli gizi untuk kondisi ini. Konteks: "${contextMsgText.substring(0, 50)}..."`;
 
     try {
       const { ok, data } = await apiCreateConsultation(pesanCoachbot);
       if (ok && data?.id) {
         await apiSendChat(data.id, "Halo Ahli Gizi, saya diarahkan oleh NutriCoach AI untuk berkonsultasi.", "user");
-        setKonsultasiStatus(prev => ({ ...prev, [msgId]: "sent" }));
+        setKonsultasiStatus((prev) => ({ ...prev, [msgId]: "sent" }));
         alert("Permintaan konsultasi berhasil dikirim! Silakan cek notifikasi atau menu Konsultasi.");
       } else {
         throw new Error("Failed to create consultation");
       }
     } catch (e) {
-      setKonsultasiStatus(prev => ({ ...prev, [msgId]: "error" }));
+      setKonsultasiStatus((prev) => ({ ...prev, [msgId]: "error" }));
       alert("Gagal mengirim permintaan konsultasi.");
     }
   };
@@ -233,9 +218,7 @@ export default function NutriCoachPage() {
   return (
     <div className={styles.layout}>
       {/* Sidebar Overlay (Mobile) */}
-      {sidebarOpen && (
-        <div className={styles.sidebarOverlay} onClick={() => setSidebarOpen(false)} />
-      )}
+      {sidebarOpen && <div className={styles.sidebarOverlay} onClick={() => setSidebarOpen(false)} />}
 
       {/* Sidebar */}
       <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ""}`}>
@@ -254,20 +237,12 @@ export default function NutriCoachPage() {
             <div className={styles.emptySidebar}>Belum ada sesi</div>
           ) : (
             sessions.map((s) => (
-              <div 
-                key={s.id} 
-                className={`${styles.sessionItem} ${activeSession === s.id ? styles.activeSession : ""}`}
-                onClick={() => selectSession(s.id)}
-              >
+              <div key={s.id} className={`${styles.sessionItem} ${activeSession === s.id ? styles.activeSession : ""}`} onClick={() => selectSession(s.id)}>
                 <div className={styles.sessionItemContent}>
                   <div className={styles.sessionTitle}>{s.title}</div>
                   <div className={styles.sessionTime}>{formatRelativeTime(s.updated_at)}</div>
                 </div>
-                <button 
-                  className={styles.deleteSessionBtn}
-                  onClick={(e) => handleDeleteSession(e, s.id)}
-                  title="Hapus sesi"
-                >
+                <button className={styles.deleteSessionBtn} onClick={(e) => handleDeleteSession(e, s.id)} title="Hapus sesi">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <polyline points="3 6 5 6 21 6"></polyline>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -305,7 +280,7 @@ export default function NutriCoachPage() {
         <div className={styles.messagesContainer}>
           {!activeSession ? (
             <div className={styles.emptyState}>
-              <div className={styles.emptyIcon}>🤖</div>
+              {/* <div className={styles.emptyIcon}>🤖</div> */}
               <h3>Selamat Datang di NutriCoach AI</h3>
               <p>Mulai sesi baru untuk berkonsultasi tentang gizi dan kesehatan Anda.</p>
               <button className={styles.startBtn} onClick={handleNewSession}>
@@ -326,7 +301,7 @@ export default function NutriCoachPage() {
                   </div>
                 </div>
               )}
-              
+
               {messages.map((msg, i) => (
                 <div key={msg.id || i} className={`${styles.msgRow} ${msg.sender === "user" ? styles.msgRowUser : styles.msgRowAi}`}>
                   <div className={`${styles.bubble} ${msg.sender === "user" ? styles.bubbleUser : styles.bubbleAi}`}>
@@ -334,17 +309,11 @@ export default function NutriCoachPage() {
                     <span className={styles.msgTime}>{formatTime(msg.sent_at)}</span>
 
                     {msg.needs_consultation && konsultasiStatus[msg.id] !== "sent" && (
-                      <button
-                        onClick={() => handleKirimKonsultasi(msg.id, msg.message)}
-                        disabled={konsultasiStatus[msg.id] === "loading"}
-                        className={styles.konsultasiBtn}
-                      >
+                      <button onClick={() => handleKirimKonsultasi(msg.id, msg.message)} disabled={konsultasiStatus[msg.id] === "loading"} className={styles.konsultasiBtn}>
                         🩺 {konsultasiStatus[msg.id] === "loading" ? "Mengirim..." : "Hubungi Ahli Gizi Sekarang"}
                       </button>
                     )}
-                    {msg.needs_consultation && konsultasiStatus[msg.id] === "sent" && (
-                      <div className={styles.konsultasiSent}>✅ Permintaan terkirim</div>
-                    )}
+                    {msg.needs_consultation && konsultasiStatus[msg.id] === "sent" && <div className={styles.konsultasiSent}>✅ Permintaan terkirim</div>}
                   </div>
                 </div>
               ))}
@@ -353,7 +322,9 @@ export default function NutriCoachPage() {
                 <div className={`${styles.msgRow} ${styles.msgRowAi}`}>
                   <div className={`${styles.bubble} ${styles.bubbleAi}`}>
                     <div className={styles.typingDots}>
-                      <span /><span /><span />
+                      <span />
+                      <span />
+                      <span />
                     </div>
                   </div>
                 </div>
@@ -365,14 +336,7 @@ export default function NutriCoachPage() {
 
         {activeSession && (
           <form onSubmit={handleSubmit} className={styles.inputArea}>
-            <input
-              type="text"
-              placeholder="Ketik pertanyaan tentang gizi..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              className={styles.inputField}
-              disabled={isTyping}
-            />
+            <input type="text" placeholder="Ketik pertanyaan tentang gizi..." value={input} onChange={(e) => setInput(e.target.value)} className={styles.inputField} disabled={isTyping} />
             <button type="submit" className={styles.sendBtn} disabled={!input.trim() || isTyping}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="22" y1="2" x2="11" y2="13" />
