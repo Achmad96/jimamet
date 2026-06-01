@@ -3,17 +3,7 @@
 import { useState, useRef, useEffect, FormEvent } from "react";
 import ReactMarkdown from "react-markdown";
 import styles from "./coach.module.css";
-import {
-  apiListCoachSessions,
-  apiGetCoachSession,
-  apiCreateCoachSession,
-  apiDeleteCoachSession,
-  apiSendCoachMessage,
-  apiCreateConsultation,
-  apiSendChat,
-  apiListConsultations,
-  apiListChat,
-} from "@/lib/api";
+import { apiListCoachSessions, apiGetCoachSession, apiCreateCoachSession, apiDeleteCoachSession, apiSendCoachMessage, apiCreateConsultation, apiSendChat, apiListConsultations, apiListChat } from "@/lib/api";
 
 interface CoachSession {
   id: string;
@@ -74,17 +64,12 @@ function formatRelativeTime(iso: string) {
   }
 }
 
-const quickReplies = [
-  "Analisis nutrisi hari ini",
-  "Rekomendasi makan malam",
-  "Tips diet sehat",
-  "Saya punya keluhan kesehatan",
-];
+const quickReplies = ["Analisis nutrisi hari ini", "Rekomendasi makan malam", "Tips diet sehat", "Saya punya keluhan kesehatan"];
 
 const statusLabels: Record<string, { label: string; color: string }> = {
   pending: { label: "Menunggu", color: "#f59e0b" },
   completed: { label: "Selesai", color: "#22c55e" },
-  cancelled: { label: "Dibatalkan", color: "#9ca3af" },
+  cancelled: { label: "Dibatalkan", color: "#9ca3af" }
 };
 
 type ViewMode = "coach" | "consultation";
@@ -137,7 +122,7 @@ export default function NutriCoachPage() {
       console.error(e);
     } finally {
       setIsLoading(false);
-    }/
+    }
   };
 
   const selectSession = async (sessionId: string) => {
@@ -222,9 +207,7 @@ export default function NutriCoachPage() {
         setMessages((prev) => [...prev, aiMsg]);
 
         if (res.data.session) {
-          setSessions((prev) =>
-            prev.map(s => s.id === activeSession ? res.data.session : s)
-          );
+          setSessions((prev) => prev.map((s) => (s.id === activeSession ? res.data.session : s)));
         }
       } else {
         setMessages((prev) => [
@@ -259,7 +242,7 @@ export default function NutriCoachPage() {
       const { ok, data } = await apiCreateConsultation(pesanCoachbot);
       if (ok && data?.id) {
         await apiSendChat(data.id, "Halo Ahli Gizi, saya diarahkan oleh NutriCoach AI untuk berkonsultasi.", "user");
-        setKonsultasiStatus(prev => ({ ...prev, [msgId]: "sent" }));
+        setKonsultasiStatus((prev) => ({ ...prev, [msgId]: "sent" }));
         // Refresh consultations list
         await loadConsultations();
         alert("Permintaan konsultasi berhasil dikirim! Klik tab 'Konsultasi Ahli Gizi' di sidebar untuk melihat balasan.");
@@ -341,9 +324,7 @@ export default function NutriCoachPage() {
 
   return (
     <div className={styles.layout}>
-      {sidebarOpen && (
-        <div className={styles.sidebarOverlay} onClick={() => setSidebarOpen(false)} />
-      )}
+      {sidebarOpen && <div className={styles.sidebarOverlay} onClick={() => setSidebarOpen(false)} />}
 
       {/* Sidebar */}
       <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ""}`}>
@@ -362,20 +343,12 @@ export default function NutriCoachPage() {
             <div className={styles.emptySidebar}>Belum ada sesi AI</div>
           ) : (
             sessions.map((s) => (
-              <div
-                key={s.id}
-                className={`${styles.sessionItem} ${viewMode === "coach" && activeSession === s.id ? styles.activeSession : ""}`}
-                onClick={() => selectSession(s.id)}
-              >
+              <div key={s.id} className={`${styles.sessionItem} ${viewMode === "coach" && activeSession === s.id ? styles.activeSession : ""}`} onClick={() => selectSession(s.id)}>
                 <div className={styles.sessionItemContent}>
                   <div className={styles.sessionTitle}>🤖 {s.title}</div>
                   <div className={styles.sessionTime}>{formatRelativeTime(s.updated_at)}</div>
                 </div>
-                <button
-                  className={styles.deleteSessionBtn}
-                  onClick={(e) => handleDeleteSession(e, s.id)}
-                  title="Hapus sesi"
-                >
+                <button className={styles.deleteSessionBtn} onClick={(e) => handleDeleteSession(e, s.id)} title="Hapus sesi">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <polyline points="3 6 5 6 21 6"></polyline>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -398,15 +371,13 @@ export default function NutriCoachPage() {
               consultations.map((c) => {
                 const st = statusLabels[c.status] || statusLabels.pending;
                 return (
-                  <div
-                    key={c.id}
-                    className={`${styles.sessionItem} ${viewMode === "consultation" && activeConsultation === c.id ? styles.activeSession : ""}`}
-                    onClick={() => selectConsultation(c.id)}
-                  >
+                  <div key={c.id} className={`${styles.sessionItem} ${viewMode === "consultation" && activeConsultation === c.id ? styles.activeSession : ""}`} onClick={() => selectConsultation(c.id)}>
                     <div className={styles.sessionItemContent}>
                       <div className={styles.sessionTitle}>🩺 Konsultasi</div>
                       <div className={styles.sessionTime}>
-                        <span className={styles.statusBadge} style={{ color: st.color }}>● {st.label}</span>
+                        <span className={styles.statusBadge} style={{ color: st.color }}>
+                          ● {st.label}
+                        </span>
                         {" · "}
                         {formatRelativeTime(c.created_at)}
                       </div>
@@ -452,12 +423,7 @@ export default function NutriCoachPage() {
                   <span className={styles.onlineDotYellow}></span> Konsultasi
                 </span>
               </div>
-              <button
-                className={styles.refreshBtn}
-                onClick={handleRefreshChat}
-                disabled={refreshing}
-                title="Muat pesan terbaru"
-              >
+              <button className={styles.refreshBtn} onClick={handleRefreshChat} disabled={refreshing} title="Muat pesan terbaru">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={refreshing ? styles.spinning : ""}>
                   <polyline points="23 4 23 10 17 10"></polyline>
                   <polyline points="1 20 1 14 7 14"></polyline>
@@ -504,17 +470,11 @@ export default function NutriCoachPage() {
                         <span className={styles.msgTime}>{formatTime(msg.sent_at)}</span>
 
                         {msg.needs_consultation && konsultasiStatus[msg.id] !== "sent" && (
-                          <button
-                            onClick={() => handleKirimKonsultasi(msg.id, msg.message)}
-                            disabled={konsultasiStatus[msg.id] === "loading"}
-                            className={styles.konsultasiBtn}
-                          >
+                          <button onClick={() => handleKirimKonsultasi(msg.id, msg.message)} disabled={konsultasiStatus[msg.id] === "loading"} className={styles.konsultasiBtn}>
                             🩺 {konsultasiStatus[msg.id] === "loading" ? "Mengirim..." : "Hubungi Ahli Gizi Sekarang"}
                           </button>
                         )}
-                        {msg.needs_consultation && konsultasiStatus[msg.id] === "sent" && (
-                          <div className={styles.konsultasiSent}>✅ Permintaan terkirim — cek sidebar &quot;Konsultasi Ahli Gizi&quot;</div>
-                        )}
+                        {msg.needs_consultation && konsultasiStatus[msg.id] === "sent" && <div className={styles.konsultasiSent}>✅ Permintaan terkirim — cek sidebar &quot;Konsultasi Ahli Gizi&quot;</div>}
                       </div>
                     </div>
                   ))}
@@ -523,7 +483,9 @@ export default function NutriCoachPage() {
                     <div className={`${styles.msgRow} ${styles.msgRowAi}`}>
                       <div className={`${styles.bubble} ${styles.bubbleAi}`}>
                         <div className={styles.typingDots}>
-                          <span /><span /><span />
+                          <span />
+                          <span />
+                          <span />
                         </div>
                       </div>
                     </div>
@@ -547,23 +509,14 @@ export default function NutriCoachPage() {
                   {consultationChats.length === 0 && (
                     <div className={styles.welcomeState}>
                       <p>Menunggu balasan dari ahli gizi... 🩺</p>
-                      <p style={{ fontSize: "0.85rem", color: "#999", marginTop: "0.5rem" }}>
-                        Klik tombol &quot;Refresh&quot; di atas untuk melihat pesan terbaru.
-                      </p>
+                      <p style={{ fontSize: "0.85rem", color: "#999", marginTop: "0.5rem" }}>Klik tombol &quot;Refresh&quot; di atas untuk melihat pesan terbaru.</p>
                     </div>
                   )}
 
                   {consultationChats.map((msg, i) => (
-                    <div
-                      key={msg.id || i}
-                      className={`${styles.msgRow} ${msg.sender === "user" ? styles.msgRowUser : styles.msgRowAi}`}
-                    >
-                      <div
-                        className={`${styles.bubble} ${msg.sender === "user" ? styles.bubbleUser : styles.bubbleDoctor}`}
-                      >
-                        {msg.sender === "nutritionist" && (
-                          <div className={styles.senderLabel}>🩺 Ahli Gizi</div>
-                        )}
+                    <div key={msg.id || i} className={`${styles.msgRow} ${msg.sender === "user" ? styles.msgRowUser : styles.msgRowAi}`}>
+                      <div className={`${styles.bubble} ${msg.sender === "user" ? styles.bubbleUser : styles.bubbleDoctor}`}>
+                        {msg.sender === "nutritionist" && <div className={styles.senderLabel}>🩺 Ahli Gizi</div>}
                         <p>{msg.message}</p>
                         <span className={styles.msgTime}>{formatTime(msg.sent_at)}</span>
                       </div>
@@ -580,14 +533,7 @@ export default function NutriCoachPage() {
         {/* Input Area */}
         {viewMode === "coach" && activeSession && (
           <form onSubmit={handleSubmit} className={styles.inputArea}>
-            <input
-              type="text"
-              placeholder="Ketik pertanyaan tentang gizi..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              className={styles.inputField}
-              disabled={isTyping}
-            />
+            <input type="text" placeholder="Ketik pertanyaan tentang gizi..." value={input} onChange={(e) => setInput(e.target.value)} className={styles.inputField} disabled={isTyping} />
             <button type="submit" className={styles.sendBtn} disabled={!input.trim() || isTyping}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="22" y1="2" x2="11" y2="13" />
@@ -599,14 +545,7 @@ export default function NutriCoachPage() {
 
         {viewMode === "consultation" && activeConsultation && (
           <form onSubmit={handleSendConsultationChat} className={styles.inputArea}>
-            <input
-              type="text"
-              placeholder="Balas pesan ahli gizi..."
-              value={consultationInput}
-              onChange={(e) => setConsultationInput(e.target.value)}
-              className={styles.inputField}
-              disabled={consultationSending}
-            />
+            <input type="text" placeholder="Balas pesan ahli gizi..." value={consultationInput} onChange={(e) => setConsultationInput(e.target.value)} className={styles.inputField} disabled={consultationSending} />
             <button type="submit" className={styles.sendBtn} disabled={!consultationInput.trim() || consultationSending}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="22" y1="2" x2="11" y2="13" />
