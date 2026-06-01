@@ -10,7 +10,7 @@ class UserModel:
 
     @classmethod
     def find_by_id(cls, user_id) -> dict | None:
-        """Find a user by id (BIGSERIAL)."""
+        """Find a user by id (UUID)."""
         rows = supabase.select(cls.TABLE, {"id": f"eq.{user_id}"})
         return rows[0] if rows else None
 

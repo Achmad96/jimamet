@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect, FormEvent } from "react";
+import ReactMarkdown from "react-markdown";
 import styles from "./coach.module.css";
 import { apiListCoachSessions, apiGetCoachSession, apiCreateCoachSession, apiDeleteCoachSession, apiSendCoachMessage, apiCreateConsultation, apiSendChat } from "@/lib/api";
+import { SkeletonCoach } from "@/components/Skeleton";
 
 interface CoachSession {
   id: string;
@@ -215,6 +217,8 @@ export default function NutriCoachPage() {
     }
   };
 
+  if (isLoading) return <SkeletonCoach />;
+
   return (
     <div className={styles.layout}>
       {/* Sidebar Overlay (Mobile) */}
@@ -305,7 +309,9 @@ export default function NutriCoachPage() {
               {messages.map((msg, i) => (
                 <div key={msg.id || i} className={`${styles.msgRow} ${msg.sender === "user" ? styles.msgRowUser : styles.msgRowAi}`}>
                   <div className={`${styles.bubble} ${msg.sender === "user" ? styles.bubbleUser : styles.bubbleAi}`}>
-                    <p>{msg.message}</p>
+                    <div className={styles.markdownWrapper}>
+                      <ReactMarkdown>{msg.message}</ReactMarkdown>
+                    </div>
                     <span className={styles.msgTime}>{formatTime(msg.sent_at)}</span>
 
                     {msg.needs_consultation && konsultasiStatus[msg.id] !== "sent" && (

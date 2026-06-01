@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import { isLoggedIn, getCurrentUser, apiLogout } from "@/lib/api";
 import styles from "./dashboard-layout.module.css";
+import { SkeletonLayout } from "@/components/Skeleton";
 
 const navItems = [
   {
@@ -91,13 +92,7 @@ export default function DashboardLayout({
     router.replace("/login");
   };
 
-  if (!ready) {
-    return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", color: "var(--outline)" }}>
-        Memuat...
-      </div>
-    );
-  }
+  if (!ready) return <SkeletonLayout />;
 
   return (
     <div className={styles.layout}>

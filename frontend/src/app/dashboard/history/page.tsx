@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import styles from "./history.module.css";
 import { apiListFoodRecords } from "@/lib/api";
+import { SkeletonHistory } from "@/components/Skeleton";
 
 interface MealRecord {
   id: string;
@@ -54,14 +55,14 @@ export default function HistoryPage() {
     apiListFoodRecords().then(({ ok, data }) => {
       if (ok && Array.isArray(data) && data.length > 0) {
         const mapped: MealRecord[] = data.map((r: Record<string, unknown>) => ({
-          id: (r.id_analysis as string) || Math.random().toString(),
-          date: formatDate(r.tanggal as string),
-          time: formatTime(r.tanggal as string),
-          name: r.nama_makanan as string,
-          calories: (r.kalori as number) || 0,
+          id: (r.id as string) || Math.random().toString(),
+          date: formatDate((r.recorded_at || r.tanggal) as string),
+          time: formatTime((r.recorded_at || r.tanggal) as string),
+          name: (r.food_name || r.nama_makanan) as string,
+          calories: (r.calories as number) || (r.kalori as number) || 0,
           protein: (r.protein as number) || 0,
-          carbs: (r.karbohidrat as number) || 0,
-          fat: (r.lemak as number) || 0,
+          carbs: (r.carbs as number) || (r.karbohidrat as number) || 0,
+          fat: (r.fat as number) || (r.lemak as number) || 0,
           emoji: "🍽️",
         }));
         setAllData(mapped);
@@ -87,6 +88,8 @@ export default function HistoryPage() {
   const totalProtein = filteredData.reduce((s, i) => s + i.protein, 0);
   const totalCarbs = filteredData.reduce((s, i) => s + i.carbs, 0);
   const totalFat = filteredData.reduce((s, i) => s + i.fat, 0);
+
+  if (loading) return <SkeletonHistory />;
 
   return (
     <div className={styles.page}>

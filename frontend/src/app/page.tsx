@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import styles from "./page.module.css";
 
-/* ───────── Intersection Observer Hook ───────── */
 function useInView(threshold = 0.15) {
   const nodeRef = useRef<HTMLDivElement>(null);
   const [isInView, setIsInView] = useState(false);
@@ -28,7 +27,6 @@ function useInView(threshold = 0.15) {
   return { nodeRef, isInView };
 }
 
-/* ───────── Animated Counter ───────── */
 function Counter({ end, suffix = "", duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
   const [count, setCount] = useState(0);
   const { nodeRef: ref, isInView } = useInView();
@@ -49,10 +47,14 @@ function Counter({ end, suffix = "", duration = 2000 }: { end: number; suffix?: 
     return () => clearInterval(timer);
   }, [isInView, end, duration]);
 
-  return <span ref={ref}>{count}{suffix}</span>;
+  return (
+    <span ref={ref}>
+      {count}
+      {suffix}
+    </span>
+  );
 }
 
-/* ───────── Feature Data ───────── */
 const features = [
   {
     icon: (
@@ -63,7 +65,7 @@ const features = [
     ),
     title: "Analisis Gambar AI",
     desc: "Ambil foto makanan Anda dan biarkan AI kami menghitung nutrisinya secara instan. Mengidentifikasi ratusan jenis bahan makanan dengan presisi tinggi.",
-    color: "#2e7d32",
+    color: "#2e7d32"
   },
   {
     icon: (
@@ -73,7 +75,7 @@ const features = [
     ),
     title: "Pelacakan Presisi",
     desc: "Pantau kalori, makronutrien, dan serat dengan akurasi standar klinis. Dashboard interaktif untuk visualisasi data nutrisi harian.",
-    color: "#4caf50",
+    color: "#4caf50"
   },
   {
     icon: (
@@ -84,8 +86,8 @@ const features = [
     ),
     title: "NutriCoach AI",
     desc: "Konsultasi nutrisi kapan saja dengan asisten AI cerdas yang memahami riwayat kesehatan Anda dan memberikan rekomendasi personal.",
-    color: "#1b6d24",
-  },
+    color: "#1b6d24"
+  }
 ];
 
 const steps = [
@@ -99,7 +101,7 @@ const steps = [
         <circle cx="8.5" cy="8.5" r="1.5" />
         <polyline points="21 15 16 10 5 21" />
       </svg>
-    ),
+    )
   },
   {
     num: "02",
@@ -112,7 +114,7 @@ const steps = [
         <path d="M8.56 13a8 8 0 0 0-2.3 3.5" />
         <path d="M15.44 13a8 8 0 0 1 2.3 3.5" />
       </svg>
-    ),
+    )
   },
   {
     num: "03",
@@ -126,20 +128,17 @@ const steps = [
         <line x1="16" y1="17" x2="8" y2="17" />
         <polyline points="10 9 9 9 8 9" />
       </svg>
-    ),
-  },
+    )
+  }
 ];
 
 const stats = [
   { value: 98.5, suffix: "%", label: "Akurasi Analisis" },
   { value: 500, suffix: "+", label: "Jenis Makanan" },
   { value: 10, suffix: "rb+", label: "Pengguna Aktif" },
-  { value: 24, suffix: "/7", label: "AI Tersedia" },
+  { value: 24, suffix: "/7", label: "AI Tersedia" }
 ];
 
-/* ═══════════════════════════════════════════════════
-   MAIN COMPONENT
-   ═══════════════════════════════════════════════════ */
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -174,17 +173,21 @@ export default function LandingPage() {
           </a>
 
           <nav className={`${styles.navLinks} ${mobileMenuOpen ? styles.navOpen : ""}`}>
-            <a href="#features" onClick={() => setMobileMenuOpen(false)}>Fitur</a>
-            <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)}>Cara Kerja</a>
-            <a href="#stats" onClick={() => setMobileMenuOpen(false)}>Data Klinis</a>
-            <a href="/login" className={styles.navCta}>Masuk</a>
+            <a href="#features" onClick={() => setMobileMenuOpen(false)}>
+              Fitur
+            </a>
+            <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)}>
+              Cara Kerja
+            </a>
+            <a href="#stats" onClick={() => setMobileMenuOpen(false)}>
+              Data Klinis
+            </a>
+            <a href="/login" className={styles.navCta}>
+              Masuk
+            </a>
           </nav>
 
-          <button
-            className={styles.hamburger}
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
+          <button className={styles.hamburger} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
             <span className={mobileMenuOpen ? styles.hamburgerOpen : ""} />
           </button>
         </div>
@@ -204,12 +207,12 @@ export default function LandingPage() {
               Clinical Nutrition AI Platform
             </span>
             <h1 className={`display-lg animate-fade-up delay-100`}>
-              Nutrisi Klinis<br />
+              Nutrisi Klinis
+              <br />
               di <span className={styles.heroGradient}>Ujung Jari</span> Anda
             </h1>
             <p className={`body-lg animate-fade-up delay-200`} style={{ color: "var(--on-surface-variant)", maxWidth: 540 }}>
-              Transformasikan kesehatan Anda dengan analisis nutrisi berbasis AI yang presisi.
-              Jimamet membantu Anda memantau asupan makanan secara klinis dan profesional.
+              Transformasikan kesehatan Anda dengan analisis nutrisi berbasis AI yang presisi. Jimamet membantu Anda memantau asupan makanan secara klinis dan profesional.
             </p>
             <div className={`${styles.heroActions} animate-fade-up delay-300`}>
               <a href="/register" className={styles.btnPrimary}>
@@ -226,14 +229,7 @@ export default function LandingPage() {
           </div>
           <div className={`${styles.heroImage} animate-slide-right delay-300`}>
             <div className={styles.heroImageWrapper}>
-              <Image
-                src="/hero-nutrition.png"
-                alt="Healthy nutritious food for medical nutrition analysis"
-                width={600}
-                height={450}
-                priority
-                className={styles.heroImg}
-              />
+              <Image src="/hero-nutrition.png" alt="Healthy nutritious food for medical nutrition analysis" width={600} height={450} priority className={styles.heroImg} />
               <div className={styles.heroFloatingCard}>
                 <div className={styles.floatingCardIcon}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="#2e7d32" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -276,23 +272,20 @@ export default function LandingPage() {
               Fitur Unggulan <span className={styles.textGreen}>Jimamet</span>
             </h2>
             <p className="body-lg" style={{ color: "var(--on-surface-variant)", maxWidth: 600 }}>
-              Teknologi kelas medis yang didesain untuk kemudahan penggunaan sehari-hari,
-              memberikan wawasan nutrisi mendalam tanpa kerumitan.
+              Teknologi kelas medis yang didesain untuk kemudahan penggunaan sehari-hari, memberikan wawasan nutrisi mendalam tanpa kerumitan.
             </p>
           </div>
 
           <div className={styles.featuresGrid}>
             {features.map((f, i) => (
-              <div
-                key={f.title}
-                className={`${styles.featureCard} ${featuresSection.isInView ? "animate-fade-up" : ""}`}
-                style={{ animationDelay: `${(i + 1) * 150}ms`, opacity: featuresSection.isInView ? undefined : 0 }}
-              >
+              <div key={f.title} className={`${styles.featureCard} ${featuresSection.isInView ? "animate-fade-up" : ""}`} style={{ animationDelay: `${(i + 1) * 150}ms`, opacity: featuresSection.isInView ? undefined : 0 }}>
                 <div className={styles.featureIcon} style={{ background: `${f.color}14`, color: f.color }}>
                   {f.icon}
                 </div>
                 <h3 className="title-lg">{f.title}</h3>
-                <p className="body-md" style={{ color: "var(--on-surface-variant)" }}>{f.desc}</p>
+                <p className="body-md" style={{ color: "var(--on-surface-variant)" }}>
+                  {f.desc}
+                </p>
                 <a href="#" className={styles.featureLink}>
                   Pelajari lebih lanjut
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -321,15 +314,13 @@ export default function LandingPage() {
 
           <div className={styles.stepsGrid}>
             {steps.map((s, i) => (
-              <div
-                key={s.num}
-                className={`${styles.stepCard} ${stepsSection.isInView ? "animate-fade-up" : ""}`}
-                style={{ animationDelay: `${(i + 1) * 200}ms`, opacity: stepsSection.isInView ? undefined : 0 }}
-              >
+              <div key={s.num} className={`${styles.stepCard} ${stepsSection.isInView ? "animate-fade-up" : ""}`} style={{ animationDelay: `${(i + 1) * 200}ms`, opacity: stepsSection.isInView ? undefined : 0 }}>
                 <div className={styles.stepNum}>{s.num}</div>
                 <div className={styles.stepIcon}>{s.icon}</div>
                 <h3 className="title-lg">{s.title}</h3>
-                <p className="body-md" style={{ color: "var(--on-surface-variant)" }}>{s.desc}</p>
+                <p className="body-md" style={{ color: "var(--on-surface-variant)" }}>
+                  {s.desc}
+                </p>
                 {i < steps.length - 1 && <div className={styles.stepConnector} />}
               </div>
             ))}
@@ -342,11 +333,7 @@ export default function LandingPage() {
         <div className="container">
           <div className={styles.statsGrid}>
             {stats.map((s, i) => (
-              <div
-                key={s.label}
-                className={`${styles.statCard} ${statsSection.isInView ? "animate-scale-in" : ""}`}
-                style={{ animationDelay: `${(i + 1) * 100}ms`, opacity: statsSection.isInView ? undefined : 0 }}
-              >
+              <div key={s.label} className={`${styles.statCard} ${statsSection.isInView ? "animate-scale-in" : ""}`} style={{ animationDelay: `${(i + 1) * 100}ms`, opacity: statsSection.isInView ? undefined : 0 }}>
                 <div className={styles.statValue}>
                   <Counter end={s.value} suffix={s.suffix} />
                 </div>
@@ -366,8 +353,7 @@ export default function LandingPage() {
               Mulai Perjalanan Sehat Anda Hari Ini
             </h2>
             <p className="body-lg" style={{ color: "rgba(255,255,255,0.85)", maxWidth: 560, position: "relative" }}>
-              Bergabunglah dengan ribuan tenaga medis dan pasien yang telah
-              mempercayakan manajemen nutrisi mereka pada Jimamet.
+              Bergabunglah dengan ribuan tenaga medis dan pasien yang telah mempercayakan manajemen nutrisi mereka pada Jimamet.
             </p>
             <div className={styles.ctaActions} style={{ position: "relative" }}>
               <a href="/register" className={styles.btnWhite}>
@@ -398,27 +384,32 @@ export default function LandingPage() {
                 <span className={styles.logoText}>Jimamet</span>
               </div>
               <p className="body-sm" style={{ color: "rgba(255, 255, 255, 0.9)", maxWidth: 320, marginTop: 12 }}>
-                Clinical precision in every byte. Platform nutrisi medis berbasis AI
-                untuk pemantauan kesehatan yang lebih baik.
+                Clinical precision in every byte. Platform nutrisi medis berbasis AI untuk pemantauan kesehatan yang lebih baik.
               </p>
             </div>
 
             <div className={styles.footerLinks}>
               <div className={styles.footerCol}>
-                <h4 className="label-md" style={{ marginBottom: 16 }}>Platform</h4>
+                <h4 className="label-md" style={{ marginBottom: 16 }}>
+                  Platform
+                </h4>
                 <a href="#features">Fitur</a>
                 <a href="#how-it-works">Cara Kerja</a>
                 <a href="#stats">Data Klinis</a>
                 <a href="#">Pricing</a>
               </div>
               <div className={styles.footerCol}>
-                <h4 className="label-md" style={{ marginBottom: 16 }}>Legal</h4>
+                <h4 className="label-md" style={{ marginBottom: 16 }}>
+                  Legal
+                </h4>
                 <a href="#">Privacy Policy</a>
                 <a href="#">Terms of Service</a>
                 <a href="#">HIPAA Compliance</a>
               </div>
               <div className={styles.footerCol}>
-                <h4 className="label-md" style={{ marginBottom: 16 }}>Support</h4>
+                <h4 className="label-md" style={{ marginBottom: 16 }}>
+                  Support
+                </h4>
                 <a href="#">Contact Support</a>
                 <a href="#">Research Papers</a>
                 <a href="#">Documentation</a>

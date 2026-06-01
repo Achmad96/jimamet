@@ -417,3 +417,38 @@
     z-index: 5;
   }
 }
+
+.markdownWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  word-break: break-word;
+}
+
+.markdownWrapper p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.markdownWrapper ul,
+.markdownWrapper ol {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.markdownWrapper h1,
+.markdownWrapper h2,
+.markdownWrapper h3,
+.markdownWrapper h4,
+.markdownWrapper h5,
+.markdownWrapper h6 {
+  margin: 0.5rem 0 0.2rem 0;
+}
+
+.markdownWrapper > :first-child {
+  margin-top: 0;
+}
+
+.markdownWrapper > :last-child {
+  margin-bottom: 0;
+}

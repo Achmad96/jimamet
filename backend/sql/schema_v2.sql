@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════════════════
--- SCHEMA V2: Full English naming convention migration
+-- SCHEMA V2.1: Full English naming + UUID user IDs
 -- Run in Supabase Dashboard → SQL Editor
 -- WARNING: This drops ALL existing tables and recreates them.
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -25,10 +25,10 @@ DROP TABLE IF EXISTS public.ahli_gizi CASCADE;
 DROP TABLE IF EXISTS public.users CASCADE;
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 2. Users
+-- 2. Users (UUID primary key)
 -- ═══════════════════════════════════════════════════════════════════════════
 CREATE TABLE public.users (
-    id                   BIGSERIAL PRIMARY KEY,
+    id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username             TEXT UNIQUE NOT NULL,
     full_name            TEXT NOT NULL DEFAULT '',
     age                  INTEGER DEFAULT 0,
@@ -48,7 +48,7 @@ CREATE TABLE public.users (
 -- ═══════════════════════════════════════════════════════════════════════════
 CREATE TABLE public.daily_summary (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id        BIGINT REFERENCES public.users(id) ON DELETE CASCADE,
+    user_id        UUID REFERENCES public.users(id) ON DELETE CASCADE,
     date           DATE NOT NULL,
     total_calories DECIMAL DEFAULT 0,
     total_protein  DECIMAL DEFAULT 0,
@@ -62,7 +62,7 @@ CREATE TABLE public.daily_summary (
 -- ═══════════════════════════════════════════════════════════════════════════
 CREATE TABLE public.images (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id     BIGINT REFERENCES public.users(id) ON DELETE CASCADE,
+    user_id     UUID REFERENCES public.users(id) ON DELETE CASCADE,
     file_path   TEXT NOT NULL,
     uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -72,7 +72,7 @@ CREATE TABLE public.images (
 -- ═══════════════════════════════════════════════════════════════════════════
 CREATE TABLE public.food_records (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id     BIGINT REFERENCES public.users(id) ON DELETE CASCADE,
+    user_id     UUID REFERENCES public.users(id) ON DELETE CASCADE,
     image_id    UUID REFERENCES public.images(id) ON DELETE SET NULL,
     food_name   TEXT NOT NULL,
     calories    DECIMAL DEFAULT 0,
@@ -88,7 +88,7 @@ CREATE TABLE public.food_records (
 -- ═══════════════════════════════════════════════════════════════════════════
 CREATE TABLE public.recommendations (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id             BIGINT REFERENCES public.users(id) ON DELETE CASCADE,
+    user_id             UUID REFERENCES public.users(id) ON DELETE CASCADE,
     recommendation_type TEXT CHECK (recommendation_type IN ('deficit', 'surplus', 'maintain')),
     content             TEXT NOT NULL,
     created_at          TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -113,7 +113,7 @@ CREATE TABLE public.nutritionists (
 -- ═══════════════════════════════════════════════════════════════════════════
 CREATE TABLE public.consultations (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id           BIGINT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    user_id           UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     coach_message     TEXT NOT NULL,
     status            TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'cancelled')),
     nutritionist_notes TEXT DEFAULT '',
@@ -136,7 +136,7 @@ CREATE TABLE public.consultation_messages (
 -- ═══════════════════════════════════════════════════════════════════════════
 CREATE TABLE public.coach_sessions (
     id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id    BIGINT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    user_id    UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     title      TEXT NOT NULL DEFAULT 'New Consultation',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import styles from "./dashboard.module.css";
 import { apiDashboardSummary } from "@/lib/api";
+import { SkeletonDashboard } from "@/components/Skeleton";
 
 export default function DashboardPage() {
   const [greeting, setGreeting] = useState("Selamat Pagi");
@@ -171,7 +172,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (loading) return <div style={{ padding: 40, textAlign: "center" }}>Memuat Dashboard...</div>;
+  if (loading) return <SkeletonDashboard />;
 
   return (
     <div className={styles.dashboard}>

@@ -44,7 +44,7 @@ class PredictionService:
     """NutriCoach AI chat business logic."""
 
     @classmethod
-    def list_sessions(cls, user_id: int) -> list:
+    def list_sessions(cls, user_id: str) -> list:
         """Fetch all sessions for user (cached 30s)."""
         cache_key = app_cache.key_coach_sessions(user_id)
         cached = app_cache.get(cache_key)
@@ -55,7 +55,7 @@ class PredictionService:
         return result
 
     @classmethod
-    def create_session(cls, user_id: int, title: str = "New Consultation") -> dict:
+    def create_session(cls, user_id: str, title: str = "New Consultation") -> dict:
         """Create a new AI chat session. Invalidates session list cache."""
         result = CoachSessionModel.create({
             "user_id": user_id,
@@ -65,7 +65,7 @@ class PredictionService:
         return result
 
     @classmethod
-    def get_session(cls, user_id: int, session_id: str) -> dict:
+    def get_session(cls, user_id: str, session_id: str) -> dict:
         """Get session details and all its messages (cached 30s)."""
         cache_key = app_cache.key_coach_session_detail(session_id)
         cached = app_cache.get(cache_key)
@@ -82,7 +82,7 @@ class PredictionService:
         return result
 
     @classmethod
-    def delete_session(cls, user_id: int, session_id: str) -> bool:
+    def delete_session(cls, user_id: str, session_id: str) -> bool:
         """Delete an AI chat session. Invalidates caches."""
         session = CoachSessionModel.find_by_id_and_user(session_id, user_id)
         if not session:

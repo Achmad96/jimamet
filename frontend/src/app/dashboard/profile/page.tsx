@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import styles from "./profile.module.css";
 import { apiGetProfile, apiUpdateProfile, apiDashboardSummary } from "@/lib/api";
+import { SkeletonProfile } from "@/components/Skeleton";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState({
@@ -97,15 +98,7 @@ export default function ProfilePage() {
     return Math.round(tdee);
   };
 
-  if (loading) {
-    return (
-      <div className={styles.page}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "4rem", color: "var(--outline)" }}>
-          Memuat profil...
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <SkeletonProfile />;
 
   return (
     <div className={styles.page}>
