@@ -21,6 +21,7 @@ interface AnalysisResult {
   nutrients: NutrientResult[];
   tags: string[];
   recommendation: string;
+  nutritionUnavailable: boolean;
 }
 
 
@@ -64,18 +65,18 @@ export default function FoodAnalysisPage() {
     try {
       const formData = new FormData();
       formData.append("image", selectedFile);
-      
+
       const res = await fetch("http://127.0.0.1:8000/api/detect-food/", {
         method: "POST",
         body: formData,
       });
-      
+
       const data = await res.json();
-      
+
       if (res.ok && data.status === "success" && data.data && data.data.length > 0) {
         // Ambil hasil dengan confidence tertinggi
         const top = data.data.sort((a: any, b: any) => b.confidence - a.confidence)[0];
-        
+
         const nut = top.nutrition || {};
         const cals = nut.calories || 0;
         const protein = nut.protein || 0;
@@ -83,23 +84,30 @@ export default function FoodAnalysisPage() {
         const fat = nut.fat || 0;
         const fiber = nut.fiber || 0;
         const sugar = nut.sugar || 0;
-        
+
+        const isUnavailable = nut.source === "unavailable";
+
         setResult({
           foodName: formatFoodLabel(top.food_name),
           confidence: top.confidence,
           calories: cals,
           portion: "1 Porsi",
           nutrients: [
-            { name: "Protein", value: protein, unit: "g", pct: Math.min(100, Math.round(protein/50*100)), color: "#4caf50" },
-            { name: "Karbohidrat", value: carbs, unit: "g", pct: Math.min(100, Math.round(carbs/300*100)), color: "#ff9800" },
-            { name: "Lemak", value: fat, unit: "g", pct: Math.min(100, Math.round(fat/65*100)), color: "#f44336" },
-            { name: "Serat", value: fiber, unit: "g", pct: Math.min(100, Math.round(fiber/25*100)), color: "#9c27b0" },
-            { name: "Gula", value: sugar, unit: "g", pct: Math.min(100, Math.round(sugar/50*100)), color: "#e91e63" },
+            { name: "Protein", value: protein, unit: "g", pct: Math.min(100, Math.round(protein / 50 * 100)), color: "#4caf50" },
+            { name: "Karbohidrat", value: carbs, unit: "g", pct: Math.min(100, Math.round(carbs / 300 * 100)), color: "#ff9800" },
+            { name: "Lemak", value: fat, unit: "g", pct: Math.min(100, Math.round(fat / 65 * 100)), color: "#f44336" },
+            { name: "Serat", value: fiber, unit: "g", pct: Math.min(100, Math.round(fiber / 25 * 100)), color: "#9c27b0" },
+            { name: "Gula", value: sugar, unit: "g", pct: Math.min(100, Math.round(sugar / 50 * 100)), color: "#e91e63" },
           ],
-          tags: nut.source === "csv" ? ["Data Akurat (Dataset)"] : ["Estimasi AI"],
-          recommendation: nut.source === "csv" 
-            ? "Data kalori dan nutrisi divalidasi dari basis data makanan Indonesia." 
-            : "Nutrisi di atas merupakan estimasi dari Generative AI berdasarkan gambar makanan."
+          tags: isUnavailable
+            ? ["Data Tidak Tersedia"]
+            : nut.source === "csv" ? ["Data Akurat (Dataset)"] : ["Estimasi AI"],
+          recommendation: isUnavailable
+            ? "Layanan AI sedang tidak tersedia. Silakan coba analisis ulang beberapa saat lagi."
+            : nut.source === "csv"
+              ? "Data kalori dan nutrisi divalidasi dari basis data makanan Indonesia."
+              : "Nutrisi di atas merupakan estimasi dari Generative AI berdasarkan gambar makanan.",
+          nutritionUnavailable: isUnavailable,
         });
       } else {
         alert("Makanan tidak terdeteksi: " + "Pastikan objek terlihat jelas.");
@@ -135,6 +143,7 @@ export default function FoodAnalysisPage() {
       portion: result.portion,
       emoji: "🍽️",
       confidence: result.confidence,
+      image_url: selectedImage || undefined,
       tags: result.tags,
       recommendation: result.recommendation,
     });
@@ -332,6 +341,23 @@ export default function FoodAnalysisPage() {
                 </div>
               </div>
 
+              {/* Nutrition Unavailable Warning */}
+              {result.nutritionUnavailable && (
+                <div className={styles.warningAlert}>
+                  <div className={styles.warningIcon}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                      <line x1="12" y1="9" x2="12" y2="13" />
+                      <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4>Data Nutrisi Tidak Tersedia</h4>
+                    <p>Layanan AI sedang mengalami gangguan sementara. Data makronutrisi tidak dapat dianalisis saat ini. Silakan coba lagi beberapa saat kemudian.</p>
+                  </div>
+                </div>
+              )}
+
               {/* Nutrients */}
               <div className={styles.nutrientsList}>
                 <h4>Detail Nutrisi</h4>
@@ -360,16 +386,17 @@ export default function FoodAnalysisPage() {
               {/* Action buttons */}
               <div className={styles.resultActions}>
                 <button
-                  className={styles.saveBtn}
+                  className={`${styles.saveBtn} ${result.nutritionUnavailable ? styles.saveBtnDisabled : ""}`}
                   onClick={saveToHistory}
-                  disabled={saveStatus !== ""}
+                  disabled={saveStatus !== "" || result.nutritionUnavailable}
+                  title={result.nutritionUnavailable ? "Tidak dapat menyimpan tanpa data nutrisi" : ""}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
                     <polyline points="17 21 17 13 7 13 7 21" />
                     <polyline points="7 3 7 8 15 8" />
                   </svg>
-                  {saveStatus === "saving" ? "Menyimpan..." : saveStatus === "saved" ? "✓ Tersimpan!" : "Simpan ke Riwayat"}
+                  {saveStatus === "saving" ? "Menyimpan..." : saveStatus === "saved" ? "✓ Tersimpan!" : result.nutritionUnavailable ? "Tidak Dapat Disimpan" : "Simpan ke Riwayat"}
                 </button>
                 <button onClick={resetAll} className={styles.newBtn}>
                   Analisis Baru

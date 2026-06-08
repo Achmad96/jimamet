@@ -16,6 +16,7 @@ interface MealRecord {
   carbs: number;
   fat: number;
   emoji: string;
+  imageUrl: string | null;
 }
 
 function formatDate(isoStr: string): string {
@@ -54,17 +55,24 @@ export default function HistoryPage() {
   useEffect(() => {
     apiListFoodRecords().then(({ ok, data }) => {
       if (ok && Array.isArray(data) && data.length > 0) {
-        const mapped: MealRecord[] = data.map((r: Record<string, unknown>) => ({
-          id: (r.id_analysis as string) || (r.id as string) || Math.random().toString(),
-          date: formatDate((r.tanggal as string) || (r.recorded_at as string)),
-          time: formatTime((r.tanggal as string) || (r.recorded_at as string)),
-          name: formatFoodLabel((r.nama_makanan as string) || (r.food_name as string) || "Makanan"),
-          calories: (r.kalori as number) || (r.calories as number) || 0,
-          protein: (r.protein as number) || 0,
-          carbs: (r.karbohidrat as number) || (r.carbs as number) || 0,
-          fat: (r.lemak as number) || (r.fat as number) || 0,
-          emoji: "🍽️"
-        }));
+        const mapped: MealRecord[] = data.map((r: Record<string, unknown>) => {
+          // Extract image URL from joined images table
+          const images = r.images as Record<string, unknown> | null;
+          const imageUrl = images?.file_path as string | null;
+
+          return {
+            id: (r.id_analysis as string) || (r.id as string) || Math.random().toString(),
+            date: formatDate((r.tanggal as string) || (r.recorded_at as string)),
+            time: formatTime((r.tanggal as string) || (r.recorded_at as string)),
+            name: formatFoodLabel((r.nama_makanan as string) || (r.food_name as string) || "Makanan"),
+            calories: (r.kalori as number) || (r.calories as number) || 0,
+            protein: (r.protein as number) || 0,
+            carbs: (r.karbohidrat as number) || (r.carbs as number) || 0,
+            fat: (r.lemak as number) || (r.fat as number) || 0,
+            emoji: "🍽️",
+            imageUrl: imageUrl || null,
+          };
+        });
         setAllData(mapped);
       }
       setLoading(false);
@@ -155,7 +163,11 @@ export default function HistoryPage() {
             <div className={styles.mealsTable}>
               {meals.map((meal) => (
                 <div key={meal.id} className={styles.mealRow}>
-                  <span className={styles.mealEmoji}>{meal.emoji}</span>
+                  {meal.imageUrl ? (
+                    <img src={meal.imageUrl} alt={meal.name} className={styles.mealImage} />
+                  ) : (
+                    <span className={styles.mealEmoji}>{meal.emoji}</span>
+                  )}
                   <div className={styles.mealInfo}>
                     <span className={styles.mealName}>{meal.name}</span>
                     <span className={styles.mealTime}>{meal.time}</span>

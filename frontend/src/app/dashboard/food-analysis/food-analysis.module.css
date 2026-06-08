@@ -597,6 +597,56 @@
   color: var(--on-surface);
 }
 
+/* ── Warning Alert (nutrition unavailable) ── */
+.warningAlert {
+  display: flex;
+  gap: 14px;
+  background: rgba(255, 152, 0, 0.06);
+  border: 1px solid rgba(255, 152, 0, 0.25);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  animation: fadeUp 0.4s ease-out;
+}
+
+.warningIcon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 152, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e65100;
+}
+
+.warningAlert h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e65100;
+  margin-bottom: 4px;
+}
+
+.warningAlert p {
+  font-size: 13px;
+  color: var(--on-surface-variant);
+  line-height: 1.6;
+}
+
+/* ── Disabled Save Button ── */
+.saveBtnDisabled {
+  background: var(--surface-container-high) !important;
+  color: var(--outline) !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.saveBtnDisabled:hover {
+  background: var(--surface-container-high) !important;
+  transform: none !important;
+}
+
 /* ═══ Responsive ═══ */
 @media (max-width: 900px) {
   .content {

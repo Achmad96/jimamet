@@ -5,7 +5,7 @@ Dashboard summary is cached for 60 seconds per user+date.
 
 from datetime import date, datetime, timedelta
 
-from api.models import FoodRecordModel, UserModel
+from api.models import FoodRecordModel, UserModel, ImageModel
 from api import cache as app_cache
 
 
@@ -39,6 +39,7 @@ class AnalysisService:
     def create_food_record(cls, user_id, data: dict) -> dict:
         """
         Create a new food consumption record.
+        If image_url is provided, saves it to the images table and links it.
         Invalidates dashboard and food record caches.
         Raises ValueError if required fields are missing.
         """
@@ -48,6 +49,20 @@ class AnalysisService:
             raise ValueError("food_name / nama_makanan is required.")
         if calories is None:
             raise ValueError("calories / kalori is required.")
+
+        # Save image if provided
+        image_id = None
+        image_url = data.get("image_url")
+        if image_url:
+            try:
+                image_record = ImageModel.create({
+                    "user_id": user_id,
+                    "file_path": image_url,
+                })
+                image_id = image_record.get("id")
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f"Failed to save image: {e}")
 
         record = {
             "user_id": user_id,
@@ -59,6 +74,9 @@ class AnalysisService:
             "sugar": data.get("sugar") or data.get("gula", 0),
             "recorded_at": data.get("recorded_at") or data.get("tanggal") or datetime.utcnow().isoformat() + "Z",
         }
+
+        if image_id:
+            record["image_id"] = image_id
 
         result = FoodRecordModel.create(record)
 

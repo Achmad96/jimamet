@@ -15,6 +15,15 @@ python-dotenv>=1.0
 # Google Gemini AI (new SDK — replaces deprecated google-generativeai)
 google-genai>=2.0
 
+# Image Processing
+Pillow>=11.0
+
+# YOLO Object Detection
+ultralytics>=8.3
+
+# PostgreSQL (migration scripts)
+psycopg2-binary>=2.9
+
 # WebSocket (real-time consultation chat)
 channels>=4.3
 daphne>=4.2

@@ -14,6 +14,7 @@ class FoodRecordModel:
         params = {
             "user_id": f"eq.{user_id}",
             "order": order,
+            "select": "*,images(file_path)",
         }
         if extra_params:
             params.update(extra_params)
