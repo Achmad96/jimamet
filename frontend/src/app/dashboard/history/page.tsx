@@ -17,7 +17,6 @@ interface MealRecord {
   emoji: string;
 }
 
-
 function formatDate(isoStr: string): string {
   const d = new Date(isoStr);
   const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
@@ -55,15 +54,15 @@ export default function HistoryPage() {
     apiListFoodRecords().then(({ ok, data }) => {
       if (ok && Array.isArray(data) && data.length > 0) {
         const mapped: MealRecord[] = data.map((r: Record<string, unknown>) => ({
-          id: (r.id as string) || Math.random().toString(),
-          date: formatDate((r.recorded_at || r.tanggal) as string),
-          time: formatTime((r.recorded_at || r.tanggal) as string),
-          name: (r.food_name || r.nama_makanan) as string,
-          calories: (r.calories as number) || (r.kalori as number) || 0,
+          id: (r.id_analysis as string) || (r.id as string) || Math.random().toString(),
+          date: formatDate((r.tanggal as string) || (r.recorded_at as string)),
+          time: formatTime((r.tanggal as string) || (r.recorded_at as string)),
+          name: (r.nama_makanan as string) || (r.food_name as string) || "Makanan",
+          calories: (r.kalori as number) || (r.calories as number) || 0,
           protein: (r.protein as number) || 0,
-          carbs: (r.carbs as number) || (r.karbohidrat as number) || 0,
-          fat: (r.fat as number) || (r.lemak as number) || 0,
-          emoji: "🍽️",
+          carbs: (r.karbohidrat as number) || (r.carbs as number) || 0,
+          fat: (r.lemak as number) || (r.fat as number) || 0,
+          emoji: "🍽️"
         }));
         setAllData(mapped);
       }
@@ -72,7 +71,8 @@ export default function HistoryPage() {
   }, []);
 
   const filteredData = allData.filter((item) => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const itemName = item.name || "";
+    const matchesSearch = itemName.toLowerCase().includes(searchQuery.toLowerCase());
     if (filter === "today") return matchesSearch && isToday(item.date);
     if (filter === "week") return matchesSearch && isThisWeek(item.date);
     return matchesSearch;
@@ -129,11 +129,7 @@ export default function HistoryPage() {
       <div className={styles.toolbar}>
         <div className={styles.filterTabs}>
           {(["all", "today", "week"] as const).map((f) => (
-            <button
-              key={f}
-              className={`${styles.filterTab} ${filter === f ? styles.filterTabActive : ""}`}
-              onClick={() => setFilter(f)}
-            >
+            <button key={f} className={`${styles.filterTab} ${filter === f ? styles.filterTabActive : ""}`} onClick={() => setFilter(f)}>
               {f === "all" ? "Semua" : f === "today" ? "Hari Ini" : "7 Hari"}
             </button>
           ))}
@@ -143,13 +139,7 @@ export default function HistoryPage() {
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
-          <input
-            type="text"
-            placeholder="Cari makanan..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className={styles.searchInput}
-          />
+          <input type="text" placeholder="Cari makanan..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className={styles.searchInput} />
         </div>
       </div>
 
@@ -159,9 +149,7 @@ export default function HistoryPage() {
           <div key={date} className={styles.dateGroup}>
             <div className={styles.dateHeader}>
               <span className={styles.dateBadge}>{date}</span>
-              <span className={styles.dateCal}>
-                {meals.reduce((s, m) => s + m.calories, 0).toLocaleString()} kkal
-              </span>
+              <span className={styles.dateCal}>{meals.reduce((s, m) => s + m.calories, 0).toLocaleString()} kkal</span>
             </div>
             <div className={styles.mealsTable}>
               {meals.map((meal) => (
@@ -172,9 +160,15 @@ export default function HistoryPage() {
                     <span className={styles.mealTime}>{meal.time}</span>
                   </div>
                   <div className={styles.mealNutrients}>
-                    <span className={styles.nutrientPill} style={{ background: "rgba(46,125,50,0.08)", color: "#2e7d32" }}>P: {meal.protein}g</span>
-                    <span className={styles.nutrientPill} style={{ background: "rgba(76,175,80,0.08)", color: "#4caf50" }}>K: {meal.carbs}g</span>
-                    <span className={styles.nutrientPill} style={{ background: "rgba(255,152,0,0.08)", color: "#f57c00" }}>L: {meal.fat}g</span>
+                    <span className={styles.nutrientPill} style={{ background: "rgba(46,125,50,0.08)", color: "#2e7d32" }}>
+                      P: {meal.protein}g
+                    </span>
+                    <span className={styles.nutrientPill} style={{ background: "rgba(76,175,80,0.08)", color: "#4caf50" }}>
+                      K: {meal.carbs}g
+                    </span>
+                    <span className={styles.nutrientPill} style={{ background: "rgba(255,152,0,0.08)", color: "#f57c00" }}>
+                      L: {meal.fat}g
+                    </span>
                   </div>
                   <span className={styles.mealCal}>{meal.calories} kkal</span>
                 </div>
