@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import styles from "./history.module.css";
 import { apiListFoodRecords } from "@/lib/api";
 import { SkeletonHistory } from "@/components/Skeleton";
+import { formatFoodLabel } from "@/lib/food-labels";
 
 interface MealRecord {
   id: string;
@@ -57,7 +58,7 @@ export default function HistoryPage() {
           id: (r.id_analysis as string) || (r.id as string) || Math.random().toString(),
           date: formatDate((r.tanggal as string) || (r.recorded_at as string)),
           time: formatTime((r.tanggal as string) || (r.recorded_at as string)),
-          name: (r.nama_makanan as string) || (r.food_name as string) || "Makanan",
+          name: formatFoodLabel((r.nama_makanan as string) || (r.food_name as string) || "Makanan"),
           calories: (r.kalori as number) || (r.calories as number) || 0,
           protein: (r.protein as number) || 0,
           carbs: (r.karbohidrat as number) || (r.carbs as number) || 0,

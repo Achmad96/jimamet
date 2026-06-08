@@ -11,6 +11,7 @@ import {
   apiDeleteChat,
   apiUpdateConsultation,
 } from "@/lib/api";
+import { formatFoodLabel } from "@/lib/food-labels";
 
 interface ChatMsg {
   id: string;
@@ -472,7 +473,7 @@ export default function ConsultationChatPage() {
                     <div key={f.id} className={styles.foodItem}>
                       <div className={styles.foodEmoji}>{f.emoji || "🍽️"}</div>
                       <div className={styles.foodInfo}>
-                        <span className={styles.foodName}>{f.food_name}</span>
+                        <span className={styles.foodName}>{formatFoodLabel(f.food_name)}</span>
                         <span className={styles.foodMeta}>
                           {f.calories} kkal · P{f.protein || 0}g · K{f.carbs || 0}g · L{f.fat || 0}g
                         </span>

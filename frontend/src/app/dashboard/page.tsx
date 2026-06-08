@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import styles from "./dashboard.module.css";
 import { apiDashboardSummary } from "@/lib/api";
 import { SkeletonDashboard } from "@/components/Skeleton";
+import { formatFoodLabel } from "@/lib/food-labels";
 
 export default function DashboardPage() {
   const [greeting, setGreeting] = useState("Selamat Pagi");
@@ -294,7 +295,7 @@ export default function DashboardPage() {
                 <div key={i} className={styles.mealItem}>
                   <span className={styles.mealEmoji}>🍽️</span>
                   <div className={styles.mealInfo}>
-                    <span className={styles.mealName}>{meal.food_name || meal.nama_makanan}</span>
+                    <span className={styles.mealName}>{formatFoodLabel(meal.food_name || meal.nama_makanan)}</span>
                     <span className={styles.mealTime}>{formatTime(meal.recorded_at || meal.tanggal)}</span>
                   </div>
                   <span className={styles.mealCal}>{meal.calories || meal.kalori} kkal</span>

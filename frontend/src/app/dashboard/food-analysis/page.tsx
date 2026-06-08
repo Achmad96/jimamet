@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import styles from "./food-analysis.module.css";
 import { apiCreateFoodRecord } from "@/lib/api";
+import { formatFoodLabel } from "@/lib/food-labels";
 
 interface NutrientResult {
   name: string;
@@ -75,20 +76,30 @@ export default function FoodAnalysisPage() {
         // Ambil hasil dengan confidence tertinggi
         const top = data.data.sort((a: any, b: any) => b.confidence - a.confidence)[0];
         
+        const nut = top.nutrition || {};
+        const cals = nut.calories || 0;
+        const protein = nut.protein || 0;
+        const carbs = nut.carbs || 0;
+        const fat = nut.fat || 0;
+        const fiber = nut.fiber || 0;
+        const sugar = nut.sugar || 0;
+        
         setResult({
-          foodName: top.food_name,
+          foodName: formatFoodLabel(top.food_name),
           confidence: top.confidence,
-          calories: Math.floor(Math.random() * 200) + 200, // Dummy kalori
+          calories: cals,
           portion: "1 Porsi",
           nutrients: [
-            { name: "Protein", value: 15, unit: "g", pct: 30, color: "#4caf50" },
-            { name: "Karbohidrat", value: 40, unit: "g", pct: 15, color: "#ff9800" },
-            { name: "Lemak", value: 12, unit: "g", pct: 18, color: "#f44336" },
-            { name: "Serat", value: 3, unit: "g", pct: 12, color: "#9c27b0" },
-            { name: "Gula", value: 5, unit: "g", pct: 10, color: "#e91e63" },
+            { name: "Protein", value: protein, unit: "g", pct: Math.min(100, Math.round(protein/50*100)), color: "#4caf50" },
+            { name: "Karbohidrat", value: carbs, unit: "g", pct: Math.min(100, Math.round(carbs/300*100)), color: "#ff9800" },
+            { name: "Lemak", value: fat, unit: "g", pct: Math.min(100, Math.round(fat/65*100)), color: "#f44336" },
+            { name: "Serat", value: fiber, unit: "g", pct: Math.min(100, Math.round(fiber/25*100)), color: "#9c27b0" },
+            { name: "Gula", value: sugar, unit: "g", pct: Math.min(100, Math.round(sugar/50*100)), color: "#e91e63" },
           ],
-          tags: ["Tinggi Protein", "Rekomendasi AI"],
-          recommendation: "Ini adalah estimasi awal berdasarkan nama makanan. Pastikan porsinya sesuai."
+          tags: nut.source === "csv" ? ["Data Akurat (Dataset)"] : ["Estimasi AI"],
+          recommendation: nut.source === "csv" 
+            ? "Data kalori dan nutrisi divalidasi dari basis data makanan Indonesia." 
+            : "Nutrisi di atas merupakan estimasi dari Generative AI berdasarkan gambar makanan."
         });
       } else {
         alert("Makanan tidak terdeteksi: " + "Pastikan objek terlihat jelas.");
