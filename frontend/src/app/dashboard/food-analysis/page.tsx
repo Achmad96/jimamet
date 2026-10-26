@@ -222,6 +222,7 @@ export default function FoodAnalysisPage() {
   const [cameraDetections, setCameraDetections] = useState<DetectionBox[]>([]);
   const [cameraPersonDetected, setCameraPersonDetected] = useState<boolean>(false);
   const cameraVideoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const cameraCanvasRef = useRef<HTMLCanvasElement>(null);
   const cameraWsRef = useRef<WebSocket | null>(null);
   const cameraInFlightRef = useRef<boolean>(false);
@@ -264,6 +265,10 @@ export default function FoodAnalysisPage() {
       } catch (e) {}
       cameraWsRef.current = null;
     }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
     if (cameraVideoRef.current && cameraVideoRef.current.srcObject) {
       const stream = cameraVideoRef.current.srcObject as MediaStream;
       stream.getTracks().forEach((t) => t.stop());
@@ -297,6 +302,18 @@ export default function FoodAnalysisPage() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [cameraActive, stopCameraStream]);
+
+  // Ensure camera stream is attached and playing when camera view mounts
+  useEffect(() => {
+    if (cameraActive && cameraVideoRef.current && streamRef.current) {
+      if (cameraVideoRef.current.srcObject !== streamRef.current) {
+        cameraVideoRef.current.srcObject = streamRef.current;
+        cameraVideoRef.current.play().catch((err) => {
+          console.warn("Camera video play on mount error:", err);
+        });
+      }
+    }
+  }, [cameraActive]);
 
   // Load available camera devices
   useEffect(() => {
@@ -524,11 +541,17 @@ export default function FoodAnalysisPage() {
         });
       }
 
-      if (!cameraVideoRef.current) return;
-      cameraVideoRef.current.srcObject = stream;
-      await cameraVideoRef.current.play();
-
+      streamRef.current = stream;
       setCameraActive(true);
+
+      if (cameraVideoRef.current) {
+        cameraVideoRef.current.srcObject = stream;
+        try {
+          await cameraVideoRef.current.play();
+        } catch (playErr) {
+          console.warn("Camera video play warning:", playErr);
+        }
+      }
 
       // Connect WebSocket for ultra-low latency streaming
       const wsUrl = getWsDetectUrl();
@@ -648,13 +671,17 @@ export default function FoodAnalysisPage() {
           }
         }
       }, 70); // 70ms tick ~ 14 FPS theoretical limit
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Gagal memulai kamera:", err);
-      alert("Tidak dapat mengakses kamera. Pastikan izin kamera telah diberikan di browser.");
-      setCameraActive(false);
-      if (typeof window !== "undefined") {
-        document.body.style.overflow = "";
-      }
+      const e = err as { name?: string; message?: string };
+      const errMsg =
+        e?.name === "NotAllowedError"
+          ? "Izin kamera ditolak oleh browser. Silakan aktifkan izin kamera di pengaturan browser."
+          : e?.name === "NotFoundError"
+          ? "Tidak ada kamera yang ditemukan pada perangkat ini."
+          : `Tidak dapat mengakses kamera: ${e?.message || "Pastikan izin kamera telah diberikan di browser."}`;
+      alert(errMsg);
+      stopCameraStream();
     }
   };
 
@@ -997,7 +1024,15 @@ export default function FoodAnalysisPage() {
             <div className={styles.streamCard}>
               <div className={styles.streamWrapper}>
                 <video
-                  ref={cameraVideoRef}
+                  ref={(el) => {
+                    cameraVideoRef.current = el;
+                    if (el && streamRef.current && el.srcObject !== streamRef.current) {
+                      el.srcObject = streamRef.current;
+                      el.play().catch((err) => {
+                        console.warn("Camera video play on ref callback error:", err);
+                      });
+                    }
+                  }}
                   playsInline
                   muted
                   autoPlay
