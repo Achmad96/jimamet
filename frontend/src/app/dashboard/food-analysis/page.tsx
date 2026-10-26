@@ -199,9 +199,7 @@ function drawDetections(
 }
 
 export default function FoodAnalysisPage() {
-  const [activeTab, setActiveTab] = useState<"upload" | "camera" | "video">("upload");
-
-  // ── Upload Mode State ──
+  // ── Upload / Photo Mode State ──
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState("");
@@ -240,14 +238,13 @@ export default function FoodAnalysisPage() {
   const videoElementRef = useRef<HTMLVideoElement>(null);
   const videoCanvasRef = useRef<HTMLCanvasElement>(null);
   const videoInFlightRef = useRef<boolean>(false);
-  const videoFileInputRef = useRef<HTMLInputElement>(null);
 
   // ── Common Result State ──
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [saveStatus, setSaveStatus] = useState<"" | "saving" | "saved">("");
 
   // ═══════════════════════════════════════════════════
-  //  TAB SWITCHING & CLEANUP
+  //  CLEANUP & DEVICE DISCOVERY
   // ═══════════════════════════════════════════════════
 
   const stopCameraStream = useCallback(() => {
@@ -277,13 +274,6 @@ export default function FoodAnalysisPage() {
       ctx?.clearRect(0, 0, cameraCanvasRef.current.width, cameraCanvasRef.current.height);
     }
   }, []);
-
-  const handleTabChange = (tab: "upload" | "camera" | "video") => {
-    if (activeTab === "camera" && tab !== "camera") {
-      stopCameraStream();
-    }
-    setActiveTab(tab);
-  };
 
   useEffect(() => {
     return () => {
@@ -383,21 +373,46 @@ export default function FoodAnalysisPage() {
   }, []);
 
   // ═══════════════════════════════════════════════════
-  //  1. UPLOAD IMAGE FLOW
+  //  1. UNIFIED FILE INPUT (PHOTO & VIDEO)
   // ═══════════════════════════════════════════════════
 
+  const handleVideoFile = useCallback((file: File) => {
+    if (!file.type.startsWith("video/")) {
+      alert("Pilih file video yang valid (.mp4, .webm, .mov).");
+      return;
+    }
+    stopCameraStream();
+    setSelectedImage(null);
+    setSelectedFile(null);
+    setUploadDetections([]);
+    setVideoFile(file);
+    const url = URL.createObjectURL(file);
+    setVideoSrc(url);
+    setVideoReport(null);
+    setVideoDetections([]);
+    setResult(null);
+  }, [stopCameraStream]);
+
   const handleFile = useCallback((file: File) => {
-    if (!file.type.startsWith("image/")) return;
-    setFileName(file.name);
-    setSelectedFile(file);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setSelectedImage(e.target?.result as string);
-      setResult(null);
-      setUploadDetections([]);
-    };
-    reader.readAsDataURL(file);
-  }, []);
+    if (file.type.startsWith("image/")) {
+      stopCameraStream();
+      setVideoSrc(null);
+      setVideoFile(null);
+      setVideoReport(null);
+      setVideoDetections([]);
+      setFileName(file.name);
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setSelectedImage(e.target?.result as string);
+        setResult(null);
+        setUploadDetections([]);
+      };
+      reader.readAsDataURL(file);
+    } else if (file.type.startsWith("video/")) {
+      handleVideoFile(file);
+    }
+  }, [stopCameraStream, handleVideoFile]);
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -450,6 +465,12 @@ export default function FoodAnalysisPage() {
   const startCamera = async () => {
     try {
       stopCameraStream();
+      setSelectedImage(null);
+      setSelectedFile(null);
+      setVideoSrc(null);
+      setVideoFile(null);
+      setVideoReport(null);
+      setResult(null);
 
       const constraints: MediaStreamConstraints = {
         video: {
@@ -603,6 +624,7 @@ export default function FoodAnalysisPage() {
 
     const snapshotUrl = c.toDataURL("image/jpeg", 0.9);
     setSelectedImage(snapshotUrl);
+    setFileName("Snapshot Kamera");
 
     if (cameraDetections.length > 0) {
       const top = [...cameraDetections].sort((a, b) => b.confidence - a.confidence)[0];
@@ -612,24 +634,12 @@ export default function FoodAnalysisPage() {
     } else {
       alert("Tidak ada makanan yang terdeteksi pada frame ini. Coba arahkan kamera lebih dekat.");
     }
+    stopCameraStream();
   };
 
   // ═══════════════════════════════════════════════════
-  //  3. VIDEO FILE & PLAYBACK FLOW
+  //  3. VIDEO PLAYBACK FLOW
   // ═══════════════════════════════════════════════════
-
-  const handleVideoFile = (file: File) => {
-    if (!file.type.startsWith("video/")) {
-      alert("Pilih file video yang valid (.mp4, .webm, .mov).");
-      return;
-    }
-    setVideoFile(file);
-    const url = URL.createObjectURL(file);
-    setVideoSrc(url);
-    setVideoReport(null);
-    setVideoDetections([]);
-    setResult(null);
-  };
 
   const toggleVideoPlay = () => {
     if (!videoElementRef.current) return;
@@ -790,9 +800,12 @@ export default function FoodAnalysisPage() {
   };
 
   const resetAll = () => {
+    stopCameraStream();
     setSelectedImage(null);
     setSelectedFile(null);
     setFileName("");
+    setVideoSrc(null);
+    setVideoFile(null);
     setResult(null);
     setSaveStatus("");
     setUploadDetections([]);
@@ -807,138 +820,103 @@ export default function FoodAnalysisPage() {
         <div>
           <h1 className={styles.title}>Analisis Nutrisi Makanan</h1>
           <p className={styles.subtitle}>
-            Deteksi hidangan makanan Indonesia secara instan via Foto, Kamera Real-Time (Live), atau Video.
+            Deteksi hidangan makanan Indonesia secara instan via Kamera Real-Time, Foto, atau Video.
           </p>
         </div>
       </div>
 
-      {/* ── Mode Selection Tabs ── */}
-      <div className={styles.modeTabs}>
-        <button
-          className={`${styles.modeTab} ${activeTab === "upload" ? styles.modeTabActive : ""}`}
-          onClick={() => handleTabChange("upload")}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-            <circle cx="8.5" cy="8.5" r="1.5" />
-            <polyline points="21 15 16 10 5 21" />
-          </svg>
-          Upload Foto
-        </button>
-
-        <button
-          className={`${styles.modeTab} ${activeTab === "camera" ? styles.modeTabActive : ""}`}
-          onClick={() => handleTabChange("camera")}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-            <circle cx="12" cy="13" r="4" />
-          </svg>
-          Kamera Real-Time
-        </button>
-
-        <button
-          className={`${styles.modeTab} ${activeTab === "video" ? styles.modeTabActive : ""}`}
-          onClick={() => handleTabChange("video")}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polygon points="23 7 16 12 23 17 23 7" />
-            <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-          </svg>
-          Deteksi Video
-        </button>
-      </div>
-
       <div className={styles.content}>
         {/* ═══════════════════════════════════════════════════
-            LEFT COLUMN: INPUT & STREAMING
+            LEFT COLUMN: UNIFIED ALL-IN-ONE MEDIA INPUT
            ═══════════════════════════════════════════════════ */}
         <div className={styles.uploadSection}>
-          {/* ── TAB 1: UPLOAD PHOTO ── */}
-          {activeTab === "upload" && (
-            <>
-              {!selectedImage ? (
-                <div
-                  className={`${styles.dropZone} ${dragActive ? styles.dropZoneActive : ""}`}
-                  onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
-                  onDragLeave={() => setDragActive(false)}
-                  onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <div className={styles.dropIcon}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="17 8 12 3 7 8" />
-                      <line x1="12" y1="3" x2="12" y2="15" />
-                    </svg>
+          {/* ── 1. PHOTO PREVIEW STATE ── */}
+          {!cameraActive && selectedImage && (
+            <div className={styles.previewCard}>
+              <div className={styles.previewImageWrapper}>
+                <img src={selectedImage} alt="Food preview" className={styles.previewImage} />
+                <canvas ref={uploadCanvasRef} className={styles.streamCanvas} />
+                {isAnalyzing && (
+                  <div className={styles.scanOverlay}>
+                    <div className={styles.scanLine} />
+                    <span className={styles.scanText}>Menganalisis YOLO...</span>
                   </div>
-                  <h3>Drag & Drop Foto Makanan</h3>
-                  <p>atau klik untuk memilih foto dari galeri</p>
-                  <span className={styles.dropFormats}>JPG, PNG, WEBP — Maks 10MB</span>
+                )}
+              </div>
+              <div className={styles.previewInfo}>
+                <span className={styles.previewName}>{fileName || "Foto Makanan"}</span>
+                <div className={styles.previewActions}>
+                  {!result && !isAnalyzing && (
+                    <button onClick={analyzeImage} className={styles.analyzeBtn}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                      </svg>
+                      Analisis Nutrisi
+                    </button>
+                  )}
+                  <button onClick={startCamera} className={styles.cameraBtn} style={{ padding: "8px 14px", fontSize: 13 }}>
+                    📸 Buka Kamera
+                  </button>
+                  <button onClick={resetAll} className={styles.resetBtn}>
+                    Ganti File
+                  </button>
                 </div>
-              ) : (
-                <div className={styles.previewCard}>
-                  <div className={styles.previewImageWrapper}>
-                    <img src={selectedImage} alt="Food preview" className={styles.previewImage} />
-                    <canvas ref={uploadCanvasRef} className={styles.streamCanvas} />
-                    {isAnalyzing && (
-                      <div className={styles.scanOverlay}>
-                        <div className={styles.scanLine} />
-                        <span className={styles.scanText}>Menganalisis YOLO...</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className={styles.previewInfo}>
-                    <span className={styles.previewName}>{fileName || "Snapshot Kamera"}</span>
-                    <div className={styles.previewActions}>
-                      {!result && !isAnalyzing && (
-                        <button onClick={analyzeImage} className={styles.analyzeBtn}>
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-                          </svg>
-                          Analisis Nutrisi
-                        </button>
-                      )}
-                      <button onClick={resetAll} className={styles.resetBtn}>
-                        Foto Lain
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
+              </div>
+            </div>
+          )}
 
-              {!selectedImage && (
-                <div className={styles.uploadButtons}>
-                  <button className={styles.uploadBtn} onClick={() => fileInputRef.current?.click()}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                      <circle cx="8.5" cy="8.5" r="1.5" />
-                      <polyline points="21 15 16 10 5 21" />
-                    </svg>
-                    Pilih dari Galeri
-                  </button>
-                  <button className={styles.cameraBtn} onClick={() => handleTabChange("camera")}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                      <circle cx="12" cy="13" r="4" />
-                    </svg>
-                    Buka Kamera Real-Time
-                  </button>
+          {/* ── 2. DEFAULT UNIFIED DROPZONE & ACTIONS ── */}
+          {!cameraActive && !selectedImage && !videoSrc && (
+            <>
+              <div
+                className={`${styles.dropZone} ${dragActive ? styles.dropZoneActive : ""}`}
+                onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+                onDragLeave={() => setDragActive(false)}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <div className={styles.dropIcon}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
                 </div>
-              )}
+                <h3>Pilih atau Ambil Foto / Video Makanan</h3>
+                <p>Drag & drop file di sini, atau gunakan kamera langsung</p>
+                <span className={styles.dropFormats}>Foto (JPG, PNG, WEBP) atau Video (MP4, WEBM) — Maks 50MB</span>
+              </div>
+
+              <div className={styles.uploadButtons}>
+                <button className={styles.cameraBtn} onClick={startCamera}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                    <circle cx="12" cy="13" r="4" />
+                  </svg>
+                  Buka Kamera Real-Time
+                </button>
+                <button className={styles.uploadBtn} onClick={() => fileInputRef.current?.click()}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                  </svg>
+                  Pilih dari Galeri
+                </button>
+              </div>
 
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/*,video/*"
                 hidden
                 onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
               />
             </>
           )}
 
-          {/* ── TAB 2: REAL-TIME CAMERA (LIVE STREAM) ── */}
-          {activeTab === "camera" && (
+          {/* ── 3. REAL-TIME CAMERA STREAM ── */}
+          {cameraActive && (
             <div className={styles.streamCard}>
               <div className={styles.streamWrapper}>
                 <video ref={cameraVideoRef} playsInline muted autoPlay className={styles.streamVideo} />
@@ -1019,27 +997,16 @@ export default function FoodAnalysisPage() {
                   </div>
 
                   <div className={styles.streamControlsRight}>
-                    {!cameraActive ? (
-                      <button onClick={startCamera} className={styles.startBtn}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polygon points="5 3 19 12 5 21 5 3" />
-                        </svg>
-                        Mulai Kamera
-                      </button>
-                    ) : (
-                      <>
-                        <button onClick={captureCameraSnapshot} className={styles.snapshotBtn} title="Bekukan frame & analisis nutrisi lengkap">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                            <circle cx="12" cy="13" r="4" />
-                          </svg>
-                          Snapshot & Simpan
-                        </button>
-                        <button onClick={stopCameraStream} className={styles.stopBtn}>
-                          Hentikan
-                        </button>
-                      </>
-                    )}
+                    <button onClick={captureCameraSnapshot} className={styles.snapshotBtn} title="Bekukan frame & analisis nutrisi lengkap">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                        <circle cx="12" cy="13" r="4" />
+                      </svg>
+                      Snapshot & Simpan
+                    </button>
+                    <button onClick={stopCameraStream} className={styles.stopBtn}>
+                      Tutup Kamera
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1104,121 +1071,97 @@ export default function FoodAnalysisPage() {
             </div>
           )}
 
-          {/* ── TAB 3: VIDEO FILE DETECTION ── */}
-          {activeTab === "video" && (
+          {/* ── 4. VIDEO PLAYBACK STATE ── */}
+          {!cameraActive && !selectedImage && videoSrc && (
             <div className={styles.streamCard}>
-              {!videoSrc ? (
-                <div
-                  className={styles.dropZone}
-                  onClick={() => videoFileInputRef.current?.click()}
-                  style={{ margin: 20 }}
-                >
-                  <div className={styles.dropIcon}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="23 7 16 12 23 17 23 7" />
-                      <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-                    </svg>
-                  </div>
-                  <h3>Pilih File Video Makanan</h3>
-                  <p>Mendukung format MP4, WebM, MOV (Maks 100MB)</p>
-                  <span className={styles.dropFormats}>Deteksi sinkron per frame saat pemutaran</span>
-                </div>
-              ) : (
-                <>
-                  <div className={styles.streamWrapper}>
-                    <video
-                      ref={videoElementRef}
-                      src={videoSrc}
-                      playsInline
-                      className={styles.streamVideo}
-                      onLoadedMetadata={(e) => {
-                        setVideoDuration(e.currentTarget.duration || 0);
-                      }}
-                      onEnded={() => setIsVideoPlaying(false)}
-                    />
-                    <canvas ref={videoCanvasRef} className={styles.streamCanvas} />
+              <div className={styles.streamWrapper}>
+                <video
+                  ref={videoElementRef}
+                  src={videoSrc}
+                  playsInline
+                  className={styles.streamVideo}
+                  onLoadedMetadata={(e) => {
+                    setVideoDuration(e.currentTarget.duration || 0);
+                  }}
+                  onEnded={() => setIsVideoPlaying(false)}
+                />
+                <canvas ref={videoCanvasRef} className={styles.streamCanvas} />
 
-                    <div className={styles.streamHud}>
-                      <div className={styles.hudLeft}>
-                        <span className={`${styles.liveBadge} ${!isVideoPlaying ? styles.liveBadgeOffline : ""}`}>
-                          {isVideoPlaying ? "PLAYING" : "PAUSED"}
-                        </span>
-                      </div>
-                      <div className={styles.hudRight}>
-                        <span className={styles.hudStatPill}>
-                          {videoDetections.length} Makanan Terdeteksi
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Video Playback Controls Bar */}
-                  <div className={styles.videoControlsBar}>
-                    <button onClick={toggleVideoPlay} className={styles.playToggleBtn}>
-                      {isVideoPlaying ? (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                          <rect x="6" y="4" width="4" height="16" />
-                          <rect x="14" y="4" width="4" height="16" />
-                        </svg>
-                      ) : (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                          <polygon points="5 3 19 12 5 21 5 3" />
-                        </svg>
-                      )}
-                    </button>
-
-                    <input
-                      type="range"
-                      min={0}
-                      max={videoDuration || 100}
-                      step={0.1}
-                      value={videoCurrentTime}
-                      onChange={(e) => {
-                        const val = parseFloat(e.target.value);
-                        setVideoCurrentTime(val);
-                        if (videoElementRef.current) videoElementRef.current.currentTime = val;
-                      }}
-                      className={styles.videoScrubber}
-                    />
-
-                    <span className={styles.timeDisplay}>
-                      {Math.floor(videoCurrentTime)}s / {Math.floor(videoDuration)}s
+                <div className={styles.streamHud}>
+                  <div className={styles.hudLeft}>
+                    <span className={`${styles.liveBadge} ${!isVideoPlaying ? styles.liveBadgeOffline : ""}`}>
+                      {isVideoPlaying ? "PLAYING" : "PAUSED"}
                     </span>
                   </div>
-
-                  {/* Actions for Video */}
-                  <div className={styles.videoActionsRow}>
-                    <button onClick={captureVideoFrame} className={styles.captureFrameBtn}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10" />
-                        <line x1="12" y1="8" x2="12" y2="12" />
-                        <line x1="12" y1="16" x2="12.01" y2="16" />
-                      </svg>
-                      Ambil Frame Ini
-                    </button>
-
-                    <button
-                      onClick={scanEntireVideo}
-                      disabled={isScanningVideo}
-                      className={styles.scanVideoBtn}
-                    >
-                      {isScanningVideo ? "Memindai Video..." : "⚡ Scan Seluruh Video (Server)"}
-                    </button>
-
-                    <button onClick={() => setVideoSrc(null)} className={styles.resetBtn}>
-                      Ganti Video
-                    </button>
+                  <div className={styles.hudRight}>
+                    <span className={styles.hudStatPill}>
+                      {videoDetections.length} Makanan Terdeteksi
+                    </span>
                   </div>
-                </>
-              )}
+                </div>
+              </div>
 
-              <input
-                ref={videoFileInputRef}
-                type="file"
-                accept="video/*"
-                hidden
-                onChange={(e) => e.target.files?.[0] && handleVideoFile(e.target.files[0])}
-              />
+              {/* Video Playback Controls Bar */}
+              <div className={styles.videoControlsBar}>
+                <button onClick={toggleVideoPlay} className={styles.playToggleBtn}>
+                  {isVideoPlaying ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <rect x="6" y="4" width="4" height="16" />
+                      <rect x="14" y="4" width="4" height="16" />
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
+                  )}
+                </button>
+
+                <input
+                  type="range"
+                  min={0}
+                  max={videoDuration || 100}
+                  step={0.1}
+                  value={videoCurrentTime}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    setVideoCurrentTime(val);
+                    if (videoElementRef.current) videoElementRef.current.currentTime = val;
+                  }}
+                  className={styles.videoScrubber}
+                />
+
+                <span className={styles.timeDisplay}>
+                  {Math.floor(videoCurrentTime)}s / {Math.floor(videoDuration)}s
+                </span>
+              </div>
+
+              {/* Actions for Video */}
+              <div className={styles.videoActionsRow}>
+                <button onClick={captureVideoFrame} className={styles.captureFrameBtn}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                  Ambil Frame Ini
+                </button>
+
+                <button
+                  onClick={scanEntireVideo}
+                  disabled={isScanningVideo}
+                  className={styles.scanVideoBtn}
+                >
+                  {isScanningVideo ? "Memindai Video..." : "⚡ Scan Seluruh Video (Server)"}
+                </button>
+
+                <button onClick={startCamera} className={styles.uploadBtn} style={{ padding: "8px 14px", fontSize: 13 }}>
+                  📸 Buka Kamera
+                </button>
+
+                <button onClick={resetAll} className={styles.resetBtn}>
+                  Ganti File
+                </button>
+              </div>
             </div>
           )}
 
