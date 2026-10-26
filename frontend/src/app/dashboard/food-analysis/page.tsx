@@ -95,7 +95,8 @@ const PALETTE = [
 function drawDetections(
   canvas: HTMLCanvasElement,
   detections: DetectionBox[],
-  activeFoodName?: string | null
+  activeFoodName?: string | null,
+  isMirrored: boolean = false
 ) {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
@@ -106,10 +107,10 @@ function drawDetections(
 
   detections.forEach((det) => {
     const [nx1, ny1, nx2, ny2] = det.bbox_normalized;
-    const x = nx1 * w;
-    const y = ny1 * h;
     const bw = (nx2 - nx1) * w;
     const bh = (ny2 - ny1) * h;
+    const x = isMirrored ? (1 - nx2) * w : nx1 * w;
+    const y = ny1 * h;
 
     const color = PALETTE[det.class_id % PALETTE.length];
     const isHighlighted = activeFoodName === det.food_name;
@@ -211,6 +212,8 @@ export default function FoodAnalysisPage() {
 
   // ── Camera Mode State ──
   const [cameraActive, setCameraActive] = useState(false);
+  const [cameraFacing, setCameraFacing] = useState<"environment" | "user">("environment");
+  const [isFlipping, setIsFlipping] = useState(false);
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
   const [resolutionPreset, setResolutionPreset] = useState<320 | 480 | 640>(480);
@@ -248,6 +251,9 @@ export default function FoodAnalysisPage() {
   // ═══════════════════════════════════════════════════
 
   const stopCameraStream = useCallback(() => {
+    if (typeof window !== "undefined") {
+      document.body.style.overflow = "";
+    }
     if (cameraIntervalRef.current) {
       clearInterval(cameraIntervalRef.current);
       cameraIntervalRef.current = null;
@@ -280,6 +286,17 @@ export default function FoodAnalysisPage() {
       stopCameraStream();
     };
   }, [stopCameraStream]);
+
+  // Close camera on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && cameraActive) {
+        stopCameraStream();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [cameraActive, stopCameraStream]);
 
   // Load available camera devices
   useEffect(() => {
@@ -462,7 +479,10 @@ export default function FoodAnalysisPage() {
   //  2. REAL-TIME CAMERA FLOW (WebSocket / Low-Latency)
   // ═══════════════════════════════════════════════════
 
-  const startCamera = async () => {
+  const startCamera = async (
+    facing: "environment" | "user" = cameraFacing,
+    deviceId?: string
+  ) => {
     try {
       stopCameraStream();
       setSelectedImage(null);
@@ -472,16 +492,38 @@ export default function FoodAnalysisPage() {
       setVideoReport(null);
       setResult(null);
 
-      const constraints: MediaStreamConstraints = {
-        video: {
-          deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
-          width: { ideal: resolutionPreset === 640 ? 640 : 480 },
-          height: { ideal: resolutionPreset === 640 ? 480 : 360 },
-          facingMode: selectedDeviceId ? undefined : "environment",
-        },
-      };
+      // Lock mobile body scroll during full-screen camera
+      if (typeof window !== "undefined" && window.innerWidth <= 768) {
+        document.body.style.overflow = "hidden";
+      }
 
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      const targetDeviceId = deviceId !== undefined ? deviceId : selectedDeviceId;
+      let stream: MediaStream;
+
+      try {
+        const constraints: MediaStreamConstraints = {
+          video: targetDeviceId
+            ? {
+                deviceId: { exact: targetDeviceId },
+                width: { ideal: resolutionPreset === 640 ? 1280 : 854 },
+                height: { ideal: resolutionPreset === 640 ? 720 : 480 },
+              }
+            : {
+                facingMode: { ideal: facing },
+                width: { ideal: resolutionPreset === 640 ? 1280 : 854 },
+                height: { ideal: resolutionPreset === 640 ? 720 : 480 },
+              },
+          audio: false,
+        };
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (err) {
+        console.warn("Primary constraint failed, falling back to basic facingMode:", err);
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: facing },
+          audio: false,
+        });
+      }
+
       if (!cameraVideoRef.current) return;
       cameraVideoRef.current.srcObject = stream;
       await cameraVideoRef.current.play();
@@ -523,7 +565,7 @@ export default function FoodAnalysisPage() {
               const v = cameraVideoRef.current;
               cameraCanvasRef.current.width = v.videoWidth || 640;
               cameraCanvasRef.current.height = v.videoHeight || 480;
-              drawDetections(cameraCanvasRef.current, dets);
+              drawDetections(cameraCanvasRef.current, dets, null, facing === "user");
             }
           }
         } catch (e) {
@@ -596,7 +638,7 @@ export default function FoodAnalysisPage() {
                 const v = cameraVideoRef.current;
                 cameraCanvasRef.current.width = v.videoWidth || 640;
                 cameraCanvasRef.current.height = v.videoHeight || 480;
-                drawDetections(cameraCanvasRef.current, dets);
+                drawDetections(cameraCanvasRef.current, dets, null, facing === "user");
               }
             }
           } catch (e) {
@@ -610,7 +652,28 @@ export default function FoodAnalysisPage() {
       console.error("Gagal memulai kamera:", err);
       alert("Tidak dapat mengakses kamera. Pastikan izin kamera telah diberikan di browser.");
       setCameraActive(false);
+      if (typeof window !== "undefined") {
+        document.body.style.overflow = "";
+      }
     }
+  };
+
+  const toggleCameraFacing = async () => {
+    setIsFlipping(true);
+    setTimeout(() => setIsFlipping(false), 500);
+
+    const nextFacing = cameraFacing === "environment" ? "user" : "environment";
+    setCameraFacing(nextFacing);
+
+    let nextDeviceId: string | undefined = undefined;
+    if (videoDevices.length > 1) {
+      const currIdx = videoDevices.findIndex((d) => d.deviceId === selectedDeviceId);
+      const nextIdx = (currIdx + 1) % videoDevices.length;
+      nextDeviceId = videoDevices[nextIdx]?.deviceId;
+      if (nextDeviceId) setSelectedDeviceId(nextDeviceId);
+    }
+
+    await startCamera(nextFacing, nextDeviceId);
   };
 
   const captureCameraSnapshot = () => {
@@ -620,7 +683,13 @@ export default function FoodAnalysisPage() {
     c.width = video.videoWidth || 640;
     c.height = video.videoHeight || 480;
     const ctx = c.getContext("2d");
-    ctx?.drawImage(video, 0, 0, c.width, c.height);
+    if (!ctx) return;
+
+    if (cameraFacing === "user") {
+      ctx.translate(c.width, 0);
+      ctx.scale(-1, 1);
+    }
+    ctx.drawImage(video, 0, 0, c.width, c.height);
 
     const snapshotUrl = c.toDataURL("image/jpeg", 0.9);
     setSelectedImage(snapshotUrl);
@@ -629,6 +698,14 @@ export default function FoodAnalysisPage() {
     if (cameraDetections.length > 0) {
       const top = [...cameraDetections].sort((a, b) => b.confidence - a.confidence)[0];
       populateResultFromTopDetection(top);
+      const currentDets = [...cameraDetections];
+      setTimeout(() => {
+        if (uploadCanvasRef.current) {
+          uploadCanvasRef.current.width = c.width;
+          uploadCanvasRef.current.height = c.height;
+          drawDetections(uploadCanvasRef.current, currentDets, top.food_name, false);
+        }
+      }, 150);
     } else if (cameraPersonDetected) {
       alert("Kamera mendeteksi wajah/orang, bukan makanan. Silakan arahkan kamera ke hidangan makanan Anda.");
     } else {
@@ -854,7 +931,7 @@ export default function FoodAnalysisPage() {
                       Analisis Nutrisi
                     </button>
                   )}
-                  <button onClick={startCamera} className={styles.cameraBtn} style={{ padding: "8px 14px", fontSize: 13 }}>
+                  <button onClick={() => startCamera()} className={styles.cameraBtn} style={{ padding: "8px 14px", fontSize: 13 }}>
                     📸 Buka Kamera
                   </button>
                   <button onClick={resetAll} className={styles.resetBtn}>
@@ -888,7 +965,7 @@ export default function FoodAnalysisPage() {
               </div>
 
               <div className={styles.uploadButtons}>
-                <button className={styles.cameraBtn} onClick={startCamera}>
+                <button className={styles.cameraBtn} onClick={() => startCamera()}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
                     <circle cx="12" cy="13" r="4" />
@@ -915,159 +992,175 @@ export default function FoodAnalysisPage() {
             </>
           )}
 
-          {/* ── 3. REAL-TIME CAMERA STREAM ── */}
+          {/* ── 3. REAL-TIME CAMERA (FULL SCREEN ON MOBILE, SLEEK VIEWFINDER ON DESKTOP) ── */}
           {cameraActive && (
             <div className={styles.streamCard}>
               <div className={styles.streamWrapper}>
-                <video ref={cameraVideoRef} playsInline muted autoPlay className={styles.streamVideo} />
+                <video
+                  ref={cameraVideoRef}
+                  playsInline
+                  muted
+                  autoPlay
+                  className={`${styles.streamVideo} ${
+                    cameraFacing === "user" ? styles.streamVideoMirrored : ""
+                  }`}
+                />
                 <canvas ref={cameraCanvasRef} className={styles.streamCanvas} />
 
-                {/* HUD Overlay */}
-                <div className={styles.streamHud}>
-                  <div className={styles.hudLeft}>
-                    <span className={`${styles.liveBadge} ${!cameraActive ? styles.liveBadgeOffline : ""}`}>
-                      <span className={`${styles.pulseDot} ${!cameraActive ? styles.pulseDotOffline : ""}`} />
-                      {cameraActive ? "LIVE" : "OFFLINE"}
-                    </span>
-                    {cameraActive && (
-                      <span className={styles.hudStatPill}>
-                        ⚡ {cameraFps} FPS
-                      </span>
-                    )}
-                  </div>
-                  <div className={styles.hudRight}>
-                    {cameraActive && (
-                      <span
-                        className={`${styles.hudStatPill} ${
-                          cameraLatency < 80
-                            ? styles.hudStatGood
-                            : cameraLatency < 160
-                            ? styles.hudStatFair
-                            : styles.hudStatSlow
-                        }`}
-                      >
-                        ⏱️ {cameraLatency} ms
-                      </span>
-                    )}
-                  </div>
+                {/* Modern Viewfinder Scanner Reticle */}
+                <div className={styles.scannerReticle}>
+                  <span className={`${styles.reticleCorner} ${styles.reticleTL}`} />
+                  <span className={`${styles.reticleCorner} ${styles.reticleTR}`} />
+                  <span className={`${styles.reticleCorner} ${styles.reticleBL}`} />
+                  <span className={`${styles.reticleCorner} ${styles.reticleBR}`} />
                 </div>
-              </div>
 
-              {/* Stream Controls Toolbar */}
-              <div className={styles.streamControls}>
-                <div className={styles.streamControlsRow}>
-                  <div className={styles.streamControlsLeft}>
-                    {videoDevices.length > 1 && (
-                      <select
-                        className={styles.deviceSelect}
-                        value={selectedDeviceId}
-                        onChange={(e) => {
-                          setSelectedDeviceId(e.target.value);
-                          if (cameraActive) startCamera();
-                        }}
-                      >
-                        {videoDevices.map((d, i) => (
-                          <option key={d.deviceId || i} value={d.deviceId}>
-                            {d.label || `Kamera ${i + 1}`}
-                          </option>
-                        ))}
-                      </select>
+                {/* Floating Glass Top HUD Bar */}
+                <div className={styles.cameraTopBar}>
+                  <button
+                    onClick={stopCameraStream}
+                    className={styles.glassCircleBtn}
+                    title="Tutup Kamera (Esc)"
+                    aria-label="Tutup Kamera"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+
+                  <div className={styles.cameraLiveBadge}>
+                    <span className={styles.pulseDot} />
+                    <span className={styles.liveText}>LIVE</span>
+                    {cameraFps > 0 && (
+                      <span className={styles.liveFps}>{cameraFps} FPS</span>
                     )}
-
-                    <div className={styles.speedGroup} title="Resolusi inferensi untuk mengontrol latensi">
-                      <button
-                        className={`${styles.speedPill} ${resolutionPreset === 320 ? styles.speedPillActive : ""}`}
-                        onClick={() => setResolutionPreset(320)}
-                      >
-                        ⚡ 320p (Ultra Cepat)
-                      </button>
-                      <button
-                        className={`${styles.speedPill} ${resolutionPreset === 480 ? styles.speedPillActive : ""}`}
-                        onClick={() => setResolutionPreset(480)}
-                      >
-                        ⚖️ 480p
-                      </button>
-                      <button
-                        className={`${styles.speedPill} ${resolutionPreset === 640 ? styles.speedPillActive : ""}`}
-                        onClick={() => setResolutionPreset(640)}
-                      >
-                        🎯 640p
-                      </button>
-                    </div>
+                    {cameraLatency > 0 && (
+                      <span className={styles.liveMs}>{cameraLatency}ms</span>
+                    )}
                   </div>
 
-                  <div className={styles.streamControlsRight}>
-                    <button onClick={captureCameraSnapshot} className={styles.snapshotBtn} title="Bekukan frame & analisis nutrisi lengkap">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                        <circle cx="12" cy="13" r="4" />
-                      </svg>
-                      Snapshot & Simpan
-                    </button>
-                    <button onClick={stopCameraStream} className={styles.stopBtn}>
-                      Tutup Kamera
-                    </button>
-                  </div>
+                  <button
+                    onClick={() =>
+                      setResolutionPreset((prev) => (prev === 480 ? 640 : 480))
+                    }
+                    className={styles.glassPillBtn}
+                    title="Kualitas Deteksi: 480p / 640p"
+                  >
+                    {resolutionPreset === 640 ? "HD" : "SD"}
+                  </button>
                 </div>
-              </div>
 
-              {/* Real-time Detections List */}
-              {cameraActive && (
-                <div className={styles.liveFeedCard}>
-                  <div className={styles.liveFeedHeader}>
-                    <span className={styles.liveFeedTitle}>Makanan Terdeteksi di Kamera</span>
-                    <span className={styles.liveFeedCount}>{cameraDetections.length} Objek</span>
-                  </div>
-                  {cameraDetections.length === 0 ? (
-                    cameraPersonDetected ? (
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 10,
-                          padding: "10px 14px",
-                          background: "#fff3e0",
-                          borderRadius: 10,
-                          color: "#e65100",
-                          fontSize: 13,
-                          fontWeight: 500,
-                          border: "1px solid #ffe0b2",
-                        }}
-                      >
-                        <span style={{ fontSize: 18 }}>👤</span>
-                        <span>Wajah / orang terdeteksi di kamera. Arahkan lensa ke hidangan makanan Anda.</span>
+                {/* Floating Dynamic Recognition Banner */}
+                <div className={styles.floatingBannerArea}>
+                  {cameraDetections.length > 0 ? (
+                    <div
+                      className={styles.floatingDetectionCard}
+                      onClick={captureCameraSnapshot}
+                      role="button"
+                      tabIndex={0}
+                      title="Klik untuk analisis & simpan nutrisi"
+                    >
+                      <div className={styles.floatingDetectionInfo}>
+                        <span className={styles.floatingDot} />
+                        <span className={styles.floatingName}>
+                          {formatFoodLabel(cameraDetections[0].food_name)}
+                        </span>
+                        <span className={styles.floatingConf}>
+                          {Math.round(cameraDetections[0].confidence)}%
+                        </span>
+                        {cameraDetections[0].nutrition?.calories && (
+                          <span className={styles.floatingCal}>
+                            {Math.round(cameraDetections[0].nutrition.calories)} kkal
+                          </span>
+                        )}
                       </div>
-                    ) : (
-                      <p style={{ fontSize: 13, color: "var(--outline)", margin: 0 }}>
-                        Arahkan kamera ke piring makanan Indonesia (Rendang, Sate, Ayam Bakar, Gado-Gado, dll)...
-                      </p>
-                    )
+                      <span className={styles.floatingCta}>Ambil Foto ➔</span>
+                    </div>
+                  ) : cameraPersonDetected ? (
+                    <div className={styles.floatingPersonAlert}>
+                      <span>👤 Wajah terdeteksi — Arahkan lensa ke makanan</span>
+                    </div>
                   ) : (
-                    <div className={styles.liveFeedList}>
-                      {cameraDetections.map((det, idx) => (
-                        <div key={idx} className={styles.liveFeedItem}>
-                          <div className={styles.liveFeedItemLeft}>
-                            <span className={styles.liveFeedItemDot} />
-                            <span className={styles.liveFeedItemName}>{formatFoodLabel(det.food_name)}</span>
-                            <span className={styles.liveFeedItemConf}>{Math.round(det.confidence)}%</span>
-                          </div>
-                          <div className={styles.liveFeedItemMacros}>
-                            <span className={`${styles.macroChip} ${styles.macroChipCal}`}>
-                              {det.nutrition?.calories ? `${Math.round(det.nutrition.calories)} kkal` : "-"}
-                            </span>
-                            <span className={styles.macroChip}>
-                              P: {det.nutrition?.protein || 0}g
-                            </span>
-                            <span className={styles.macroChip}>
-                              C: {det.nutrition?.carbs || 0}g
-                            </span>
-                          </div>
-                        </div>
-                      ))}
+                    <div className={styles.floatingHintPill}>
+                      <span>Arahkan kamera ke hidangan makanan</span>
                     </div>
                   )}
                 </div>
-              )}
+
+                {/* Floating Glass Bottom Controls Bar */}
+                <div className={styles.cameraBottomBar}>
+                  {/* Left: Gallery upload button */}
+                  <button
+                    onClick={() => {
+                      stopCameraStream();
+                      fileInputRef.current?.click();
+                    }}
+                    className={styles.cameraSideBtn}
+                    title="Pilih dari Galeri"
+                    aria-label="Pilih dari Galeri"
+                  >
+                    <svg
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg>
+                  </button>
+
+                  {/* Center: Beautiful Native Shutter Button */}
+                  <button
+                    onClick={captureCameraSnapshot}
+                    className={styles.shutterBtn}
+                    title="Ambil Foto & Analisis"
+                    aria-label="Ambil Foto"
+                  >
+                    <div className={styles.shutterBtnInner} />
+                  </button>
+
+                  {/* Right: Camera Flip Icon Button */}
+                  <button
+                    onClick={toggleCameraFacing}
+                    className={styles.cameraSideBtn}
+                    title="Ganti Kamera Depan / Belakang"
+                    aria-label="Ganti Kamera"
+                  >
+                    <svg
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className={isFlipping ? styles.rotatingIcon : ""}
+                    >
+                      <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                      <path d="M3 3v5h5" />
+                      <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                      <path d="M16 21h5v-5" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
@@ -1154,7 +1247,7 @@ export default function FoodAnalysisPage() {
                   {isScanningVideo ? "Memindai Video..." : "⚡ Scan Seluruh Video (Server)"}
                 </button>
 
-                <button onClick={startCamera} className={styles.uploadBtn} style={{ padding: "8px 14px", fontSize: 13 }}>
+                <button onClick={() => startCamera()} className={styles.uploadBtn} style={{ padding: "8px 14px", fontSize: 13 }}>
                   📸 Buka Kamera
                 </button>
 
