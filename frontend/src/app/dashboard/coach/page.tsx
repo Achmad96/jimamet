@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, FormEvent } from "react";
 import ReactMarkdown from "react-markdown";
 import styles from "./coach.module.css";
-import { apiListCoachSessions, apiGetCoachSession, apiCreateCoachSession, apiDeleteCoachSession, apiSendCoachMessage, apiCreateConsultation, apiSendChat, apiListConsultations, apiListChat } from "@/lib/api";
+import { apiListCoachSessions, apiGetCoachSession, apiCreateCoachSession, apiDeleteCoachSession, apiSendCoachMessage, apiCreateConsultation, apiSendChat, apiListConsultations, apiListChat, getWsConsultationUrl } from "@/lib/api";
 
 interface CoachSession {
   id: string;
@@ -320,7 +320,7 @@ export default function NutriCoachPage() {
       wsRef.current.close();
     }
 
-    const wsUrl = `ws://localhost:8000/ws/consultation/${consultationId}/`;
+    const wsUrl = getWsConsultationUrl(consultationId);
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {

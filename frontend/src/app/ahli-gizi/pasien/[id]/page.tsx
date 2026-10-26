@@ -10,6 +10,8 @@ import {
   apiSendChat,
   apiDeleteChat,
   apiUpdateConsultation,
+  apiGetMe,
+  getWsConsultationUrl,
 } from "@/lib/api";
 import { formatFoodLabel } from "@/lib/food-labels";
 
@@ -141,7 +143,7 @@ export default function ConsultationChatPage() {
     if (wsRef.current) wsRef.current.close();
 
     const ws = new WebSocket(
-      `ws://localhost:8000/ws/consultation/${consultationId}/`
+      getWsConsultationUrl(consultationId)
     );
 
     ws.onopen = () => {
@@ -271,12 +273,11 @@ export default function ConsultationChatPage() {
   const handleTangani = async () => {
     let nama = "Ahli Gizi";
     try {
-      const userStr = localStorage.getItem("jimamet_user");
-      if (userStr) {
-        const u = JSON.parse(userStr);
-        nama = u.full_name || u.username || "Ahli Gizi";
+      const { ok, data } = await apiGetMe();
+      if (ok) {
+        nama = data.full_name || data.username || "Ahli Gizi";
       }
-    } catch (e) {}
+    } catch {}
     await apiUpdateConsultation(consultationId, { handled_by: nama.trim() });
     
     setConsultationStatus("active");

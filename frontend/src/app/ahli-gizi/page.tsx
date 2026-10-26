@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import styles from "./ahli-gizi.module.css";
+import { apiGetMe } from "@/lib/api";
 
 
 export default function AhliGiziDashboard() {
@@ -10,10 +11,9 @@ export default function AhliGiziDashboard() {
   const [today, setToday] = useState("");
 
   useEffect(() => {
-    const stored = localStorage.getItem("jimamet_user");
-    if (stored) {
-      try { setUser(JSON.parse(stored)); } catch {}
-    }
+    apiGetMe().then(({ ok, data }) => {
+      if (ok) setUser(data);
+    });
     setToday(new Date().toLocaleDateString("id-ID", {
       weekday: "long", day: "numeric", month: "long", year: "numeric"
     }));

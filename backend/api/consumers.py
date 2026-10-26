@@ -1,11 +1,13 @@
 """
-WebSocket consumer for real-time consultation chat.
+WebSocket consumer for real-time consultation chat and low-latency food detection.
 Uses Django Channels with in-memory channel layer.
 """
 
+import asyncio
 import json
 import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
+from api.services.detection_service import DetectionService
 
 logger = logging.getLogger(__name__)
 
@@ -69,3 +71,82 @@ class ConsultationChatConsumer(AsyncWebsocketConsumer):
             "sender": event["sender"],
             "sent_at": event["sent_at"],
         }))
+
+
+class DetectionStreamConsumer(AsyncWebsocketConsumer):
+    """
+    Ultra-low latency WebSocket stream consumer for real-time food detection
+    from live camera feeds or video playback.
+    
+    Accepts:
+      - JSON text: {"frame": "<base64>", "ts": 123456789, "conf": 0.25, "imgsz": 320}
+      - Binary bytes: raw JPEG frame buffer
+    
+    Returns JSON:
+      {
+        "status": "success",
+        "detections": [...],
+        "inference_ms": 85.4,
+        "ts": 123456789,
+        "width": 640,
+        "height": 480
+      }
+    """
+
+    async def connect(self):
+        await self.accept()
+        logger.info("DetectionStreamConsumer connected")
+
+    async def disconnect(self, close_code):
+        logger.info("DetectionStreamConsumer disconnected (%s)", close_code)
+
+    async def receive(self, text_data=None, bytes_data=None):
+        ts = None
+        conf = 0.25
+        imgsz = 320
+        fast_mode = True
+        image_input = None
+
+        try:
+            if bytes_data is not None:
+                image_input = bytes_data
+            elif text_data is not None:
+                data = json.loads(text_data)
+                # Client heartbeat or ping
+                if data.get("type") == "ping":
+                    await self.send(text_data=json.dumps({"type": "pong", "ts": data.get("ts")}))
+                    return
+
+                image_input = data.get("frame") or data.get("image")
+                ts = data.get("ts")
+                conf = float(data.get("conf", 0.25))
+                imgsz = int(data.get("imgsz", 320))
+                fast_mode = bool(data.get("fast", True))
+
+            if not image_input:
+                await self.send(text_data=json.dumps({"status": "error", "message": "No frame received"}))
+                return
+
+            loop = asyncio.get_running_loop()
+            result = await loop.run_in_executor(
+                None,
+                DetectionService.detect_frame,
+                image_input,
+                imgsz,
+                conf,
+                0.45,
+                fast_mode,
+            )
+
+            if ts is not None:
+                result["ts"] = ts
+
+            await self.send(text_data=json.dumps(result))
+
+        except Exception as e:
+            logger.error("DetectionStream error: %s", e)
+            await self.send(text_data=json.dumps({
+                "status": "error",
+                "message": str(e),
+                "ts": ts,
+            }))

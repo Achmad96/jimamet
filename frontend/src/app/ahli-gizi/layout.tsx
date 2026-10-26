@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import styles from "./ahli-gizi.module.css";
+import { apiGetMe, apiLogout } from "@/lib/api";
 
 export default function AhliGiziLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -12,21 +13,17 @@ export default function AhliGiziLayout({ children }: { children: React.ReactNode
   const [user, setUser] = useState<{ full_name?: string; spesialisasi?: string } | null>(null);
 
   useEffect(() => {
-    const role = localStorage.getItem("jimamet_role");
-    const storedUser = localStorage.getItem("jimamet_user");
-    if (role !== "ahli_gizi") {
-      router.replace("/login");
-      return;
-    }
-    if (storedUser) {
-      try { setUser(JSON.parse(storedUser)); } catch { }
-    }
+    apiGetMe().then(({ ok, data }) => {
+      if (!ok || data?.role !== "nutritionist") {
+        router.replace("/login");
+        return;
+      }
+      setUser(data);
+    });
   }, [router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("jimamet_token");
-    localStorage.removeItem("jimamet_user");
-    localStorage.removeItem("jimamet_role");
+  const handleLogout = async () => {
+    await apiLogout();
     router.replace("/login");
   };
 

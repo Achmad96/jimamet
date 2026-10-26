@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import styles from "./dashboard.module.css";
-import { apiDashboardSummary } from "@/lib/api";
+import { apiDashboardSummary, apiGetMe } from "@/lib/api";
 import { SkeletonDashboard } from "@/components/Skeleton";
 import { formatFoodLabel } from "@/lib/food-labels";
 
@@ -24,10 +24,9 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
-    const stored = localStorage.getItem("jimamet_user");
-    if (stored) {
-      try { setUser(JSON.parse(stored)); } catch {}
-    }
+    apiGetMe().then(({ ok, data }) => {
+      if (ok) setUser(data);
+    });
 
     const h = new Date().getHours();
     if (h >= 5 && h < 11) setGreeting("Selamat Pagi");

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import styles from "../ahli-gizi.module.css";
-import { apiListConsultations, apiUpdateConsultation, apiListChat, apiSendChat, apiDeleteChat, apiDeleteConsultation } from "@/lib/api";
+import { apiListConsultations, apiUpdateConsultation, apiListChat, apiSendChat, apiDeleteChat, apiDeleteConsultation, getWsConsultationUrl } from "@/lib/api";
 
 interface ChatMsg {
   id: string;
@@ -66,7 +66,7 @@ export default function KonsultasiPage() {
   const connectWebSocket = useCallback((consultationId: string) => {
     if (wsRef.current) wsRef.current.close();
 
-    const ws = new WebSocket(`ws://localhost:8000/ws/consultation/${consultationId}/`);
+    const ws = new WebSocket(getWsConsultationUrl(consultationId));
 
     ws.onopen = () => {
       console.log("[WS Nutritionist] Connected to", consultationId);

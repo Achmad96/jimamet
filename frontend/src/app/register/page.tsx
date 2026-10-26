@@ -7,17 +7,9 @@ export default function RegisterRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("jimamet_token");
-    const role = localStorage.getItem("jimamet_role");
-    if (token) {
-      if (role === "ahli_gizi") {
-        router.replace("/ahli-gizi");
-      } else {
-        router.replace("/dashboard");
-      }
-    } else {
-      router.replace("/login?tab=register");
-    }
+    // Middleware handles redirect if already logged in.
+    // Otherwise, redirect to login page with register tab.
+    router.replace("/login?tab=register");
   }, [router]);
 
   return null;

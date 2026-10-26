@@ -48,6 +48,8 @@ urlpatterns = [
     path('coach/sessions/<str:session_id>/delete/', views.delete_session, name='delete_session'),
     path('coach/sessions/<str:session_id>/chat/', views.coachbot_chat, name='coachbot_chat'),
 
-    # ML YOLO Detection
+    # ML YOLO Detection (Image, Real-time Frame, Video)
     path('detect-food/', views.detect_food_api, name='detect_food_api'),
+    path('detect-frame/', views.detect_frame_api, name='detect_frame_api'),
+    path('detect-video/', views.detect_video_api, name='detect_video_api'),
 ]

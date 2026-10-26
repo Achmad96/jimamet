@@ -1,38 +1,10 @@
 /**
  * Jimamet API Client
- * Handles all communication between Next.js frontend and Django backend.
+ * All requests go through Next.js API routes (proxy) which handle
+ * auth tokens via HttpOnly cookies. The browser never sees raw tokens.
+ *
  * Includes in-memory request caching with TTL for frequently-accessed data.
  */
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-// ── Token Management ──
-function getToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("jimamet_token");
-}
-
-function setToken(token: string) {
-  localStorage.setItem("jimamet_token", token);
-}
-
-function removeToken() {
-  localStorage.removeItem("jimamet_token");
-}
-
-function getUser() {
-  if (typeof window === "undefined") return null;
-  const raw = localStorage.getItem("jimamet_user");
-  return raw ? JSON.parse(raw) : null;
-}
-
-function setUser(user: Record<string, unknown>) {
-  localStorage.setItem("jimamet_user", JSON.stringify(user));
-}
-
-function removeUser() {
-  localStorage.removeItem("jimamet_user");
-}
 
 // ═══════════════════════════════════════════════════
 //  IN-MEMORY REQUEST CACHE
@@ -81,22 +53,17 @@ export function clearApiCache() {
 }
 
 // ── Base Fetch Helper ──
+// All requests go through the Next.js proxy which adds the auth header
 async function apiFetch(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<Response> {
-  const token = getToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(options.headers as Record<string, string>),
   };
 
-  const isAuthEndpoint = endpoint.includes("/auth/login") || endpoint.includes("/auth/register");
-  if (token && !isAuthEndpoint) {
-    headers["Authorization"] = `Token ${token}`;
-  }
-
-  return fetch(`${API_BASE}${endpoint}`, {
+  return fetch(`/api/proxy${endpoint}`, {
     ...options,
     headers,
   });
@@ -116,51 +83,35 @@ export async function apiRegister(data: {
   height?: number;
   activity_level?: string;
 }) {
-  const res = await apiFetch("/auth/register/", {
+  const res = await fetch("/api/auth/register", {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
   const json = await res.json();
-  if (res.ok && json.token) {
-    setToken(json.token);
-    setUser(json.user);
-  }
   return { ok: res.ok, data: json };
 }
 
 export async function apiLogin(data: { username: string; password: string }) {
-  const res = await apiFetch("/auth/login/", {
+  const res = await fetch("/api/auth/login", {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
   const json = await res.json();
-  if (res.ok && json.token) {
-    setToken(json.token);
-    setUser(json.user);
-  }
   return { ok: res.ok, data: json };
 }
 
 export async function apiLogout() {
-  const res = await apiFetch("/auth/logout/", { method: "POST" });
-  removeToken();
-  removeUser();
+  const res = await fetch("/api/auth/logout", { method: "POST" });
   clearApiCache();
   return { ok: res.ok };
 }
 
 export async function apiGetMe() {
-  const res = await apiFetch("/auth/me/");
+  const res = await fetch("/api/auth/me");
   const json = await res.json();
   return { ok: res.ok, data: json };
-}
-
-export function isLoggedIn(): boolean {
-  return !!getToken();
-}
-
-export function getCurrentUser() {
-  return getUser();
 }
 
 // ═══════════════════════════════════════════════════
@@ -396,5 +347,72 @@ export async function apiSendCoachMessage(sessionId: string, message: string) {
   const json = await res.json();
   // Invalidate session list cache since updated_at changes
   cacheInvalidate("coachSessions");
+  return { ok: res.ok, data: json };
+}
+
+
+// ═══════════════════════════════════════════════════
+//  FOOD DETECTION (Real-time Vision & Video)
+// ═══════════════════════════════════════════════════
+
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (typeof window !== "undefined"
+    ? `${window.location.protocol}//${window.location.hostname}:8000/api`
+    : "http://127.0.0.1:8000/api");
+
+export function getWsConsultationUrl(consultationId: string): string {
+  if (typeof window !== "undefined") {
+    const isHttps = window.location.protocol === "https:";
+    const host = window.location.hostname || "127.0.0.1";
+    const proto = isHttps ? "wss:" : "ws:";
+    return `${proto}//${host}:8000/ws/consultation/${consultationId}/`;
+  }
+  return `ws://127.0.0.1:8000/ws/consultation/${consultationId}/`;
+}
+
+export function getWsDetectUrl(): string {
+  if (typeof window !== "undefined") {
+    const isHttps = window.location.protocol === "https:";
+    const host = window.location.hostname || "127.0.0.1";
+    const proto = isHttps ? "wss:" : "ws:";
+    return `${proto}//${host}:8000/ws/detect-stream/`;
+  }
+  return "ws://127.0.0.1:8000/ws/detect-stream/";
+}
+
+export async function apiDetectFood(formData: FormData, fast = false) {
+  const url = `${API_BASE_URL}/detect-food/${fast ? "?fast=1" : ""}`;
+  const res = await fetch(url, {
+    method: "POST",
+    body: formData,
+  });
+  const json = await res.json();
+  return { ok: res.ok, data: json };
+}
+
+export async function apiDetectFrame(payload: {
+  frame: string;
+  conf?: number;
+  imgsz?: number;
+  fast?: boolean;
+}) {
+  const url = `${API_BASE_URL}/detect-frame/`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json();
+  return { ok: res.ok, data: json };
+}
+
+export async function apiDetectVideo(formData: FormData) {
+  const url = `${API_BASE_URL}/detect-video/`;
+  const res = await fetch(url, {
+    method: "POST",
+    body: formData,
+  });
+  const json = await res.json();
   return { ok: res.ok, data: json };
 }

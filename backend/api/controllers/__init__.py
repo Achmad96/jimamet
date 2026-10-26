@@ -42,6 +42,8 @@ from api.controllers.prediction_controller import (
 )
 from api.controllers.detection_controller import (
     detect_food_api,
+    detect_frame_api,
+    detect_video_api,
 )
 
 __all__ = [
@@ -53,5 +55,5 @@ __all__ = [
     'create_consultation', 'list_consultations', 'update_consultation', 'delete_consultation', 'get_patient_details',
     'list_chat', 'send_chat', 'delete_chat',
     'coachbot_chat', 'list_sessions', 'create_session', 'get_session', 'delete_session',
-    'detect_food_api',
+    'detect_food_api', 'detect_frame_api', 'detect_video_api',
 ]

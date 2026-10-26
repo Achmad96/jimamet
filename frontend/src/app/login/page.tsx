@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, FormEvent, Suspense } from "react";
+import { useState, FormEvent, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -17,21 +17,8 @@ function LoginForm() {
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-  useEffect(() => {
-    const token = localStorage.getItem("jimamet_token");
-    const role = localStorage.getItem("jimamet_role");
-    if (token) {
-      if (role === "ahli_gizi") {
-        router.replace("/ahli-gizi");
-      } else {
-        router.replace("/dashboard");
-      }
-    } else {
-      setIsCheckingAuth(false);
-    }
-  }, [router]);
+  // Middleware already redirects logged-in users away from /login
 
   /* ── Login State ── */
   const [loginData, setLoginData] = useState({ username: "", password: "" });
@@ -57,13 +44,10 @@ function LoginForm() {
     try {
       const { ok, data } = await apiLogin(loginData);
       if (ok) {
-        // Store role in localStorage for routing
         if (data.role === "ahli_gizi") {
-          localStorage.setItem("jimamet_role", "ahli_gizi");
           setSuccess("Login berhasil! Mengalihkan ke Portal Ahli Gizi...");
           setTimeout(() => router.push("/ahli-gizi"), 1000);
         } else {
-          localStorage.setItem("jimamet_role", "user");
           setSuccess("Login berhasil! Mengalihkan...");
           setTimeout(() => router.push("/dashboard"), 1000);
         }
@@ -137,13 +121,7 @@ function LoginForm() {
     setSuccess("");
   };
 
-  if (isCheckingAuth) {
-    return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", color: "var(--outline)", background: "var(--surface)" }}>
-        Memuat...
-      </div>
-    );
-  }
+  // No loading state needed — middleware handles redirect for logged-in users
 
   return (
     <div className={styles.page}>

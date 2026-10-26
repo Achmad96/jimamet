@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
-import { isLoggedIn, getCurrentUser, apiLogout } from "@/lib/api";
+import { apiLogout, apiGetMe } from "@/lib/api";
 import styles from "./dashboard-layout.module.css";
 import { SkeletonLayout } from "@/components/Skeleton";
 
@@ -75,17 +75,18 @@ export default function DashboardLayout({
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (!isLoggedIn()) {
-      router.replace("/login");
-      return;
-    }
-    const user = getCurrentUser();
-    if (user?.full_name) {
-      setUserInitial(user.full_name.charAt(0).toUpperCase());
-    } else if (user?.username) {
-      setUserInitial(user.username.charAt(0).toUpperCase());
-    }
-    setReady(true);
+    apiGetMe().then(({ ok, data }) => {
+      if (!ok) {
+        router.replace("/login");
+        return;
+      }
+      if (data?.full_name) {
+        setUserInitial(data.full_name.charAt(0).toUpperCase());
+      } else if (data?.username) {
+        setUserInitial(data.username.charAt(0).toUpperCase());
+      }
+      setReady(true);
+    });
   }, [router]);
 
   const handleLogout = async () => {
