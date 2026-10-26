@@ -88,7 +88,7 @@ class ThreadedCamera:
         self.cap.release()
 
 
-def draw_hud(frame, fps, latency_ms, detected_count, is_paused=False):
+def draw_hud(frame, fps, latency_ms, detected_count, is_paused=False, person_detected=False):
     """Render a modern HUD bar at the top with FPS and latency stats."""
     h, w = frame.shape[:2]
     # Header bar background
@@ -105,6 +105,8 @@ def draw_hud(frame, fps, latency_ms, detected_count, is_paused=False):
 
     # FPS & Latency stats
     hud_text = f"FPS: {fps:4.1f} | Latency: {latency_ms:4.0f}ms | Makanan: {detected_count}"
+    if detected_count == 0 and person_detected:
+        hud_text += " | Wajah/Orang Terdeteksi"
     cv2.putText(frame, hud_text, (115, 26), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (240, 240, 240), 1, cv2.LINE_AA)
 
     # Instructions in bottom bar
@@ -182,7 +184,7 @@ def draw_detections(frame, detections):
 def run_detector(
     source=0,
     imgsz=384,
-    conf=0.25,
+    conf=0.35,
     save_path=None,
     no_view=False,
     skip_frames=1,
@@ -226,6 +228,7 @@ def run_detector(
     fps_history = []
     last_detections = []
     last_infer_ms = 0.0
+    last_person_detected = False
     frame_counter = 0
     paused = False
     window_name = "Jimamet 2.0 - Real-Time Food Detection"
@@ -264,6 +267,7 @@ def run_detector(
                     )
                     last_infer_ms = res.get("inference_ms", (time.perf_counter() - t_inf_start) * 1000)
                     last_detections = res.get("detections", [])
+                    last_person_detected = res.get("person_detected", False)
 
                 # Calculate smoothed FPS
                 frame_time = time.perf_counter() - t_frame_start
@@ -275,7 +279,7 @@ def run_detector(
 
                 display_frame = frame.copy()
                 draw_detections(display_frame, last_detections)
-                draw_hud(display_frame, current_fps, last_infer_ms, len(last_detections), is_paused=False)
+                draw_hud(display_frame, current_fps, last_infer_ms, len(last_detections), is_paused=False, person_detected=last_person_detected)
 
                 if writer:
                     writer.write(display_frame)
@@ -284,7 +288,7 @@ def run_detector(
                 # When paused, keep rendering last frame with PAUSED badge
                 display_frame = frame.copy()
                 draw_detections(display_frame, last_detections)
-                draw_hud(display_frame, 0.0, last_infer_ms, len(last_detections), is_paused=True)
+                draw_hud(display_frame, 0.0, last_infer_ms, len(last_detections), is_paused=True, person_detected=last_person_detected)
 
             if not no_view:
                 cv2.imshow(window_name, display_frame)

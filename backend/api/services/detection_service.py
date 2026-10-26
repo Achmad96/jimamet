@@ -18,6 +18,7 @@ class DetectionService:
     MODEL_PATH = os.path.join(BASE_DIR, "ml_models", "JIMAMET_MODEL.pt")
     CSV_PATH = os.path.join(BASE_DIR, "indonesian_foods_nutrition.csv")
     model = None
+    person_model = None
     _fast_nutrition_cache: Dict[str, dict] = {}
 
     @classmethod
@@ -41,7 +42,7 @@ class DetectionService:
                 from ultralytics import YOLO
 
                 cls.model = YOLO(active_path)
-                logger.info(f"YOLO model loaded successfully from {active_path}")
+                logger.info(f"YOLO food model loaded successfully from {active_path}")
             except ImportError:
                 logger.error("ultralytics library is not installed.")
                 return None
@@ -49,6 +50,73 @@ class DetectionService:
                 logger.error(f"Error loading YOLO model: {exception}")
                 return None
         return cls.model
+
+    @classmethod
+    def get_person_model(cls):
+        """
+        Loads standard lightweight YOLO model to detect human beings/faces
+        and eliminate false-positive food predictions on humans (AI slop prevention).
+        """
+        if cls.person_model is None:
+            candidates = [
+                os.path.join(cls.BASE_DIR, "ml_models", "yolov8n.pt"),
+                os.path.join(cls.BASE_DIR, "yolov8n.pt"),
+                os.path.join(os.path.dirname(cls.BASE_DIR), "yolov8n.pt"),
+                "yolov8n.pt",
+            ]
+            active_path = None
+            for p in candidates:
+                if os.path.exists(p):
+                    active_path = p
+                    break
+            if not active_path:
+                active_path = "yolov8n.pt"
+            try:
+                from ultralytics import YOLO
+
+                cls.person_model = YOLO(active_path)
+                logger.info(f"YOLO person detection model loaded successfully from {active_path}")
+            except Exception as exception:
+                logger.error(f"Error loading YOLO person model: {exception}")
+                return None
+        return cls.person_model
+
+    @staticmethod
+    def _is_human_false_positive(food_box: list, person_boxes: list) -> bool:
+        """
+        Determines whether a detected food candidate is actually a human being,
+        a person's torso/body, or a human face/head, thereby eliminating AI hallucination/slop.
+        """
+        if not person_boxes:
+            return False
+
+        fx1, fy1, fx2, fy2 = food_box
+        f_area = max(1.0, (fx2 - fx1) * (fy2 - fy1))
+
+        for px1, py1, px2, py2 in person_boxes:
+            p_area = max(1.0, (px2 - px1) * (py2 - py1))
+            ix1 = max(fx1, px1)
+            iy1 = max(fy1, py1)
+            ix2 = min(fx2, px2)
+            iy2 = min(fy2, py2)
+            inter = max(0.0, ix2 - ix1) * max(0.0, iy2 - iy1)
+            iou = inter / (f_area + p_area - inter) if (f_area + p_area - inter) > 0 else 0
+
+            # 1. High IoU overlap with person (the whole person or head was detected as food)
+            if iou > 0.30:
+                return True
+
+            # 2. Food box is predominantly inside the person and is large (torso / body)
+            if (inter / f_area > 0.65) and (f_area / p_area > 0.15):
+                return True
+
+            # 3. Overlaps with person's head/face region (top 45% of the person's bounding box)
+            hx1, hy1, hx2, hy2 = px1, py1, px2, py1 + 0.45 * (py2 - py1)
+            h_inter = max(0.0, min(fx2, hx2) - max(fx1, hx1)) * max(0.0, min(fy2, hy2) - max(fy1, hy1))
+            if (h_inter / f_area > 0.40):
+                return True
+
+        return False
 
     @classmethod
     def get_fast_nutrition(cls, food_name: str) -> dict:
@@ -155,14 +223,14 @@ class DetectionService:
         cls,
         image_input: Any,
         imgsz: int = 384,
-        conf_threshold: float = 0.25,
+        conf_threshold: float = 0.35,
         iou_threshold: float = 0.45,
         fast_mode: bool = True,
     ) -> dict:
         """
         Low-latency frame detection designed for real-time video and camera feeds.
-        Runs YOLO inference, measures precise inference time, and returns bounding boxes
-        with both pixel and normalized coordinates.
+        Runs YOLO inference, measures precise inference time, and suppresses human/person
+        false positives (AI slop prevention) before returning enriched bounding boxes.
         """
         model = cls.get_model()
         if not model:
@@ -172,47 +240,82 @@ class DetectionService:
 
         t0 = time.perf_counter()
         results = model(img, imgsz=imgsz, conf=conf_threshold, iou=iou_threshold, verbose=False)
-        inference_ms = round((time.perf_counter() - t0) * 1000, 1)
 
-        detected_foods = []
+        raw_candidates = []
         for result in results:
             boxes = result.boxes
             for box in boxes:
-                class_id = int(box.cls[0].item())
                 confidence = float(box.conf[0].item())
-                yolo_label = result.names[class_id]
-
                 if confidence >= conf_threshold:
+                    class_id = int(box.cls[0].item())
+                    yolo_label = result.names[class_id]
                     xyxy = box.xyxy[0].tolist()
-                    x1, y1, x2, y2 = xyxy
-
-                    norm_x1 = round(max(0.0, min(1.0, x1 / width)), 4)
-                    norm_y1 = round(max(0.0, min(1.0, y1 / height)), 4)
-                    norm_x2 = round(max(0.0, min(1.0, x2 / width)), 4)
-                    norm_y2 = round(max(0.0, min(1.0, y2 / height)), 4)
-
-                    if fast_mode:
-                        nutrition = cls.get_fast_nutrition(yolo_label)
-                    else:
-                        nutrition = cls._get_nutrition_data(yolo_label, pil_image=img)
-
-                    food_name = nutrition.get("matched_food_name") or yolo_label.replace("_", " ")
-
-                    detected_foods.append({
+                    raw_candidates.append({
                         "class_id": class_id,
                         "raw_label": yolo_label,
-                        "food_name": food_name,
-                        "confidence": round(confidence * 100, 1),
-                        "bbox": [round(x1, 1), round(y1, 1), round(x2, 1), round(y2, 1)],
-                        "bbox_normalized": [norm_x1, norm_y1, norm_x2, norm_y2],
-                        "nutrition": nutrition,
+                        "confidence": confidence,
+                        "xyxy": xyxy,
                     })
+
+        # Person / human suppression filter to eliminate AI slop (detecting faces/people as food)
+        person_detected = False
+        person_boxes = []
+        if raw_candidates:
+            p_model = cls.get_person_model()
+            if p_model:
+                try:
+                    p_results = p_model(img, imgsz=256, conf=0.25, classes=[0], verbose=False)
+                    for pr in p_results:
+                        for pb in pr.boxes:
+                            person_boxes.append(pb.xyxy[0].tolist())
+                    if person_boxes:
+                        person_detected = True
+                except Exception as pe:
+                    logger.warning(f"Person detection filter error: {pe}")
+
+        detected_foods = []
+        for cand in raw_candidates:
+            x1, y1, x2, y2 = cand["xyxy"]
+
+            # Filter out detections that are actually a person, head, or face
+            if cls._is_human_false_positive([x1, y1, x2, y2], person_boxes):
+                logger.info(
+                    f"Suppressed false positive food detection '{cand['raw_label']}' ({round(cand['confidence']*100, 1)}%) "
+                    "matching human person/face"
+                )
+                continue
+
+            norm_x1 = round(max(0.0, min(1.0, x1 / width)), 4)
+            norm_y1 = round(max(0.0, min(1.0, y1 / height)), 4)
+            norm_x2 = round(max(0.0, min(1.0, x2 / width)), 4)
+            norm_y2 = round(max(0.0, min(1.0, y2 / height)), 4)
+
+            yolo_label = cand["raw_label"]
+            if fast_mode:
+                nutrition = cls.get_fast_nutrition(yolo_label)
+            else:
+                nutrition = cls._get_nutrition_data(yolo_label, pil_image=img)
+
+            food_name = nutrition.get("matched_food_name") or yolo_label.replace("_", " ")
+
+            detected_foods.append({
+                "class_id": cand["class_id"],
+                "raw_label": yolo_label,
+                "food_name": food_name,
+                "confidence": round(cand["confidence"] * 100, 1),
+                "bbox": [round(x1, 1), round(y1, 1), round(x2, 1), round(y2, 1)],
+                "bbox_normalized": [norm_x1, norm_y1, norm_x2, norm_y2],
+                "nutrition": nutrition,
+            })
+
+        inference_ms = round((time.perf_counter() - t0) * 1000, 1)
 
         return {
             "status": "success",
             "detections": detected_foods,
             "count": len(detected_foods),
             "inference_ms": inference_ms,
+            "person_detected": person_detected,
             "width": width,
             "height": height,
         }
@@ -223,7 +326,7 @@ class DetectionService:
         Original endpoint method, updated to return enriched bounding boxes
         while preserving backward compatibility.
         """
-        frame_result = cls.detect_frame(image_file, imgsz=416, conf_threshold=0.25, fast_mode=fast_mode)
+        frame_result = cls.detect_frame(image_file, imgsz=416, conf_threshold=0.35, fast_mode=fast_mode)
         return frame_result["detections"]
 
     @classmethod
@@ -231,7 +334,7 @@ class DetectionService:
         cls,
         video_source: Any,
         sample_fps: float = 2.0,
-        conf_threshold: float = 0.25,
+        conf_threshold: float = 0.35,
         imgsz: int = 384,
         max_duration_sec: float = 120.0,
     ) -> dict:

@@ -102,7 +102,7 @@ class DetectionStreamConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data=None, bytes_data=None):
         ts = None
-        conf = 0.25
+        conf = 0.35
         imgsz = 320
         fast_mode = True
         image_input = None
@@ -119,7 +119,7 @@ class DetectionStreamConsumer(AsyncWebsocketConsumer):
 
                 image_input = data.get("frame") or data.get("image")
                 ts = data.get("ts")
-                conf = float(data.get("conf", 0.25))
+                conf = float(data.get("conf", 0.35))
                 imgsz = int(data.get("imgsz", 320))
                 fast_mode = bool(data.get("fast", True))
 

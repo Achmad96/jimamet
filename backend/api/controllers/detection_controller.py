@@ -41,7 +41,7 @@ def detect_frame_api(request):
     Menerima JSON base64 {'frame': '...'} atau multipart {'image': file}.
     """
     try:
-        conf_threshold = 0.25
+        conf_threshold = 0.35
         imgsz = 384
         fast_mode = True
         image_input = None
@@ -53,7 +53,7 @@ def detect_frame_api(request):
                 image_input = request.FILES["image"]
             elif "frame" in request.FILES:
                 image_input = request.FILES["frame"]
-            conf_threshold = float(request.POST.get("conf", 0.25))
+            conf_threshold = float(request.POST.get("conf", 0.35))
             imgsz = int(request.POST.get("imgsz", 384))
             fast_mode = request.POST.get("fast", "true").lower() in ("1", "true", "yes")
         else:
@@ -63,7 +63,7 @@ def detect_frame_api(request):
                 body = {}
 
             image_input = body.get("frame") or body.get("image")
-            conf_threshold = float(body.get("conf", 0.25))
+            conf_threshold = float(body.get("conf", 0.35))
             imgsz = int(body.get("imgsz", 384))
             fast_mode = bool(body.get("fast", True))
 
@@ -97,7 +97,7 @@ def detect_video_api(request):
     video_file = request.FILES["video"]
     try:
         sample_fps = float(request.POST.get("sample_fps", 2.0))
-        conf_threshold = float(request.POST.get("conf", 0.25))
+        conf_threshold = float(request.POST.get("conf", 0.35))
         imgsz = int(request.POST.get("imgsz", 384))
 
         result = DetectionService.process_video(

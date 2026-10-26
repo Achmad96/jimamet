@@ -219,6 +219,7 @@ export default function FoodAnalysisPage() {
   const [cameraFps, setCameraFps] = useState<number>(0);
   const [cameraLatency, setCameraLatency] = useState<number>(0);
   const [cameraDetections, setCameraDetections] = useState<DetectionBox[]>([]);
+  const [cameraPersonDetected, setCameraPersonDetected] = useState<boolean>(false);
   const cameraVideoRef = useRef<HTMLVideoElement>(null);
   const cameraCanvasRef = useRef<HTMLCanvasElement>(null);
   const cameraWsRef = useRef<WebSocket | null>(null);
@@ -270,6 +271,7 @@ export default function FoodAnalysisPage() {
     setCameraFps(0);
     setCameraLatency(0);
     setCameraDetections([]);
+    setCameraPersonDetected(false);
     if (cameraCanvasRef.current) {
       const ctx = cameraCanvasRef.current.getContext("2d");
       ctx?.clearRect(0, 0, cameraCanvasRef.current.width, cameraCanvasRef.current.height);
@@ -487,6 +489,7 @@ export default function FoodAnalysisPage() {
           if (res.status === "success") {
             const dets: DetectionBox[] = res.detections || [];
             setCameraDetections(dets);
+            setCameraPersonDetected(Boolean(res.person_detected));
 
             // Calculate latency
             if (res.ts) {
@@ -549,7 +552,7 @@ export default function FoodAnalysisPage() {
             JSON.stringify({
               frame: frameData,
               ts: sendTs,
-              conf: 0.25,
+              conf: 0.35,
               imgsz: resolutionPreset,
               fast: true,
             })
@@ -559,13 +562,14 @@ export default function FoodAnalysisPage() {
           try {
             const { ok, data } = await apiDetectFrame({
               frame: frameData,
-              conf: 0.25,
+              conf: 0.35,
               imgsz: resolutionPreset,
               fast: true,
             });
             if (ok && data.status === "success") {
               const dets: DetectionBox[] = data.detections || [];
               setCameraDetections(dets);
+              setCameraPersonDetected(Boolean(data.person_detected));
               setCameraLatency(Date.now() - sendTs);
               if (cameraCanvasRef.current && cameraVideoRef.current) {
                 const v = cameraVideoRef.current;
@@ -603,6 +607,8 @@ export default function FoodAnalysisPage() {
     if (cameraDetections.length > 0) {
       const top = [...cameraDetections].sort((a, b) => b.confidence - a.confidence)[0];
       populateResultFromTopDetection(top);
+    } else if (cameraPersonDetected) {
+      alert("Kamera mendeteksi wajah/orang, bukan makanan. Silakan arahkan kamera ke hidangan makanan Anda.");
     } else {
       alert("Tidak ada makanan yang terdeteksi pada frame ini. Coba arahkan kamera lebih dekat.");
     }
@@ -665,7 +671,7 @@ export default function FoodAnalysisPage() {
           try {
             const { ok, data } = await apiDetectFrame({
               frame: frameData,
-              conf: 0.25,
+              conf: 0.35,
               imgsz: 384,
               fast: true,
             });
@@ -728,7 +734,7 @@ export default function FoodAnalysisPage() {
       const formData = new FormData();
       formData.append("video", videoFile);
       formData.append("sample_fps", "2.0");
-      formData.append("conf", "0.25");
+      formData.append("conf", "0.35");
 
       const { ok, data } = await apiDetectVideo(formData);
       if (ok && data.status === "success") {
@@ -1046,9 +1052,29 @@ export default function FoodAnalysisPage() {
                     <span className={styles.liveFeedCount}>{cameraDetections.length} Objek</span>
                   </div>
                   {cameraDetections.length === 0 ? (
-                    <p style={{ fontSize: 13, color: "var(--outline)", margin: 0 }}>
-                      Arahkan kamera ke piring makanan Indonesia (Rendang, Sate, Ayam Bakar, Gado-Gado, dll)...
-                    </p>
+                    cameraPersonDetected ? (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          padding: "10px 14px",
+                          background: "#fff3e0",
+                          borderRadius: 10,
+                          color: "#e65100",
+                          fontSize: 13,
+                          fontWeight: 500,
+                          border: "1px solid #ffe0b2",
+                        }}
+                      >
+                        <span style={{ fontSize: 18 }}>👤</span>
+                        <span>Wajah / orang terdeteksi di kamera. Arahkan lensa ke hidangan makanan Anda.</span>
+                      </div>
+                    ) : (
+                      <p style={{ fontSize: 13, color: "var(--outline)", margin: 0 }}>
+                        Arahkan kamera ke piring makanan Indonesia (Rendang, Sate, Ayam Bakar, Gado-Gado, dll)...
+                      </p>
+                    )
                   ) : (
                     <div className={styles.liveFeedList}>
                       {cameraDetections.map((det, idx) => (
