@@ -8,8 +8,77 @@ import {
   apiDetectFrame,
   apiDetectVideo,
   getWsDetectUrl,
+  isDetectWsSupported,
 } from "@/lib/api";
 import { formatFoodLabel } from "@/lib/food-labels";
+
+type LegacyGetUserMedia = (
+  constraints: MediaStreamConstraints,
+  onSuccess: (stream: MediaStream) => void,
+  onError: (err: unknown) => void
+) => void;
+
+interface CameraErrorInfo {
+  title: string;
+  message: string;
+  showNativeCapture?: boolean;
+}
+
+function hasUserMediaSupport(): boolean {
+  if (typeof navigator === "undefined") return false;
+  if (typeof navigator.mediaDevices?.getUserMedia === "function") return true;
+  const legacyNav = navigator as Navigator & {
+    getUserMedia?: LegacyGetUserMedia;
+    webkitGetUserMedia?: LegacyGetUserMedia;
+    mozGetUserMedia?: LegacyGetUserMedia;
+  };
+  return Boolean(
+    legacyNav.getUserMedia ||
+      legacyNav.webkitGetUserMedia ||
+      legacyNav.mozGetUserMedia
+  );
+}
+
+async function requestCameraStream(
+  constraints: MediaStreamConstraints
+): Promise<MediaStream> {
+  if (
+    typeof navigator !== "undefined" &&
+    typeof navigator.mediaDevices?.getUserMedia === "function"
+  ) {
+    return navigator.mediaDevices.getUserMedia(constraints);
+  }
+
+  if (typeof navigator !== "undefined") {
+    const legacyNav = navigator as Navigator & {
+      getUserMedia?: LegacyGetUserMedia;
+      webkitGetUserMedia?: LegacyGetUserMedia;
+      mozGetUserMedia?: LegacyGetUserMedia;
+    };
+    const legacyFn =
+      legacyNav.getUserMedia ||
+      legacyNav.webkitGetUserMedia ||
+      legacyNav.mozGetUserMedia;
+
+    if (legacyFn) {
+      return new Promise<MediaStream>((resolve, reject) => {
+        legacyFn.call(navigator, constraints, resolve, reject);
+      });
+    }
+  }
+
+  const isInsecure =
+    typeof window !== "undefined" && window.isSecureContext === false;
+  const error = new Error(
+    isInsecure
+      ? "Browser memblokir streaming kamera pada koneksi HTTP jaringan lokal. Gunakan HTTPS atau localhost."
+      : "Browser pada perangkat ini tidak mendukung akses kamera real-time."
+  );
+  error.name = isInsecure
+    ? "InsecureContextError"
+    : "MediaDevicesUnavailableError";
+  throw error;
+}
 
 interface NutrientResult {
   name: string;
@@ -208,10 +277,12 @@ export default function FoodAnalysisPage() {
   const [uploadDetections, setUploadDetections] = useState<DetectionBox[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraCaptureInputRef = useRef<HTMLInputElement>(null);
   const uploadCanvasRef = useRef<HTMLCanvasElement>(null);
 
   // ── Camera Mode State ──
   const [cameraActive, setCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState<CameraErrorInfo | null>(null);
   const [cameraFacing, setCameraFacing] = useState<"environment" | "user">("environment");
   const [isFlipping, setIsFlipping] = useState(false);
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
@@ -228,7 +299,7 @@ export default function FoodAnalysisPage() {
   const cameraInFlightRef = useRef<boolean>(false);
   const cameraIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const fpsHistoryRef = useRef<number[]>([]);
-  const lastFrameTimeRef = useRef<number>(Date.now());
+  const lastFrameTimeRef = useRef<number>(0);
 
   // ── Video Mode State ──
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
@@ -262,7 +333,7 @@ export default function FoodAnalysisPage() {
     if (cameraWsRef.current) {
       try {
         cameraWsRef.current.close();
-      } catch (e) {}
+      } catch {}
       cameraWsRef.current = null;
     }
     if (streamRef.current) {
@@ -416,6 +487,7 @@ export default function FoodAnalysisPage() {
       return;
     }
     stopCameraStream();
+    setCameraError(null);
     setSelectedImage(null);
     setSelectedFile(null);
     setUploadDetections([]);
@@ -430,6 +502,7 @@ export default function FoodAnalysisPage() {
   const handleFile = useCallback((file: File) => {
     if (file.type.startsWith("image/")) {
       stopCameraStream();
+      setCameraError(null);
       setVideoSrc(null);
       setVideoFile(null);
       setVideoReport(null);
@@ -500,6 +573,27 @@ export default function FoodAnalysisPage() {
     facing: "environment" | "user" = cameraFacing,
     deviceId?: string
   ) => {
+    setCameraError(null);
+
+    if (!hasUserMediaSupport()) {
+      const isInsecure =
+        typeof window !== "undefined" && window.isSecureContext === false;
+      const httpsUrl =
+        typeof window !== "undefined"
+          ? `https://${window.location.host}${window.location.pathname}`
+          : "";
+      setCameraError({
+        title: isInsecure
+          ? "Kamera Real-Time Membutuhkan Koneksi Aman (HTTPS)"
+          : "Kamera Real-Time Tidak Tersedia di Browser Ini",
+        message: isInsecure
+          ? `Browser memblokir streaming kamera langsung pada alamat HTTP jaringan lokal (${window.location.origin}). Jalankan server mode HTTPS (run-https.bat / npm run dev:https) lalu buka ${httpsUrl}, atau ambil foto langsung memakai kamera perangkat di bawah ini.`
+          : "Browser atau perangkat ini tidak menyediakan akses streaming kamera (getUserMedia). Anda tetap dapat memotret makanan secara langsung menggunakan tombol di bawah.",
+        showNativeCapture: true,
+      });
+      return;
+    }
+
     try {
       stopCameraStream();
       setSelectedImage(null);
@@ -532,13 +626,44 @@ export default function FoodAnalysisPage() {
               },
           audio: false,
         };
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        stream = await requestCameraStream(constraints);
       } catch (err) {
+        const errName = (err as { name?: string })?.name;
+        if (
+          errName === "NotAllowedError" ||
+          errName === "PermissionDeniedError" ||
+          errName === "SecurityError" ||
+          errName === "InsecureContextError" ||
+          errName === "MediaDevicesUnavailableError"
+        ) {
+          throw err;
+        }
         console.warn("Primary constraint failed, falling back to basic facingMode:", err);
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: facing },
-          audio: false,
-        });
+        try {
+          stream = await requestCameraStream({
+            video: { facingMode: facing },
+            audio: false,
+          });
+        } catch (fallbackErr) {
+          const fbName = (fallbackErr as { name?: string })?.name;
+          if (fbName === "NotAllowedError" || fbName === "PermissionDeniedError") {
+            throw fallbackErr;
+          }
+          stream = await requestCameraStream({ video: true, audio: false });
+        }
+      }
+
+      // Refresh available video input devices now that permission is granted
+      if (typeof navigator !== "undefined" && navigator.mediaDevices?.enumerateDevices) {
+        navigator.mediaDevices
+          .enumerateDevices()
+          .then((devices) => {
+            const videoDevs = devices.filter((d) => d.kind === "videoinput" && d.deviceId);
+            if (videoDevs.length > 0) {
+              setVideoDevices(videoDevs);
+            }
+          })
+          .catch(() => {});
       }
 
       streamRef.current = stream;
@@ -553,50 +678,62 @@ export default function FoodAnalysisPage() {
         }
       }
 
-      // Connect WebSocket for ultra-low latency streaming
-      const wsUrl = getWsDetectUrl();
-      const ws = new WebSocket(wsUrl);
-      cameraWsRef.current = ws;
+      // Connect WebSocket for ultra-low latency streaming when supported,
+      // or immediately use same-origin HTTP fast-frame proxy (e.g. on HTTPS dev mode)
+      let ws: WebSocket | null = null;
+      let useFallback = !isDetectWsSupported();
 
-      let useFallback = false;
-
-      ws.onopen = () => {
-        console.log("WebSocket Camera Detection connected:", wsUrl);
-      };
-
-      ws.onerror = (e) => {
-        console.warn("WebSocket connection failed, falling back to HTTP fast frames:", e);
-        useFallback = true;
-      };
-
-      ws.onmessage = (event) => {
+      if (!useFallback) {
         try {
-          const res = JSON.parse(event.data);
-          if (res.status === "success") {
-            const dets: DetectionBox[] = res.detections || [];
-            setCameraDetections(dets);
-            setCameraPersonDetected(Boolean(res.person_detected));
+          const wsUrl = getWsDetectUrl();
+          ws = new WebSocket(wsUrl);
+          cameraWsRef.current = ws;
 
-            // Calculate latency
-            if (res.ts) {
-              const rtt = Date.now() - res.ts;
-              setCameraLatency(rtt);
-            }
+          ws.onopen = () => {
+            console.log("WebSocket Camera Detection connected:", wsUrl);
+          };
 
-            // Draw bounding boxes on video overlay canvas
-            if (cameraCanvasRef.current && cameraVideoRef.current) {
-              const v = cameraVideoRef.current;
-              cameraCanvasRef.current.width = v.videoWidth || 640;
-              cameraCanvasRef.current.height = v.videoHeight || 480;
-              drawDetections(cameraCanvasRef.current, dets, null, facing === "user");
+          ws.onerror = () => {
+            console.warn("WebSocket unavailable, falling back to HTTP fast frames.");
+            useFallback = true;
+          };
+
+          ws.onclose = () => {
+            useFallback = true;
+          };
+
+          ws.onmessage = (event) => {
+            try {
+              const res = JSON.parse(event.data);
+              if (res.status === "success") {
+                const dets: DetectionBox[] = res.detections || [];
+                setCameraDetections(dets);
+                setCameraPersonDetected(Boolean(res.person_detected));
+
+                // Calculate latency
+                if (res.ts) {
+                  const rtt = Date.now() - res.ts;
+                  setCameraLatency(rtt);
+                }
+
+                // Draw bounding boxes on video overlay canvas
+                if (cameraCanvasRef.current && cameraVideoRef.current) {
+                  const v = cameraVideoRef.current;
+                  cameraCanvasRef.current.width = v.videoWidth || 640;
+                  cameraCanvasRef.current.height = v.videoHeight || 480;
+                  drawDetections(cameraCanvasRef.current, dets, null, facing === "user");
+                }
+              }
+            } catch (e) {
+              console.error("WS parse error:", e);
+            } finally {
+              cameraInFlightRef.current = false;
             }
-          }
-        } catch (e) {
-          console.error("WS parse error:", e);
-        } finally {
-          cameraInFlightRef.current = false;
+          };
+        } catch {
+          useFallback = true;
         }
-      };
+      }
 
       // Create offscreen canvas for frame capture
       const offscreen = document.createElement("canvas");
@@ -621,10 +758,10 @@ export default function FoodAnalysisPage() {
 
         // Calculate smooth client FPS
         const now = Date.now();
-        const delta = now - lastFrameTimeRef.current;
+        const prev = lastFrameTimeRef.current;
         lastFrameTimeRef.current = now;
-        if (delta > 0) {
-          fpsHistoryRef.current.push(1000 / delta);
+        if (prev > 0 && now > prev) {
+          fpsHistoryRef.current.push(1000 / (now - prev));
           if (fpsHistoryRef.current.length > 10) fpsHistoryRef.current.shift();
           const avgFps =
             fpsHistoryRef.current.reduce((a, b) => a + b, 0) / fpsHistoryRef.current.length;
@@ -633,7 +770,7 @@ export default function FoodAnalysisPage() {
 
         cameraInFlightRef.current = true;
 
-        if (ws.readyState === WebSocket.OPEN && !useFallback) {
+        if (ws && ws.readyState === WebSocket.OPEN && !useFallback) {
           ws.send(
             JSON.stringify({
               frame: frameData,
@@ -672,16 +809,37 @@ export default function FoodAnalysisPage() {
         }
       }, 70); // 70ms tick ~ 14 FPS theoretical limit
     } catch (err: unknown) {
-      console.error("Gagal memulai kamera:", err);
       const e = err as { name?: string; message?: string };
-      const errMsg =
-        e?.name === "NotAllowedError"
-          ? "Izin kamera ditolak oleh browser. Silakan aktifkan izin kamera di pengaturan browser."
-          : e?.name === "NotFoundError"
-          ? "Tidak ada kamera yang ditemukan pada perangkat ini."
-          : `Tidak dapat mengakses kamera: ${e?.message || "Pastikan izin kamera telah diberikan di browser."}`;
-      alert(errMsg);
       stopCameraStream();
+      if (e?.name === "NotAllowedError" || e?.name === "PermissionDeniedError") {
+        setCameraError({
+          title: "Izin Kamera Ditolak",
+          message:
+            "Izin akses kamera ditolak oleh browser. Aktifkan izin kamera pada ikon gembok/pengaturan situs di bilah alamat, atau ambil foto langsung dari kamera perangkat.",
+          showNativeCapture: true,
+        });
+      } else if (e?.name === "NotFoundError" || e?.name === "DevicesNotFoundError") {
+        setCameraError({
+          title: "Kamera Tidak Ditemukan",
+          message:
+            "Tidak ada perangkat kamera yang terdeteksi. Pastikan kamera terhubung atau unggah foto makanan dari galeri.",
+          showNativeCapture: false,
+        });
+      } else if (e?.name === "NotReadableError" || e?.name === "TrackStartError") {
+        setCameraError({
+          title: "Kamera Sedang Digunakan",
+          message:
+            "Kamera sedang dipakai oleh aplikasi atau tab lain. Tutup aplikasi lain yang menggunakan kamera lalu coba lagi.",
+          showNativeCapture: true,
+        });
+      } else {
+        setCameraError({
+          title: "Tidak Dapat Mengakses Kamera",
+          message:
+            e?.message || "Pastikan izin kamera telah diberikan pada pengaturan browser.",
+          showNativeCapture: true,
+        });
+      }
     }
   };
 
@@ -905,6 +1063,7 @@ export default function FoodAnalysisPage() {
 
   const resetAll = () => {
     stopCameraStream();
+    setCameraError(null);
     setSelectedImage(null);
     setSelectedFile(null);
     setFileName("");
@@ -934,6 +1093,75 @@ export default function FoodAnalysisPage() {
             LEFT COLUMN: UNIFIED ALL-IN-ONE MEDIA INPUT
            ═══════════════════════════════════════════════════ */}
         <div className={styles.uploadSection}>
+          {/* ── Always-mounted hidden file & native camera inputs ── */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,video/*"
+            hidden
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleFile(f);
+              e.target.value = "";
+            }}
+          />
+          <input
+            ref={cameraCaptureInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            hidden
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleFile(f);
+              e.target.value = "";
+            }}
+          />
+
+          {/* ── Camera / Secure Context Notice Banner ── */}
+          {cameraError && !cameraActive && (
+            <div className={styles.cameraErrorBanner} role="alert">
+              <div className={styles.warningIcon}>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+              </div>
+              <div className={styles.cameraErrorBody}>
+                <h4>{cameraError.title}</h4>
+                <p>{cameraError.message}</p>
+                <div className={styles.cameraErrorActions}>
+                  {cameraError.showNativeCapture && (
+                    <button
+                      type="button"
+                      className={styles.nativeCaptureBtn}
+                      onClick={() => cameraCaptureInputRef.current?.click()}
+                    >
+                      📸 Ambil Foto dengan Kamera Perangkat
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className={styles.dismissBannerBtn}
+                    onClick={() => setCameraError(null)}
+                  >
+                    Tutup
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ── 1. PHOTO PREVIEW STATE ── */}
           {!cameraActive && selectedImage && (
             <div className={styles.previewCard}>
@@ -1008,14 +1236,6 @@ export default function FoodAnalysisPage() {
                   Pilih dari Galeri
                 </button>
               </div>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*,video/*"
-                hidden
-                onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-              />
             </>
           )}
 

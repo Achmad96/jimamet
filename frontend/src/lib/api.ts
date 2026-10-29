@@ -358,10 +358,20 @@ export async function apiSendCoachMessage(sessionId: string, message: string) {
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   (typeof window !== "undefined"
-    ? `${window.location.protocol}//${window.location.hostname}:8000/api`
+    ? "/backend-api"
     : "http://127.0.0.1:8000/api");
 
+function getDirectHttpApiUrl(): string | null {
+  if (typeof window !== "undefined" && window.location.protocol === "http:") {
+    return `http://${window.location.hostname || "127.0.0.1"}:8000/api`;
+  }
+  return null;
+}
+
 export function getWsConsultationUrl(consultationId: string): string {
+  if (process.env.NEXT_PUBLIC_WS_URL) {
+    return `${process.env.NEXT_PUBLIC_WS_URL.replace(/\/$/, "")}/ws/consultation/${consultationId}/`;
+  }
   if (typeof window !== "undefined") {
     const isHttps = window.location.protocol === "https:";
     const host = window.location.hostname || "127.0.0.1";
@@ -371,7 +381,20 @@ export function getWsConsultationUrl(consultationId: string): string {
   return `ws://127.0.0.1:8000/ws/consultation/${consultationId}/`;
 }
 
+export function isDetectWsSupported(): boolean {
+  if (process.env.NEXT_PUBLIC_WS_URL) return true;
+  if (typeof window !== "undefined") {
+    // Local Daphne runs plain ws:// on port 8000; over HTTPS dev mode,
+    // use same-origin /backend-api/detect-frame rewrite to avoid Mixed Content / TLS errors.
+    return window.location.protocol === "http:";
+  }
+  return true;
+}
+
 export function getWsDetectUrl(): string {
+  if (process.env.NEXT_PUBLIC_WS_URL) {
+    return `${process.env.NEXT_PUBLIC_WS_URL.replace(/\/$/, "")}/ws/detect-stream/`;
+  }
   if (typeof window !== "undefined") {
     const isHttps = window.location.protocol === "https:";
     const host = window.location.hostname || "127.0.0.1";
@@ -382,11 +405,22 @@ export function getWsDetectUrl(): string {
 }
 
 export async function apiDetectFood(formData: FormData, fast = false) {
-  const url = `${API_BASE_URL}/detect-food/${fast ? "?fast=1" : ""}`;
-  const res = await fetch(url, {
+  const isRewrite = API_BASE_URL === "/backend-api";
+  const suffix = fast ? "?fast=1" : "";
+  const url = `${API_BASE_URL}/detect-food${isRewrite ? "" : "/"}${suffix}`;
+  let res = await fetch(url, {
     method: "POST",
     body: formData,
   });
+  if (isRewrite && res.status === 404) {
+    const fallbackBase = getDirectHttpApiUrl();
+    if (fallbackBase) {
+      res = await fetch(`${fallbackBase}/detect-food/${suffix}`, {
+        method: "POST",
+        body: formData,
+      });
+    }
+  }
   const json = await res.json();
   return { ok: res.ok, data: json };
 }
@@ -397,22 +431,44 @@ export async function apiDetectFrame(payload: {
   imgsz?: number;
   fast?: boolean;
 }) {
-  const url = `${API_BASE_URL}/detect-frame/`;
-  const res = await fetch(url, {
+  const isRewrite = API_BASE_URL === "/backend-api";
+  const url = `${API_BASE_URL}/detect-frame${isRewrite ? "" : "/"}`;
+  const body = JSON.stringify(payload);
+  let res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    body,
   });
+  if (isRewrite && res.status === 404) {
+    const fallbackBase = getDirectHttpApiUrl();
+    if (fallbackBase) {
+      res = await fetch(`${fallbackBase}/detect-frame/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      });
+    }
+  }
   const json = await res.json();
   return { ok: res.ok, data: json };
 }
 
 export async function apiDetectVideo(formData: FormData) {
-  const url = `${API_BASE_URL}/detect-video/`;
-  const res = await fetch(url, {
+  const isRewrite = API_BASE_URL === "/backend-api";
+  const url = `${API_BASE_URL}/detect-video${isRewrite ? "" : "/"}`;
+  let res = await fetch(url, {
     method: "POST",
     body: formData,
   });
+  if (isRewrite && res.status === 404) {
+    const fallbackBase = getDirectHttpApiUrl();
+    if (fallbackBase) {
+      res = await fetch(`${fallbackBase}/detect-video/`, {
+        method: "POST",
+        body: formData,
+      });
+    }
+  }
   const json = await res.json();
   return { ok: res.ok, data: json };
 }

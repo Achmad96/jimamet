@@ -1,12 +1,11 @@
 import os
-import csv
 import io
 import json
 import re
 import logging
 import base64
 import time
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Tuple
 from PIL import Image, ImageOps
 import numpy as np
 
@@ -113,7 +112,7 @@ class DetectionService:
             # 3. Overlaps with person's head/face region (top 45% of the person's bounding box)
             hx1, hy1, hx2, hy2 = px1, py1, px2, py1 + 0.45 * (py2 - py1)
             h_inter = max(0.0, min(fx2, hx2) - max(fx1, hx1)) * max(0.0, min(fy2, hy2) - max(fy1, hy1))
-            if (h_inter / f_area > 0.40):
+            if h_inter / f_area > 0.40:
                 return True
 
         return False
@@ -250,12 +249,14 @@ class DetectionService:
                     class_id = int(box.cls[0].item())
                     yolo_label = result.names[class_id]
                     xyxy = box.xyxy[0].tolist()
-                    raw_candidates.append({
-                        "class_id": class_id,
-                        "raw_label": yolo_label,
-                        "confidence": confidence,
-                        "xyxy": xyxy,
-                    })
+                    raw_candidates.append(
+                        {
+                            "class_id": class_id,
+                            "raw_label": yolo_label,
+                            "confidence": confidence,
+                            "xyxy": xyxy,
+                        }
+                    )
 
         # Person / human suppression filter to eliminate AI slop (detecting faces/people as food)
         person_detected = False
@@ -298,15 +299,17 @@ class DetectionService:
 
             food_name = nutrition.get("matched_food_name") or yolo_label.replace("_", " ")
 
-            detected_foods.append({
-                "class_id": cand["class_id"],
-                "raw_label": yolo_label,
-                "food_name": food_name,
-                "confidence": round(cand["confidence"] * 100, 1),
-                "bbox": [round(x1, 1), round(y1, 1), round(x2, 1), round(y2, 1)],
-                "bbox_normalized": [norm_x1, norm_y1, norm_x2, norm_y2],
-                "nutrition": nutrition,
-            })
+            detected_foods.append(
+                {
+                    "class_id": cand["class_id"],
+                    "raw_label": yolo_label,
+                    "food_name": food_name,
+                    "confidence": round(cand["confidence"] * 100, 1),
+                    "bbox": [round(x1, 1), round(y1, 1), round(x2, 1), round(y2, 1)],
+                    "bbox_normalized": [norm_x1, norm_y1, norm_x2, norm_y2],
+                    "nutrition": nutrition,
+                }
+            )
 
         inference_ms = round((time.perf_counter() - t0) * 1000, 1)
 
@@ -390,11 +393,13 @@ class DetectionService:
                     )
                     detections = frame_res.get("detections", [])
                     if detections:
-                        timeline.append({
-                            "timestamp": timestamp_sec,
-                            "frame_index": frame_idx,
-                            "detections": detections,
-                        })
+                        timeline.append(
+                            {
+                                "timestamp": timestamp_sec,
+                                "frame_index": frame_idx,
+                                "detections": detections,
+                            }
+                        )
 
                         for det in detections:
                             key = det["food_name"]

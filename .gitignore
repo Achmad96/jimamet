@@ -51,3 +51,7 @@ build/
 
 # Dokumen
 dokumen/
+
+# Local HTTPS dev certificates
+*.pem
+frontend/certificates/

@@ -128,8 +128,14 @@ CORS_ALLOW_CREDENTIALS = True
 
 # CSRF — trust the frontend origin
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS + [
+    "https://localhost:3000",
+    "https://127.0.0.1:3000",
     "http://192.168.68.113:3000",
+    "https://192.168.68.113:3000",
     "http://192.168.137.1:3000",
+    "https://192.168.137.1:3000",
+    "http://192.168.20.144:3000",
+    "https://192.168.20.144:3000",
 ]
 
 # REST Framework — pakai custom Supabase token auth (tidak ada Django Token model)
