@@ -42,18 +42,6 @@ interface FoodRecord {
   carbs?: number;
   fat?: number;
   recorded_at: string;
-  emoji?: string;
-}
-
-function formatDate(iso: string) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 function formatDateShort(iso: string) {
@@ -67,17 +55,17 @@ function formatDateShort(iso: string) {
 }
 
 const activityLabels: Record<string, string> = {
-  sedentary: "Tidak Aktif",
+  sedentary: "Sedentari",
   light: "Ringan",
-  moderate: "Sedang",
+  moderate: "Moderat",
   active: "Aktif",
   veryActive: "Sangat Aktif",
 };
 
 const goalLabels: Record<string, string> = {
-  lose: "Turunkan Berat",
-  maintain: "Pertahankan",
-  gain: "Naikkan Berat",
+  lose: "Reduksi Massa",
+  maintain: "Pemeliharaan",
+  gain: "Surplus Anabolik",
 };
 
 export default function ConsultationChatPage() {
@@ -232,15 +220,12 @@ export default function ConsultationChatPage() {
     else alert("Gagal menghapus pesan.");
   };
 
-
   const handleSelesai = async () => {
     if (!confirm("Tandai konsultasi ini sebagai selesai?")) return;
     
-    // Kirim pesan penutup ke user
-    const closingText = "✅ Konsultasi ini telah diselesaikan oleh Ahli Gizi. Terima kasih telah menggunakan layanan NutriCoach! Jaga kesehatan selalu ya. 😊";
+    const closingText = "Sesi konsultasi klinis ini telah diselesaikan oleh Ahli Gizi. Terima kasih telah menggunakan layanan NutriCoach.";
     const { ok: chatOk, data } = await apiSendChat(consultationId, closingText, "nutritionist");
     
-    // Broadcast pesan penutup ke websocket jika terhubung
     if (chatOk && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(
         JSON.stringify({
@@ -252,7 +237,6 @@ export default function ConsultationChatPage() {
       );
     }
     
-    // Update status menjadi completed
     await apiUpdateConsultation(consultationId, { status: "completed" });
     setConsultationStatus("completed");
     
@@ -282,7 +266,6 @@ export default function ConsultationChatPage() {
     
     setConsultationStatus("active");
     
-    // Kirim pesan pembuka ke user
     const welcomeText = `Halo! Saya Ahli Gizi ${nama.trim()} yang akan membantu Anda hari ini. Ada keluhan atau pertanyaan apa yang bisa saya bantu?`;
     const { ok, data } = await apiSendChat(consultationId, welcomeText, "nutritionist");
     
@@ -336,7 +319,7 @@ export default function ConsultationChatPage() {
     return (
       <div className={styles.loadingPage}>
         <div className={styles.spinner} />
-        <p>Memuat data pasien...</p>
+        <p>Memuat rekam medis pasien...</p>
       </div>
     );
   }
@@ -347,7 +330,7 @@ export default function ConsultationChatPage() {
       <aside className={styles.infoPanel}>
         <div className={styles.infoPanelHeader}>
           <Link href="/ahli-gizi/pasien" className={styles.backBtn}>
-            ← Kembali
+            ← Kembali ke Antrean
           </Link>
           <h2>{profile?.full_name || "Pasien"}</h2>
           <p className={styles.infoEmail}>{profile?.email}</p>
@@ -358,13 +341,13 @@ export default function ConsultationChatPage() {
             className={`${styles.tab} ${sidebarTab === "profile" ? styles.tabActive : ""}`}
             onClick={() => setSidebarTab("profile")}
           >
-            Profil
+            Antropometri
           </button>
           <button
             className={`${styles.tab} ${sidebarTab === "food" ? styles.tabActive : ""}`}
             onClick={() => setSidebarTab("food")}
           >
-            Konsumsi
+            Log Konsumsi
           </button>
         </div>
 
@@ -374,7 +357,7 @@ export default function ConsultationChatPage() {
               <div className={styles.profileGrid}>
                 <div className={styles.profileItem}>
                   <span className={styles.profileLabel}>Usia</span>
-                  <span className={styles.profileValue}>{profile?.age ?? "—"} tahun</span>
+                  <span className={styles.profileValue}>{profile?.age ?? "—"} thn</span>
                 </div>
                 <div className={styles.profileItem}>
                   <span className={styles.profileLabel}>Berat</span>
@@ -385,7 +368,7 @@ export default function ConsultationChatPage() {
                   <span className={styles.profileValue}>{profile?.height ?? "—"} cm</span>
                 </div>
                 <div className={styles.profileItem}>
-                  <span className={styles.profileLabel}>BMI</span>
+                  <span className={styles.profileLabel}>IMT (BMI)</span>
                   <span className={styles.profileValue}>{bmi ?? "—"}</span>
                 </div>
                 <div className={styles.profileItem}>
@@ -401,13 +384,13 @@ export default function ConsultationChatPage() {
                   </span>
                 </div>
                 <div className={styles.profileItem}>
-                  <span className={styles.profileLabel}>Goal</span>
+                  <span className={styles.profileLabel}>Orientasi</span>
                   <span className={styles.profileValue}>
                     {goalLabels[profile?.goal || ""] || "—"}
                   </span>
                 </div>
                 <div className={styles.profileItem}>
-                  <span className={styles.profileLabel}>Target Kalori</span>
+                  <span className={styles.profileLabel}>Target TDEE</span>
                   <span className={styles.profileValue}>
                     {profile?.daily_calorie_target ?? "—"} kkal
                   </span>
@@ -416,34 +399,33 @@ export default function ConsultationChatPage() {
 
               {/* Today's Summary */}
               <div className={styles.todaySummary}>
-                <h4>📊 Konsumsi Hari Ini</h4>
+                <h4>TELEMETRI ASUPAN HARI INI</h4>
                 <div className={styles.nutriGrid}>
                   <div className={styles.nutriItem}>
                     <span className={styles.nutriVal}>{Math.round(todayCal)}</span>
                     <span className={styles.nutriLabel}>kkal</span>
                   </div>
                   <div className={styles.nutriItem}>
-                    <span className={styles.nutriVal}>{Math.round(todayProtein)}g</span>
+                    <span className={styles.nutriVal} style={{ color: "var(--macro-protein)" }}>{Math.round(todayProtein)}g</span>
                     <span className={styles.nutriLabel}>Protein</span>
                   </div>
                   <div className={styles.nutriItem}>
-                    <span className={styles.nutriVal}>{Math.round(todayCarbs)}g</span>
+                    <span className={styles.nutriVal} style={{ color: "var(--macro-carbs)" }}>{Math.round(todayCarbs)}g</span>
                     <span className={styles.nutriLabel}>Karbo</span>
                   </div>
                   <div className={styles.nutriItem}>
-                    <span className={styles.nutriVal}>{Math.round(todayFat)}g</span>
+                    <span className={styles.nutriVal} style={{ color: "var(--macro-fat)" }}>{Math.round(todayFat)}g</span>
                     <span className={styles.nutriLabel}>Lemak</span>
                   </div>
                 </div>
               </div>
 
-
-              <div className={styles.notesSection} style={{ marginBottom: "20px" }}>
-                <h4>📝 Catatan Ahli Gizi</h4>
+              <div className={styles.notesSection} style={{ marginBottom: "16px" }}>
+                <h4>CATATAN KLINIS AHLI GIZI</h4>
                 <textarea
                   value={catatan}
                   onChange={(e) => setCatatan(e.target.value)}
-                  placeholder="Tambahkan catatan khusus untuk pasien ini..."
+                  placeholder="Tuliskan observasi klinis dan rekomendasi diet pasien..."
                   className={styles.notesInput}
                   rows={4}
                 />
@@ -452,13 +434,13 @@ export default function ConsultationChatPage() {
                   onClick={handleSaveNotes}
                   disabled={savingCatatan}
                 >
-                  {savingCatatan ? "Menyimpan..." : "Simpan Catatan"}
+                  {savingCatatan ? "Menyimpan..." : "Simpan Catatan Klinis"}
                 </button>
               </div>
 
               {consultationStatus !== "completed" && (
                 <button className={styles.selesaiBtn} onClick={handleSelesai}>
-                  ✅ Tandai Selesai
+                  Selesaikan Sesi Konsultasi
                 </button>
               )}
             </div>
@@ -467,16 +449,18 @@ export default function ConsultationChatPage() {
           {sidebarTab === "food" && (
             <div className={styles.foodSection}>
               {foodHistory.length === 0 ? (
-                <p className={styles.emptyFood}>Belum ada data konsumsi.</p>
+                <p className={styles.emptyFood}>Belum ada rekaman konsumsi pasien.</p>
               ) : (
                 <div className={styles.foodList}>
                   {foodHistory.map((f) => (
                     <div key={f.id} className={styles.foodItem}>
-                      <div className={styles.foodEmoji}>{f.emoji || "🍽️"}</div>
+                      <div className={styles.foodIconBox}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>restaurant</span>
+                      </div>
                       <div className={styles.foodInfo}>
                         <span className={styles.foodName}>{formatFoodLabel(f.food_name)}</span>
                         <span className={styles.foodMeta}>
-                          {f.calories} kkal · P{f.protein || 0}g · K{f.carbs || 0}g · L{f.fat || 0}g
+                          {f.calories} kkal · P {f.protein || 0}g · K {f.carbs || 0}g · L {f.fat || 0}g
                         </span>
                         <span className={styles.foodDate}>{formatDateShort(f.recorded_at)}</span>
                       </div>
@@ -493,16 +477,18 @@ export default function ConsultationChatPage() {
       <main className={styles.chatMain}>
         <header className={styles.chatHeader}>
           <div className={styles.chatHeaderLeft}>
-            <span className={styles.chatAvatar}>💬</span>
+            <div className={styles.chatAvatarBox}>
+              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>forum</span>
+            </div>
             <div>
-              <h3>Chat dengan {profile?.full_name || "Pasien"}</h3>
+              <h3>Konsultasi: {profile?.full_name || "Pasien"}</h3>
               <span className={styles.wsStatus}>
                 <span
                   className={
                     wsConnected ? styles.wsDotGreen : styles.wsDotRed
                   }
                 />
-                {wsConnected ? "Real-time" : "Offline"}
+                {wsConnected ? "WebSocket Real-time Aktif" : "Offline"}
               </span>
             </div>
           </div>
@@ -511,7 +497,7 @@ export default function ConsultationChatPage() {
         <div className={styles.chatMessages}>
           {chatMsgs.length === 0 && (
             <div className={styles.chatEmpty}>
-              <p>Belum ada pesan. Mulai percakapan dengan pasien.</p>
+              <p>Belum ada pesan percakapan dengan pasien ini.</p>
             </div>
           )}
 
@@ -532,7 +518,7 @@ export default function ConsultationChatPage() {
                       onClick={() => handleDeleteMsg(msg.id)}
                       title="Hapus pesan"
                     >
-                      🗑️
+                      <span className="material-symbols-outlined" style={{ fontSize: 14 }}>delete</span>
                     </button>
                   )}
                 </div>
@@ -543,21 +529,13 @@ export default function ConsultationChatPage() {
         </div>
 
         {consultationStatus === "pending" ? (
-          <div className={styles.chatInputBar} style={{ justifyContent: "center", padding: "20px" }}>
+          <div className={styles.chatInputBar} style={{ justifyContent: "center", padding: "18px" }}>
             <button
               onClick={handleTangani}
-              style={{
-                background: "var(--ag-primary)",
-                color: "#fff",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                fontSize: "15px",
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
+              className={styles.chatSendBtn}
+              style={{ padding: "11px 24px" }}
             >
-              Mulai Tangani Pasien
+              Ambil Alih & Tangani Pasien
             </button>
           </div>
         ) : (
@@ -566,7 +544,7 @@ export default function ConsultationChatPage() {
               type="text"
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
-              placeholder={consultationStatus === "completed" ? "Sesi konsultasi telah selesai" : "Ketik balasan untuk pasien..."}
+              placeholder={consultationStatus === "completed" ? "Sesi konsultasi telah diselesaikan" : "Ketik arahan klinis untuk pasien..."}
               className={styles.chatInput}
               disabled={chatSending || consultationStatus === "completed"}
             />

@@ -12,9 +12,9 @@ import { SkeletonLayout } from "@/components/Skeleton";
 const navItems = [
   {
     href: "/dashboard",
-    label: "Dashboard",
+    label: "Ringkasan",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="7" height="7" rx="1" />
         <rect x="14" y="3" width="7" height="7" rx="1" />
         <rect x="3" y="14" width="7" height="7" rx="1" />
@@ -24,9 +24,9 @@ const navItems = [
   },
   {
     href: "/dashboard/food-analysis",
-    label: "Input Makanan",
+    label: "Analisis Makanan",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
         <circle cx="12" cy="13" r="4" />
       </svg>
@@ -34,30 +34,30 @@ const navItems = [
   },
   {
     href: "/dashboard/history",
-    label: "Histori Konsumsi",
+    label: "Jurnal Konsumsi",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10" />
         <polyline points="12 6 12 12 16 14" />
       </svg>
     ),
   },
   {
-    href: "/dashboard/profile",
-    label: "Kelola Profil",
+    href: "/dashboard/coach",
+    label: "NutriCoach & Konsultasi",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-        <circle cx="12" cy="7" r="4" />
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
       </svg>
     ),
   },
   {
-    href: "/dashboard/coach",
-    label: "NutriCoach AI",
+    href: "/dashboard/profile",
+    label: "Profil Klinis",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
       </svg>
     ),
   },
@@ -72,6 +72,7 @@ export default function DashboardLayout({
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userInitial, setUserInitial] = useState("U");
+  const [userName, setUserName] = useState("Pasien");
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -82,8 +83,10 @@ export default function DashboardLayout({
       }
       if (data?.full_name) {
         setUserInitial(data.full_name.charAt(0).toUpperCase());
+        setUserName(data.full_name.split(" ")[0]);
       } else if (data?.username) {
         setUserInitial(data.username.charAt(0).toUpperCase());
+        setUserName(data.username);
       }
       setReady(true);
     });
@@ -107,15 +110,16 @@ export default function DashboardLayout({
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle menu"
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="3" y1="6" x2="21" y2="6" />
                 <line x1="3" y1="12" x2="21" y2="12" />
                 <line x1="3" y1="18" x2="21" y2="18" />
               </svg>
             </button>
             <Link href="/" className={styles.logo}>
-              <Image src="/jimamet_logo.webp" alt="Jimamet Logo" width={40} height={40} style={{ objectFit: 'contain' }} />
+              <Image src="/jimamet_logo.webp" alt="Jimamet Logo" width={34} height={34} style={{ objectFit: "contain" }} />
               <span>Jimamet</span>
+              <span className={styles.logoTag}>WORKSPACE</span>
             </Link>
           </div>
 
@@ -134,20 +138,26 @@ export default function DashboardLayout({
           </nav>
 
           <div className={styles.topNavRight}>
-            <button className={styles.notifBtn} aria-label="Notifications">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            <Link
+              href="/dashboard/profile"
+              className={styles.userChip}
+              title="Kelola Profil Klinis"
+            >
+              <span className={styles.avatar}>{userInitial}</span>
+              <span className={styles.userName}>{userName}</span>
+            </Link>
+            <button
+              className={styles.logoutBtn}
+              onClick={handleLogout}
+              title="Keluar dari sesi"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
               </svg>
-              <span className={styles.notifDot} />
+              <span>Keluar</span>
             </button>
-            <button className={styles.logoutBtn} onClick={handleLogout} title="Logout" style={{ background: "none", border: "none", color: "var(--error)", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px", fontSize: "13px", fontWeight: "600", padding: "6px 10px", borderRadius: "8px", marginLeft: "8px" }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-              Logout
-            </button>
-            <div className={styles.avatar} onClick={() => router.push('/dashboard/profile')} title="Profil" style={{ cursor: "pointer", marginLeft: "12px" }}>
-              <span>{userInitial}</span>
-            </div>
           </div>
         </div>
       </header>
@@ -173,7 +183,6 @@ export default function DashboardLayout({
 
       {/* ── MAIN CONTENT ── */}
       <main className={styles.main}>{children}</main>
-
     </div>
   );
 }

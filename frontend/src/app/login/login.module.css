@@ -1,11 +1,11 @@
 /* ═══════════════════════════════════════════════════
    JIMAMET — Login & Registration Page
-   Split-screen layout matching Stitch design
+   Clinical Editorial Split Layout
    ═══════════════════════════════════════════════════ */
 
 .page {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 0.95fr 1.05fr;
   min-height: 100vh;
   background: var(--surface);
 }
@@ -16,6 +16,7 @@
   overflow: hidden;
   display: flex;
   align-items: flex-end;
+  border-right: 1px solid var(--surface-container-highest);
 }
 
 .leftImage {
@@ -24,6 +25,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  filter: saturate(0.85) contrast(1.05);
 }
 
 .leftOverlay {
@@ -31,9 +33,9 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(13, 99, 27, 0.4) 0%,
-    rgba(46, 125, 50, 0.75) 50%,
-    rgba(27, 109, 36, 0.92) 100%
+    rgba(17, 28, 22, 0.68) 0%,
+    rgba(20, 54, 37, 0.85) 55%,
+    rgba(15, 34, 24, 0.96) 100%
   );
   z-index: 1;
 }
@@ -41,7 +43,7 @@
 .leftContent {
   position: relative;
   z-index: 2;
-  padding: 48px;
+  padding: 48px 56px;
   display: flex;
   flex-direction: column;
   gap: 32px;
@@ -51,72 +53,97 @@
 }
 
 .leftLogo {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 10px;
   text-decoration: none;
-  color: white;
+  color: #ffffff;
   font-family: var(--font-headline);
   font-weight: 700;
-  font-size: 22px;
+  font-size: 20px;
   letter-spacing: -0.02em;
+  width: fit-content;
+}
+
+.leftLogoBadge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: var(--inverse-primary);
 }
 
 .leftText {
-  max-width: 420px;
+  max-width: 440px;
+}
+
+.leftKicker {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--inverse-primary);
+  margin-bottom: 12px;
 }
 
 .leftText h1 {
   font-family: var(--font-headline);
-  font-size: clamp(28px, 3vw, 36px);
+  font-size: clamp(28px, 2.8vw, 36px);
   font-weight: 700;
-  color: white;
-  line-height: 1.2;
-  margin-bottom: 12px;
+  color: #ffffff;
+  line-height: 1.16;
+  letter-spacing: -0.025em;
+  margin-bottom: 14px;
 }
 
 .leftText p {
   font-family: var(--font-body);
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.85);
-  line-height: 1.6;
+  font-size: 15px;
+  color: rgba(242, 240, 234, 0.8);
+  line-height: 1.62;
 }
 
 .leftStats {
   display: flex;
   align-items: center;
   gap: 24px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: var(--radius-lg);
-  padding: 20px 28px;
+  background: rgba(17, 28, 22, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-md);
+  padding: 18px 24px;
 }
 
 .leftStat {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .leftStatValue {
-  font-family: var(--font-headline);
-  font-size: 22px;
-  font-weight: 700;
-  color: white;
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.01em;
 }
 
 .leftStatLabel {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(242, 240, 234, 0.68);
   font-weight: 500;
 }
 
 .leftStatDivider {
   width: 1px;
-  height: 36px;
-  background: rgba(255, 255, 255, 0.2);
+  height: 32px;
+  background: rgba(255, 255, 255, 0.14);
 }
 
 /* ── RIGHT PANEL ── */
@@ -131,28 +158,33 @@
 .formContainer {
   width: 100%;
   max-width: 440px;
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--surface-container-highest);
+  border-radius: var(--radius-lg);
+  padding: 36px 32px;
+  box-shadow: var(--shadow-md);
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 24px;
 }
 
 /* ── Form Header ── */
 .formHeader {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .formTitle {
   font-family: var(--font-headline);
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   color: var(--on-surface);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 .formSubtitle {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--on-surface-variant);
   line-height: 1.5;
 }
@@ -160,35 +192,35 @@
 /* ── Tabs ── */
 .tabs {
   display: flex;
-  background: var(--surface-container);
+  background: var(--surface-container-low);
+  border: 1px solid var(--surface-container-high);
   border-radius: var(--radius-md);
-  padding: 4px;
+  padding: 3px;
   gap: 4px;
 }
 
 .tab {
   flex: 1;
-  padding: 12px 16px;
+  padding: 9px 14px;
   border: none;
   background: transparent;
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   color: var(--on-surface-variant);
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.15s ease;
 }
 
 .tab:hover {
   color: var(--on-surface);
-  background: var(--surface-container-high);
 }
 
 .tabActive {
   background: var(--surface-container-lowest) !important;
-  color: var(--primary-container) !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  color: var(--primary) !important;
+  box-shadow: 0 1px 2px rgba(18, 24, 20, 0.06);
 }
 
 /* ── Alerts ── */
@@ -197,47 +229,64 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 18px;
+  padding: 12px 14px;
   border-radius: var(--radius-md);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
-  animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .alertError {
   background: var(--error-container);
-  color: #93000a;
-  border: 1px solid rgba(186, 26, 26, 0.15);
+  color: var(--error);
+  border: 1px solid rgba(180, 35, 24, 0.2);
 }
 
 .alertSuccess {
-  background: rgba(46, 125, 50, 0.08);
+  background: var(--secondary-container);
   color: var(--primary);
-  border: 1px solid rgba(46, 125, 50, 0.15);
+  border: 1px solid rgba(45, 106, 79, 0.2);
 }
 
 /* ── Form ── */
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .inputRow {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 12px;
+}
+
+.metricsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.sectionDivider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.sectionDivider span {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--outline);
+}
+
+.sectionDivider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--surface-container-high);
 }
 
 .inputGroup {
@@ -247,10 +296,9 @@
 }
 
 .inputGroup label {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--on-surface);
-  letter-spacing: 0.01em;
 }
 
 .inputWrapper {
@@ -261,46 +309,81 @@
 
 .inputIcon {
   position: absolute;
-  left: 14px;
+  left: 12px;
   color: var(--outline);
   pointer-events: none;
-  transition: color 0.2s;
+  transition: color 0.15s ease;
   flex-shrink: 0;
 }
 
 .inputWrapper input {
   width: 100%;
-  padding: 13px 14px 13px 44px;
-  border: 1.5px solid var(--surface-container-high);
+  padding: 11px 12px 11px 38px;
+  border: 1px solid var(--surface-container-highest);
   border-radius: var(--radius-md);
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: 14px;
   color: var(--on-surface);
-  background: var(--surface-container-lowest);
+  background: var(--surface-bright);
   outline: none;
-  transition: all 0.25s;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.compactInput {
+  padding-left: 12px !important;
+  font-family: var(--font-mono) !important;
 }
 
 .inputWrapper input::placeholder {
-  color: var(--outline-variant);
+  color: var(--outline);
+  opacity: 0.65;
 }
 
 .inputWrapper input:focus {
-  border-color: var(--primary-container);
-  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+  border-color: var(--primary);
+  background: var(--surface-container-lowest);
+  box-shadow: 0 0 0 3px rgba(20, 54, 37, 0.08);
 }
 
 .inputWrapper:focus-within .inputIcon {
-  color: var(--primary-container);
+  color: var(--primary);
+}
+
+.selectInput {
+  width: 100%;
+  padding: 11px 36px 11px 12px;
+  border: 1px solid var(--surface-container-highest);
+  border-radius: var(--radius-md);
+  background: var(--surface-bright);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--on-surface);
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.selectInput:focus {
+  border-color: var(--primary);
+  background: var(--surface-container-lowest);
+  box-shadow: 0 0 0 3px rgba(20, 54, 37, 0.08);
+}
+
+.selectChevron {
+  position: absolute;
+  right: 12px;
+  color: var(--outline);
+  pointer-events: none;
 }
 
 .passwordInput {
-  padding-right: 44px !important;
+  padding-right: 40px !important;
 }
 
 .eyeButton {
   position: absolute;
-  right: 14px;
+  right: 10px;
   background: none;
   border: none;
   color: var(--outline);
@@ -310,13 +393,12 @@
   justify-content: center;
   padding: 4px;
   border-radius: 4px;
-  transition: color 0.2s, background-color 0.2s;
+  transition: color 0.15s ease;
   z-index: 5;
 }
 
 .eyeButton:hover {
-  color: var(--primary-container);
-  background-color: var(--surface-container-high);
+  color: var(--on-surface);
 }
 
 .eyeButton svg {
@@ -330,41 +412,35 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 15px 24px;
-  background: var(--primary-container);
-  color: white;
+  padding: 12.5px 20px;
+  background: var(--primary);
+  color: #ffffff;
   border: none;
   border-radius: var(--radius-md);
   font-family: var(--font-body);
-  font-size: 16px;
+  font-size: 14.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 16px rgba(46, 125, 50, 0.25);
+  transition: background 0.15s ease, transform 0.15s ease;
   margin-top: 4px;
 }
 
 .submitBtn:hover:not(:disabled) {
-  background: var(--primary);
-  box-shadow: 0 6px 24px rgba(46, 125, 50, 0.35);
-  transform: translateY(-2px);
-}
-
-.submitBtn:active:not(:disabled) {
-  transform: translateY(0);
+  background: var(--primary-hover);
+  transform: translateY(-1px);
 }
 
 .submitBtn:disabled {
-  opacity: 0.7;
+  opacity: 0.65;
   cursor: not-allowed;
 }
 
 /* ── Spinner ── */
 .spinner {
-  width: 22px;
-  height: 22px;
-  border: 2.5px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
@@ -380,25 +456,26 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
   padding-top: 8px;
+  border-top: 1px solid var(--surface-container);
 }
 
 .formFooter a {
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--on-surface-variant);
   text-decoration: none;
   font-weight: 500;
-  transition: color 0.2s;
+  transition: color 0.15s ease;
 }
 
 .formFooter a:hover {
-  color: var(--primary-container);
+  color: var(--primary);
 }
 
 .footerDot {
   color: var(--outline-variant);
-  font-size: 16px;
+  font-size: 14px;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -416,24 +493,22 @@
 
   .rightPanel {
     min-height: 100vh;
-    padding: 32px 24px;
+    padding: 32px 20px;
   }
 }
 
 @media (max-width: 480px) {
   .formContainer {
+    padding: 24px 20px;
     gap: 20px;
   }
 
-  .formTitle {
-    font-size: 24px;
-  }
-
-  .inputRow {
+  .inputRow,
+  .metricsRow {
     grid-template-columns: 1fr;
   }
 
   .rightPanel {
-    padding: 24px 16px;
+    padding: 16px;
   }
 }

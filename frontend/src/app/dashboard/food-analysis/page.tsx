@@ -432,35 +432,35 @@ export default function FoodAnalysisPage() {
           value: protein,
           unit: "g",
           pct: Math.min(100, Math.round((protein / 50) * 100)),
-          color: "#4caf50",
+          color: "#c85a32",
         },
         {
           name: "Karbohidrat",
           value: carbs,
           unit: "g",
           pct: Math.min(100, Math.round((carbs / 300) * 100)),
-          color: "#ff9800",
+          color: "#d9822b",
         },
         {
           name: "Lemak",
           value: fat,
           unit: "g",
           pct: Math.min(100, Math.round((fat / 65) * 100)),
-          color: "#f44336",
+          color: "#2b6f77",
         },
         {
           name: "Serat",
           value: fiber,
           unit: "g",
           pct: Math.min(100, Math.round((fiber / 25) * 100)),
-          color: "#9c27b0",
+          color: "#588157",
         },
         {
           name: "Gula",
           value: sugar,
           unit: "g",
           pct: Math.min(100, Math.round((sugar / 50) * 100)),
-          color: "#e91e63",
+          color: "#a8385d",
         },
       ],
       tags: isUnavailable
@@ -1081,9 +1081,10 @@ export default function FoodAnalysisPage() {
       {/* ── Header ── */}
       <div className={styles.header}>
         <div>
+          <span className={styles.headerKicker}>MODUL VISI KOMPUTER · YOLOv8</span>
           <h1 className={styles.title}>Analisis Nutrisi Makanan</h1>
           <p className={styles.subtitle}>
-            Deteksi hidangan makanan Indonesia secara instan via Kamera Real-Time, Foto, atau Video.
+            Identifikasi hidangan Nusantara secara instan melalui kamera real-time, foto, atau pemindaian video.
           </p>
         </div>
       </div>
@@ -1147,7 +1148,7 @@ export default function FoodAnalysisPage() {
                       className={styles.nativeCaptureBtn}
                       onClick={() => cameraCaptureInputRef.current?.click()}
                     >
-                      📸 Ambil Foto dengan Kamera Perangkat
+                      Ambil Foto dengan Kamera Perangkat
                     </button>
                   )}
                   <button
@@ -1187,7 +1188,7 @@ export default function FoodAnalysisPage() {
                     </button>
                   )}
                   <button onClick={() => startCamera()} className={styles.cameraBtn} style={{ padding: "8px 14px", fontSize: 13 }}>
-                    📸 Buka Kamera
+                    Buka Kamera
                   </button>
                   <button onClick={resetAll} className={styles.resetBtn}>
                     Ganti File
@@ -1343,7 +1344,7 @@ export default function FoodAnalysisPage() {
                     </div>
                   ) : cameraPersonDetected ? (
                     <div className={styles.floatingPersonAlert}>
-                      <span>👤 Wajah terdeteksi — Arahkan lensa ke makanan</span>
+                      <span>Wajah terdeteksi — Arahkan lensa ke makanan</span>
                     </div>
                   ) : (
                     <div className={styles.floatingHintPill}>
@@ -1499,11 +1500,11 @@ export default function FoodAnalysisPage() {
                   disabled={isScanningVideo}
                   className={styles.scanVideoBtn}
                 >
-                  {isScanningVideo ? "Memindai Video..." : "⚡ Scan Seluruh Video (Server)"}
+                  {isScanningVideo ? "Memindai Video..." : "Pindai Seluruh Video"}
                 </button>
 
                 <button onClick={() => startCamera()} className={styles.uploadBtn} style={{ padding: "8px 14px", fontSize: 13 }}>
-                  📸 Buka Kamera
+                  Buka Kamera
                 </button>
 
                 <button onClick={resetAll} className={styles.resetBtn}>
@@ -1705,9 +1706,15 @@ export default function FoodAnalysisPage() {
 
               {/* NutriCoach Recommendation */}
               <div className={styles.recoCard}>
-                <div className={styles.recoIcon}>💡</div>
+                <div className={styles.recoIcon}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="16" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12.01" y2="8" />
+                  </svg>
+                </div>
                 <div>
-                  <h4>Rekomendasi NutriCoach</h4>
+                  <h4>Catatan Klinis NutriCoach</h4>
                   <p>{result.recommendation}</p>
                 </div>
               </div>

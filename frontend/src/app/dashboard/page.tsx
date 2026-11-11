@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import styles from "./dashboard.module.css";
 import { apiDashboardSummary, apiGetMe } from "@/lib/api";
 import { SkeletonDashboard } from "@/components/Skeleton";
@@ -42,17 +43,15 @@ export default function DashboardPage() {
     });
   }, []);
 
-  // Format Time Helper
   const formatTime = (iso: string) => {
     return new Date(iso).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
   };
 
-  // Target nutrisi harian (standar umum — bisa diambil dari profil user di iterasi berikutnya)
   const DEFAULT_CALORIE_TARGET = 2000;
-  const DEFAULT_PROTEIN_TARGET = 60;  // gram
-  const DEFAULT_CARB_TARGET = 200;    // gram
-  const DEFAULT_FAT_TARGET = 60;      // gram
-  const DEFAULT_FIBER_TARGET = 25;    // gram
+  const DEFAULT_PROTEIN_TARGET = 60;
+  const DEFAULT_CARB_TARGET = 200;
+  const DEFAULT_FAT_TARGET = 60;
+  const DEFAULT_FIBER_TARGET = 25;
 
   const target = summary.target_calories || DEFAULT_CALORIE_TARGET;
   const cals = summary.total_calories || 0;
@@ -62,37 +61,39 @@ export default function DashboardPage() {
   const protPct = Math.min((prot / DEFAULT_PROTEIN_TARGET) * 100, 100);
 
   const carbs = Number(summary.total_carbs) || 0;
+  const carbPct = Math.min((carbs / DEFAULT_CARB_TARGET) * 100, 100);
+
   const fat = Number(summary.total_fat) || 0;
+  const fatPct = Math.min((fat / DEFAULT_FAT_TARGET) * 100, 100);
 
   const macroData = [
-    { name: "Protein", value: prot, target: DEFAULT_PROTEIN_TARGET, color: "#2e7d32", unit: "g" },
-    { name: "Karbo", value: carbs, target: DEFAULT_CARB_TARGET, color: "#4caf50", unit: "g" },
-    { name: "Lemak", value: fat, target: DEFAULT_FAT_TARGET, color: "#a5d6a7", unit: "g" },
-    { name: "Serat", value: 0, target: DEFAULT_FIBER_TARGET, color: "#1b6d24", unit: "g" },
+    { name: "Protein", value: prot, target: DEFAULT_PROTEIN_TARGET, color: "#c85a32", unit: "g" },
+    { name: "Karbohidrat", value: carbs, target: DEFAULT_CARB_TARGET, color: "#d9822b", unit: "g" },
+    { name: "Lemak", value: fat, target: DEFAULT_FAT_TARGET, color: "#2b6f77", unit: "g" },
+    { name: "Serat", value: 0, target: DEFAULT_FIBER_TARGET, color: "#588157", unit: "g" },
   ];
 
-  const totalMacros = prot + carbs + fat || 1;
+  const rawMacroSum = prot + carbs + fat;
+  const totalMacros = rawMacroSum || 1;
   const nutrientDonut = [
-    { name: "Protein", pct: Math.round((prot / totalMacros) * 100), color: "#2e7d32", value: prot },
-    { name: "Karbohidrat", pct: Math.round((carbs / totalMacros) * 100), color: "#4caf50", value: carbs },
-    { name: "Lemak", pct: Math.round((fat / totalMacros) * 100), color: "#a5d6a7", value: fat },
+    { name: "Protein", pct: rawMacroSum ? Math.round((prot / totalMacros) * 100) : 0, color: "#c85a32", value: prot },
+    { name: "Karbohidrat", pct: rawMacroSum ? Math.round((carbs / totalMacros) * 100) : 0, color: "#d9822b", value: carbs },
+    { name: "Lemak", pct: rawMacroSum ? Math.round((fat / totalMacros) * 100) : 0, color: "#2b6f77", value: fat },
   ];
 
-  // Chart kalori: 7 hari terakhir
   const calorieData = Array.from({ length: 7 }).map((_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
-    
-    // Ensure accurate local ISO string for timezone matching
+
     const offset = d.getTimezoneOffset();
-    const localDate = new Date(d.getTime() - (offset*60*1000));
-    const isoDate = localDate.toISOString().split('T')[0];
-    
+    const localDate = new Date(d.getTime() - offset * 60 * 1000);
+    const isoDate = localDate.toISOString().split("T")[0];
+
     const dayName = d.toLocaleDateString("id-ID", { weekday: "short" });
-    
-    const apiDay = summary.weekly_data?.find(w => w.date === isoDate);
+
+    const apiDay = summary.weekly_data?.find((w) => w.date === isoDate);
     const val = apiDay ? apiDay.calories : 0;
-    
+
     if (i === 6) {
       return { day: "Hari Ini", value: cals, target: target };
     }
@@ -100,52 +101,100 @@ export default function DashboardPage() {
   });
 
   function renderDonutChart() {
-    const size = 160, cx = size / 2, cy = size / 2, r = 60;
+    const size = 164,
+      cx = size / 2,
+      cy = size / 2,
+      r = 60;
     const circumference = 2 * Math.PI * r;
     let offset = 0;
 
     return (
       <div className={styles.donutWrapper}>
         <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
-          {nutrientDonut.map((seg) => {
-            const dash = (seg.pct / 100) * circumference;
-            const isHovered = hoveredMacro === seg.name;
-            const opacity = hoveredMacro && !isHovered ? 0.3 : 1;
-            const currentStroke = isHovered ? "24" : "20"; // sedikit membesar saat disorot
+          <circle
+            cx={cx}
+            cy={cy}
+            r={r}
+            fill="none"
+            stroke="var(--surface-container)"
+            strokeWidth="18"
+          />
+          {rawMacroSum > 0 &&
+            nutrientDonut.map((seg) => {
+              const dash = (seg.pct / 100) * circumference;
+              const isHovered = hoveredMacro === seg.name;
+              const opacity = hoveredMacro && !isHovered ? 0.35 : 1;
+              const currentStroke = isHovered ? "21" : "18";
 
-            const el = (
-              <circle
-                key={seg.name} cx={cx} cy={cy} r={r} fill="none"
-                stroke={seg.color} strokeWidth={currentStroke}
-                strokeDasharray={`${Math.max(0, dash - 4)} ${circumference}`}
-                strokeDashoffset={-offset}
-                transform={`rotate(-90 ${cx} ${cy})`}
-                className={styles.donutSegment}
-                style={{ cursor: "pointer", transition: "all 0.2s ease" }}
-                opacity={opacity}
-                onMouseEnter={() => setHoveredMacro(seg.name)}
-                onMouseLeave={() => setHoveredMacro(null)}
-              />
-            );
-            offset += dash;
-            return el;
-          })}
-          
+              const el = (
+                <circle
+                  key={seg.name}
+                  cx={cx}
+                  cy={cy}
+                  r={r}
+                  fill="none"
+                  stroke={seg.color}
+                  strokeWidth={currentStroke}
+                  strokeDasharray={`${Math.max(0, dash - 3)} ${circumference}`}
+                  strokeDashoffset={-offset}
+                  transform={`rotate(-90 ${cx} ${cy})`}
+                  className={styles.donutSegment}
+                  style={{ cursor: "pointer", transition: "all 0.2s ease" }}
+                  opacity={opacity}
+                  onMouseEnter={() => setHoveredMacro(seg.name)}
+                  onMouseLeave={() => setHoveredMacro(null)}
+                />
+              );
+              offset += dash;
+              return el;
+            })}
+
           {hoveredMacro ? (
             <>
-              <text x={cx} y={cy - 2} textAnchor="middle" fill="var(--on-surface)" fontSize="24" fontWeight="800" fontFamily="Plus Jakarta Sans">
-                {nutrientDonut.find(n => n.name === hoveredMacro)?.value}g
+              <text
+                x={cx}
+                y={cy - 2}
+                textAnchor="middle"
+                fill="var(--on-surface)"
+                fontSize="22"
+                fontWeight="700"
+                fontFamily="JetBrains Mono, monospace"
+              >
+                {nutrientDonut.find((n) => n.name === hoveredMacro)?.value}g
               </text>
-              <text x={cx} y={cy + 16} textAnchor="middle" fill={nutrientDonut.find(n => n.name === hoveredMacro)?.color} fontSize="12" fontWeight="600" fontFamily="Inter">
+              <text
+                x={cx}
+                y={cy + 16}
+                textAnchor="middle"
+                fill={nutrientDonut.find((n) => n.name === hoveredMacro)?.color}
+                fontSize="11.5"
+                fontWeight="600"
+                fontFamily="Inter, sans-serif"
+              >
                 {hoveredMacro}
               </text>
             </>
           ) : (
             <>
-              <text x={cx} y={cy - 6} textAnchor="middle" fill="var(--on-surface)" fontSize="22" fontWeight="700" fontFamily="Plus Jakarta Sans">
+              <text
+                x={cx}
+                y={cy - 4}
+                textAnchor="middle"
+                fill="var(--on-surface)"
+                fontSize="21"
+                fontWeight="700"
+                fontFamily="JetBrains Mono, monospace"
+              >
                 {cals}
               </text>
-              <text x={cx} y={cy + 12} textAnchor="middle" fill="var(--on-surface-variant)" fontSize="11" fontFamily="Inter">
+              <text
+                x={cx}
+                y={cy + 14}
+                textAnchor="middle"
+                fill="var(--outline)"
+                fontSize="11"
+                fontFamily="JetBrains Mono, monospace"
+              >
                 / {target} kkal
               </text>
             </>
@@ -165,51 +214,116 @@ export default function DashboardPage() {
   }
 
   function renderBarChart() {
-    // Cari nilai tertinggi dari target atau data kalori untuk skala Y dinamis
-    const highestVal = Math.max(...calorieData.map(d => d.value), target);
-    // Skala atas dengan pembulatan ke kelipatan 500 terdekat (+sedikit ruang)
-    const maxVal = Math.max(2000, Math.ceil((highestVal + 200) / 500) * 500); 
-    
-    const barW = 36, gap = 20, chartH = 180;
+    const highestVal = Math.max(...calorieData.map((d) => d.value), target);
+    const maxVal = Math.max(2000, Math.ceil((highestVal + 200) / 500) * 500);
+
+    const barW = 36,
+      gap = 20,
+      chartH = 180;
     const chartW = calorieData.length * (barW + gap);
 
     return (
-      <svg viewBox={`0 0 ${chartW + 40} ${chartH + 40}`} className={styles.chartSvg}>
+      <svg viewBox={`0 0 ${chartW + 44} ${chartH + 40}`} className={styles.chartSvg}>
         {[0, 0.25, 0.5, 0.75, 1].map((pct) => (
           <g key={pct}>
-            <line x1="36" y1={chartH - chartH * pct + 12} x2={chartW + 36} y2={chartH - chartH * pct + 12} stroke="var(--surface-container-high)" strokeWidth="1" />
-            <text x="0" y={chartH - chartH * pct + 16} fill="var(--outline)" fontSize="10">{Math.round(maxVal * pct)}</text>
+            <line
+              x1="40"
+              y1={chartH - chartH * pct + 12}
+              x2={chartW + 40}
+              y2={chartH - chartH * pct + 12}
+              stroke="var(--surface-container-high)"
+              strokeWidth="1"
+            />
+            <text
+              x="0"
+              y={chartH - chartH * pct + 16}
+              fill="var(--outline)"
+              fontSize="10"
+              fontFamily="JetBrains Mono, monospace"
+            >
+              {Math.round(maxVal * pct)}
+            </text>
           </g>
         ))}
-        <line x1="36" y1={chartH - (target / maxVal) * chartH + 12} x2={chartW + 36} y2={chartH - (target / maxVal) * chartH + 12} stroke="#ff9800" strokeWidth="1.5" strokeDasharray="6 4" />
+        <line
+          x1="40"
+          y1={chartH - (target / maxVal) * chartH + 12}
+          x2={chartW + 40}
+          y2={chartH - (target / maxVal) * chartH + 12}
+          stroke="#d9822b"
+          strokeWidth="1.25"
+          strokeDasharray="5 4"
+        />
         {calorieData.map((d, i) => {
-          const h = (d.value / maxVal) * chartH;
-          const x = 40 + i * (barW + gap);
+          const h = Math.max(d.value > 0 ? 4 : 2, (d.value / maxVal) * chartH);
+          const x = 44 + i * (barW + gap);
           const isHovered = hoveredDay === d.day;
-          const opacity = hoveredDay && !isHovered ? 0.3 : 1;
-          
+          const opacity = hoveredDay && !isHovered ? 0.4 : 1;
+
           return (
-            <g 
+            <g
               key={d.day}
               onMouseEnter={() => setHoveredDay(d.day)}
               onMouseLeave={() => setHoveredDay(null)}
-              style={{ cursor: "pointer", transition: "opacity 0.2s ease" }}
+              style={{ cursor: "pointer", transition: "opacity 0.15s ease" }}
               opacity={opacity}
             >
-              {/* Invisible rect to increase hover hit area */}
-              <rect x={x - gap/2} y="0" width={barW + gap} height={chartH + 30} fill="transparent" />
-              
-              <rect x={x} y={chartH - h + 12} width={barW} height={h} rx="6" ry="6" fill={d.value > d.target ? "url(#barOver)" : "url(#barNormal)"} className={styles.bar} />
-              
-              <text x={x + barW / 2} y={chartH + 30} textAnchor="middle" fill={isHovered ? "var(--on-surface)" : "var(--on-surface-variant)"} fontSize="12" fontWeight={isHovered ? "600" : "400"}>{d.day}</text>
-              <text x={x + barW / 2} y={chartH - h + 6} textAnchor="middle" fill="var(--on-surface-variant)" fontSize="10" opacity={isHovered ? 0 : 1}>{d.value}</text>
-              
-              {/* Tooltip */}
+              <rect x={x - gap / 2} y="0" width={barW + gap} height={chartH + 30} fill="transparent" />
+
+              <rect
+                x={x}
+                y={chartH - h + 12}
+                width={barW}
+                height={h}
+                rx="4"
+                ry="4"
+                fill={
+                  d.value === 0
+                    ? "var(--surface-container-high)"
+                    : d.value > d.target
+                    ? "#c85a32"
+                    : "#1b4332"
+                }
+                className={styles.bar}
+              />
+
+              <text
+                x={x + barW / 2}
+                y={chartH + 30}
+                textAnchor="middle"
+                fill={isHovered ? "var(--on-surface)" : "var(--on-surface-variant)"}
+                fontSize="11.5"
+                fontWeight={isHovered || i === 6 ? "600" : "400"}
+              >
+                {d.day}
+              </text>
+              {d.value > 0 && (
+                <text
+                  x={x + barW / 2}
+                  y={chartH - h + 6}
+                  textAnchor="middle"
+                  fill="var(--outline)"
+                  fontSize="10"
+                  fontFamily="JetBrains Mono, monospace"
+                  opacity={isHovered ? 0 : 1}
+                >
+                  {d.value}
+                </text>
+              )}
+
               {isHovered && (
-                <g transform={`translate(${x + barW / 2}, ${chartH - h - 14})`}>
-                  <rect x="-35" y="-24" width="70" height="24" rx="6" fill="var(--on-surface)" />
-                  <polygon points="-6,0 6,0 0,6" fill="var(--on-surface)" />
-                  <text x="0" y="-7" textAnchor="middle" fill="var(--surface)" fontSize="12" fontWeight="700">
+                <g transform={`translate(${x + barW / 2}, ${chartH - h - 12})`}>
+                  <rect x="-38" y="-24" width="76" height="22" rx="4" fill="var(--on-surface)" />
+                  <polygon points="-5,-2 5,-2 0,4" fill="var(--on-surface)" />
+                  <text
+                    x="0"
+                    y="-9"
+                    textAnchor="middle"
+                    fill="var(--surface)"
+                    fontSize="11"
+                    fontWeight="600"
+                    fontFamily="JetBrains Mono, monospace"
+                  >
                     {d.value} kkal
                   </text>
                 </g>
@@ -217,10 +331,6 @@ export default function DashboardPage() {
             </g>
           );
         })}
-        <defs>
-          <linearGradient id="barNormal" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#4caf50" /><stop offset="100%" stopColor="#2e7d32" /></linearGradient>
-          <linearGradient id="barOver" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ff9800" /><stop offset="100%" stopColor="#f57c00" /></linearGradient>
-        </defs>
       </svg>
     );
   }
@@ -231,71 +341,163 @@ export default function DashboardPage() {
     <div className={styles.dashboard}>
       <div className={styles.header}>
         <div>
-          <h1 className={styles.greeting}>{greeting}, {user?.username || user?.full_name?.split(" ")[0] || "User"}! 👋</h1>
-          <p className={styles.subtitle}>Pantau asupan nutrisi harian Anda untuk mencapai target kesehatan.</p>
+          <span className={styles.headerKicker}>TELEMETRI ASUPAN HARIAN</span>
+          <h1 className={styles.greeting}>
+            {greeting}, {user?.full_name?.split(" ")[0] || user?.username || "Pasien"}
+          </h1>
+          <p className={styles.subtitle}>
+            Ringkasan keseimbangan energi dan makronutrien berdasarkan catatan konsumsi Anda.
+          </p>
         </div>
         <div className={styles.headerActions}>
           <span className={styles.dateBadge}>
-            📅 {new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            {new Date().toLocaleDateString("id-ID", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
           </span>
         </div>
       </div>
 
+      {/* ── 4-Column Clinical Telemetry Strip ── */}
       <div className={styles.statCards}>
         <div className={styles.statCard}>
-          <div className={styles.statIcon} style={{ background: "rgba(46,125,50,0.08)", color: "#2e7d32" }}>🔥</div>
-          <div className={styles.statInfo}>
-            <span className={styles.statLabel}>Kalori Hari Ini</span>
-            <span className={styles.statValue}>{cals}</span>
-            <span className={styles.statMeta}>/ {target} kkal</span>
+          <div className={styles.statTopRow}>
+            <span className={styles.statLabel}>ENERGI HARI INI</span>
+            <span className={styles.statPctBadge}>{Math.round(calPct)}%</span>
           </div>
-          <div className={styles.statProgress}><div style={{ width: `${calPct}%`, background: "linear-gradient(90deg, #2e7d32, #4caf50)" }} /></div>
+          <div className={styles.statInfo}>
+            <span className={styles.statValue}>{cals.toLocaleString("id-ID")}</span>
+            <span className={styles.statMeta}>target {target.toLocaleString("id-ID")} kkal</span>
+          </div>
+          <div className={styles.statProgress}>
+            <div style={{ width: `${calPct}%`, background: "var(--macro-cal)" }} />
+          </div>
         </div>
+
         <div className={styles.statCard}>
-          <div className={styles.statIcon} style={{ background: "rgba(76,175,80,0.08)", color: "#4caf50" }}>🥩</div>
-          <div className={styles.statInfo}>
-            <span className={styles.statLabel}>Protein</span>
-            <span className={styles.statValue}>{prot}g</span>
-            <span className={styles.statMeta}>/ {DEFAULT_PROTEIN_TARGET}g target</span>
+          <div className={styles.statTopRow}>
+            <span className={styles.statLabel}>PROTEIN</span>
+            <span className={styles.statDot} style={{ background: "var(--macro-protein)" }} />
           </div>
-          <div className={styles.statProgress}><div style={{ width: `${protPct}%`, background: "linear-gradient(90deg, #4caf50, #a5d6a7)" }} /></div>
+          <div className={styles.statInfo}>
+            <span className={styles.statValue}>{prot}g</span>
+            <span className={styles.statMeta}>target {DEFAULT_PROTEIN_TARGET}g</span>
+          </div>
+          <div className={styles.statProgress}>
+            <div style={{ width: `${protPct}%`, background: "var(--macro-protein)" }} />
+          </div>
+        </div>
+
+        <div className={styles.statCard}>
+          <div className={styles.statTopRow}>
+            <span className={styles.statLabel}>KARBOHIDRAT</span>
+            <span className={styles.statDot} style={{ background: "var(--macro-carbs)" }} />
+          </div>
+          <div className={styles.statInfo}>
+            <span className={styles.statValue}>{carbs}g</span>
+            <span className={styles.statMeta}>target {DEFAULT_CARB_TARGET}g</span>
+          </div>
+          <div className={styles.statProgress}>
+            <div style={{ width: `${carbPct}%`, background: "var(--macro-carbs)" }} />
+          </div>
+        </div>
+
+        <div className={styles.statCard}>
+          <div className={styles.statTopRow}>
+            <span className={styles.statLabel}>LEMAK</span>
+            <span className={styles.statDot} style={{ background: "var(--macro-fat)" }} />
+          </div>
+          <div className={styles.statInfo}>
+            <span className={styles.statValue}>{fat}g</span>
+            <span className={styles.statMeta}>target {DEFAULT_FAT_TARGET}g</span>
+          </div>
+          <div className={styles.statProgress}>
+            <div style={{ width: `${fatPct}%`, background: "var(--macro-fat)" }} />
+          </div>
         </div>
       </div>
 
+      {/* ── Charts Row ── */}
       <div className={styles.chartsRow}>
         <div className={styles.chartCard}>
           <div className={styles.chartHeader}>
-            <div><h3>Tren Kalori 7 Hari Terakhir</h3></div>
+            <div>
+              <h3>Tren Asupan Energi (7 Hari)</h3>
+              <p>Perbandingan asupan harian terhadap batas target kalori</p>
+            </div>
+            <div className={styles.chartLegendInline}>
+              <span>
+                <i className={styles.legendDotInline} style={{ background: "#1b4332" }} />
+                Terkendali
+              </span>
+              <span>
+                <i className={styles.legendDotInline} style={{ background: "#c85a32" }} />
+                Melebihi Target
+              </span>
+            </div>
           </div>
           {renderBarChart()}
         </div>
+
         <div className={styles.chartCard}>
           <div className={styles.chartHeader}>
-            <div><h3>Distribusi Nutrisi Hari Ini</h3></div>
+            <div>
+              <h3>Proporsi Makronutrien</h3>
+              <p>Rasio distribusi gramasi hari ini</p>
+            </div>
           </div>
           {renderDonutChart()}
         </div>
       </div>
 
+      {/* ── Bottom Row ── */}
       <div className={styles.bottomRow}>
         <div className={styles.mealsCard}>
           <div className={styles.chartHeader}>
             <div>
-              <h3>Riwayat Makan Hari Ini</h3>
-              <p>{summary.meals.length} makanan tercatat</p>
+              <h3>Log Konsumsi Hari Ini</h3>
+              <p>{summary.meals.length} entri makanan tercatat</p>
             </div>
-            <a href="/dashboard/food-analysis" className={styles.addBtn}>+ Tambah</a>
+            <Link href="/dashboard/food-analysis" className={styles.addBtn}>
+              + Catat Makanan
+            </Link>
           </div>
           <div className={styles.mealsList}>
             {summary.meals.length === 0 ? (
-              <p style={{ textAlign: "center", padding: 20, color: "gray" }}>Belum ada makanan tercatat hari ini.</p>
+              <div className={styles.emptyMeals}>
+                <p>Belum ada makanan yang dicatat hari ini.</p>
+                <Link href="/dashboard/food-analysis" className={styles.emptyMealsLink}>
+                  Mulai analisis foto atau kamera →
+                </Link>
+              </div>
             ) : (
               summary.meals.map((meal, i) => (
                 <div key={i} className={styles.mealItem}>
-                  <span className={styles.mealEmoji}>🍽️</span>
+                  <div className={styles.mealIconBox}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+                      <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
+                      <line x1="6" y1="1" x2="6" y2="4" />
+                      <line x1="10" y1="1" x2="10" y2="4" />
+                      <line x1="14" y1="1" x2="14" y2="4" />
+                    </svg>
+                  </div>
                   <div className={styles.mealInfo}>
-                    <span className={styles.mealName}>{formatFoodLabel(meal.food_name || meal.nama_makanan)}</span>
-                    <span className={styles.mealTime}>{formatTime(meal.recorded_at || meal.tanggal)}</span>
+                    <span className={styles.mealName}>
+                      {formatFoodLabel(meal.food_name || meal.nama_makanan)}
+                    </span>
+                    <span className={styles.mealTime}>
+                      {formatTime(meal.recorded_at || meal.tanggal)}
+                    </span>
                   </div>
                   <span className={styles.mealCal}>{meal.calories || meal.kalori} kkal</span>
                 </div>
@@ -306,17 +508,33 @@ export default function DashboardPage() {
 
         <div className={styles.macroCard}>
           <div className={styles.chartHeader}>
-            <div><h3>Progress Makronutrien</h3></div>
+            <div>
+              <h3>Target Kecukupan Makronutrien</h3>
+              <p>Pencapaian gramasi harian per kategori gizi</p>
+            </div>
           </div>
           <div className={styles.macroList}>
             {macroData.map((m) => (
               <div key={m.name} className={styles.macroItem}>
                 <div className={styles.macroTop}>
                   <span className={styles.macroName}>{m.name}</span>
-                  <span className={styles.macroValue}>{m.value}{m.unit} <span className={styles.macroTarget}>/ {m.target}{m.unit}</span></span>
+                  <span className={styles.macroValue}>
+                    {m.value}
+                    {m.unit}{" "}
+                    <span className={styles.macroTarget}>
+                      / {m.target}
+                      {m.unit}
+                    </span>
+                  </span>
                 </div>
                 <div className={styles.macroTrack}>
-                  <div className={styles.macroFill} style={{ width: `${Math.min((m.value/m.target)*100, 100)}%`, background: m.color }} />
+                  <div
+                    className={styles.macroFill}
+                    style={{
+                      width: `${Math.min((m.value / m.target) * 100, 100)}%`,
+                      background: m.color,
+                    }}
+                  />
                 </div>
               </div>
             ))}

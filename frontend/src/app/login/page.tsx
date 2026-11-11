@@ -125,7 +125,7 @@ function LoginForm() {
 
   return (
     <div className={styles.page}>
-      {/* ── LEFT PANEL — Hero Image ── */}
+      {/* ── LEFT PANEL — Clinical Editorial Showcase ── */}
       <div className={styles.leftPanel}>
         <div className={styles.leftOverlay} />
         <img
@@ -135,30 +135,31 @@ function LoginForm() {
         />
         <div className={styles.leftContent}>
           <Link href="/" className={styles.leftLogo}>
-            <Image src="/jimamet_logo.webp" alt="Jimamet Logo" width={80} height={80} style={{ objectFit: 'contain' }} />
+            <Image src="/jimamet_logo.webp" alt="Jimamet Logo" width={40} height={40} style={{ objectFit: 'contain' }} />
             <span>Jimamet</span>
+            <span className={styles.leftLogoBadge}>CLINICAL</span>
           </Link>
           <div className={styles.leftText}>
-            <h1>Nutrisi Klinis di Ujung Jari Anda</h1>
+            <span className={styles.leftKicker}>TELEMETRI NUTRISI & DIETETIKA</span>
+            <h1>Rekam gizi presisi untuk keputusan klinis harian.</h1>
             <p>
-              Platform analisis nutrisi berbasis AI dengan presisi klinis untuk
-              pemantauan kesehatan yang lebih baik.
+              Identifikasi komponen makronutrien makanan secara otomatis melalui visi komputer dan terhubung langsung dengan evaluasi Ahli Gizi.
             </p>
           </div>
           <div className={styles.leftStats}>
             <div className={styles.leftStat}>
-              <span className={styles.leftStatValue}>98.5%</span>
-              <span className={styles.leftStatLabel}>Akurasi AI</span>
+              <span className={styles.leftStatValue}>YOLOv8</span>
+              <span className={styles.leftStatLabel}>Deteksi Visual</span>
             </div>
             <div className={styles.leftStatDivider} />
             <div className={styles.leftStat}>
               <span className={styles.leftStatValue}>500+</span>
-              <span className={styles.leftStatLabel}>Jenis Makanan</span>
+              <span className={styles.leftStatLabel}>Indeks Pangan</span>
             </div>
             <div className={styles.leftStatDivider} />
             <div className={styles.leftStat}>
-              <span className={styles.leftStatValue}>24/7</span>
-              <span className={styles.leftStatLabel}>AI Tersedia</span>
+              <span className={styles.leftStatValue}>Live WS</span>
+              <span className={styles.leftStatLabel}>Konsultasi Gizi</span>
             </div>
           </div>
         </div>
@@ -425,17 +426,20 @@ function LoginForm() {
               </div>
 
               {/* Data Fisik */}
-              <div className={styles.inputRow}>
+              <div className={styles.sectionDivider}>
+                <span>Data Antropometri</span>
+              </div>
+              <div className={styles.metricsRow}>
                 <div className={styles.inputGroup}>
                   <label htmlFor="reg-age">Usia (thn)</label>
                   <div className={styles.inputWrapper}>
                     <input
                       id="reg-age"
                       type="number"
-                      placeholder="Mis: 25"
+                      placeholder="25"
                       value={registerData.age}
                       onChange={(e) => setRegisterData({ ...registerData, age: e.target.value })}
-                      style={{ paddingLeft: 16 }}
+                      className={styles.compactInput}
                       required
                     />
                   </div>
@@ -447,10 +451,10 @@ function LoginForm() {
                       id="reg-weight"
                       type="number"
                       step="0.1"
-                      placeholder="Mis: 65"
+                      placeholder="65"
                       value={registerData.weight}
                       onChange={(e) => setRegisterData({ ...registerData, weight: e.target.value })}
-                      style={{ paddingLeft: 16 }}
+                      className={styles.compactInput}
                       required
                     />
                   </div>
@@ -462,10 +466,10 @@ function LoginForm() {
                       id="reg-height"
                       type="number"
                       step="0.1"
-                      placeholder="Mis: 170"
+                      placeholder="170"
                       value={registerData.height}
                       onChange={(e) => setRegisterData({ ...registerData, height: e.target.value })}
-                      style={{ paddingLeft: 16 }}
+                      className={styles.compactInput}
                       required
                     />
                   </div>
@@ -473,24 +477,13 @@ function LoginForm() {
               </div>
 
               <div className={styles.inputGroup}>
-                <label htmlFor="reg-activity">Tingkat Aktivitas</label>
+                <label htmlFor="reg-activity">Tingkat Aktivitas Harian</label>
                 <div className={styles.inputWrapper}>
                   <select
                     id="reg-activity"
                     value={registerData.activity_level}
                     onChange={(e) => setRegisterData({ ...registerData, activity_level: e.target.value })}
-                    style={{
-                      width: "100%",
-                      padding: "12px 16px",
-                      borderRadius: "12px",
-                      border: "1px solid var(--ag-border)",
-                      background: "var(--ag-surface)",
-                      fontSize: "14px",
-                      color: "var(--ag-on-surface)",
-                      outline: "none",
-                      appearance: "none",
-                      cursor: "pointer",
-                    }}
+                    className={styles.selectInput}
                     required
                   >
                     <option value="sedentary">Sangat Jarang Olahraga</option>
@@ -499,7 +492,7 @@ function LoginForm() {
                     <option value="active">Sering Olahraga (6-7 hari/minggu)</option>
                     <option value="very_active">Sangat Sering Olahraga</option>
                   </select>
-                  <svg className={styles.inputIcon} style={{ right: 16, left: "auto", color: "var(--ag-outline)", pointerEvents: "none" }} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg className={styles.selectChevron} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </div>

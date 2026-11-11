@@ -1,69 +1,92 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
-
 @import "tailwindcss";
 
-
 /* ═══════════════════════════════════════════════════
-   JIMAMET — Clinical Vitality Design System
-   Based on Stitch Design System: "Clinical Vitality"
+   JIMAMET — Clinical Editorial Design System
+   Precision Nutrition & Medical Telemetry
    ═══════════════════════════════════════════════════ */
 
 :root {
-  /* ── Primary Palette ── */
-  --primary: #0d631b;
-  --primary-container: #2e7d32;
+  /* ── Core Brand & Ink ── */
+  --primary: #143625;
+  --primary-container: #1b4332;
+  --primary-hover: #0f291c;
   --on-primary: #ffffff;
-  --on-primary-container: #cbffc2;
-  --primary-fixed: #a3f69c;
-  --primary-fixed-dim: #88d982;
+  --on-primary-container: #d8f3dc;
+  --primary-fixed: #d8f3dc;
+  --primary-fixed-dim: #95d5b2;
 
-  /* ── Secondary Palette ── */
-  --secondary: #006e1c;
-  --secondary-container: #91f78e;
+  /* ── Secondary & Accent ── */
+  --secondary: #2d6a4f;
+  --secondary-container: #e9f5ee;
   --on-secondary: #ffffff;
-  --on-secondary-container: #00731e;
+  --on-secondary-container: #1b4332;
 
-  /* ── Tertiary Palette ── */
-  --tertiary: #335f3a;
-  --tertiary-container: #4b7850;
+  /* ── Tertiary & Warm Clinical Accents ── */
+  --tertiary: #3b5249;
+  --tertiary-container: #52796f;
   --on-tertiary: #ffffff;
 
-  /* ── Surface / Neutrals ── */
-  --surface: #f9f9f9;
-  --surface-dim: #dadada;
-  --surface-bright: #f9f9f9;
+  /* ── Macro & Clinical Telemetry Palette ── */
+  --macro-cal: #1b4332;
+  --macro-protein: #c85a32;
+  --macro-carbs: #d9822b;
+  --macro-fat: #2b6f77;
+  --macro-fiber: #588157;
+  --macro-sugar: #a8385d;
+
+  /* ── Warm Alabaster & Stone Surfaces ── */
+  --surface: #f7f6f2;
+  --surface-dim: #e6e4dd;
+  --surface-bright: #fcfbf9;
   --surface-container-lowest: #ffffff;
-  --surface-container-low: #f3f3f3;
-  --surface-container: #eeeeee;
-  --surface-container-high: #e8e8e8;
-  --surface-container-highest: #e2e2e2;
-  --on-surface: #1a1c1c;
-  --on-surface-variant: #40493d;
+  --surface-container-low: #f2f0ea;
+  --surface-container: #ebe8e0;
+  --surface-container-high: #e2dfd5;
+  --surface-container-highest: #d6d2c6;
 
-  /* ── Outline ── */
-  --outline: #707a6c;
-  --outline-variant: #bfcaba;
+  /* ── Typography Colors ── */
+  --on-surface: #121814;
+  --on-surface-variant: #4a544d;
+  --outline: #6e7870;
+  --outline-variant: #c8c5bc;
 
-  /* ── Error ── */
-  --error: #ba1a1a;
+  /* ── Semantic Status ── */
+  --error: #b42318;
   --on-error: #ffffff;
-  --error-container: #ffdad6;
+  --error-container: #fee4e2;
+  --success: #2d6a4f;
+  --warning: #b54708;
+  --info: #175cd3;
 
   /* ── Inverse ── */
-  --inverse-surface: #2f3131;
-  --inverse-on-surface: #f1f1f1;
-  --inverse-primary: #88d982;
+  --inverse-surface: #111c16;
+  --inverse-on-surface: #f2f0ea;
+  --inverse-primary: #74c69d;
 
-  /* ── Functional Colors ── */
-  --success: #4caf50;
-  --warning: #ff9800;
-  --info: #2196f3;
+  /* ── Ahli Gizi Portal Compatibility Tokens ── */
+  --ag-primary: #143625;
+  --ag-primary-dark: #1b4332;
+  --ag-secondary: #2d6a4f;
+  --ag-tertiary: #95d5b2;
+  --ag-surface: #f7f6f2;
+  --ag-surface-low: #f2f0ea;
+  --ag-surface-card: #ffffff;
+  --ag-border: #e2dfd5;
+  --ag-on-surface: #121814;
+  --ag-on-variant: #4a544d;
+  --ag-outline: #6e7870;
+  --ag-error: #b42318;
+  --ag-shadow-low: 0 1px 2px rgba(18, 24, 20, 0.04);
+  --ag-shadow-high: 0 8px 24px rgba(18, 24, 20, 0.07);
+  --ag-radius-sm: 6px;
+  --ag-radius: 8px;
+  --ag-radius-lg: 12px;
 
-  /* ── Elevation Shadows ── */
-  --shadow-low: 0 2px 8px rgba(46, 125, 50, 0.04);
-  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.05);
-  --shadow-high: 0 8px 30px rgba(0, 0, 0, 0.08);
-  --shadow-glow: 0 0 20px rgba(46, 125, 50, 0.15);
+  /* ── Elevation Shadows (Restrained, Crisp) ── */
+  --shadow-low: 0 1px 2px rgba(18, 24, 20, 0.04);
+  --shadow-md: 0 4px 12px rgba(18, 24, 20, 0.05);
+  --shadow-high: 0 12px 28px rgba(18, 24, 20, 0.08);
+  --shadow-glow: 0 2px 8px rgba(20, 54, 37, 0.14);
 
   /* ── Spacing ── */
   --space-xs: 4px;
@@ -74,19 +97,21 @@
   --space-2xl: 48px;
   --space-3xl: 64px;
 
-  /* ── Border Radius ── */
+  /* ── Border Radius (Architectural, Not Over-Rounded) ── */
   --radius-sm: 4px;
   --radius-md: 8px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
   --radius-full: 9999px;
 
   /* ── Typography ── */
-  --font-headline: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, sans-serif;
+  --font-headline: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
 
   /* ── Container ── */
-  --container-max: 1280px;
+  --container-max: 1240px;
   --gutter: 24px;
 }
 
@@ -109,67 +134,70 @@ body {
   font-family: var(--font-body);
   color: var(--on-surface);
   background: var(--surface);
-  line-height: 1.6;
+  line-height: 1.55;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
 /* ── Typography Classes ── */
 .display-lg {
   font-family: var(--font-headline);
-  font-size: clamp(32px, 5vw, 48px);
+  font-size: clamp(34px, 4.5vw, 52px);
   font-weight: 700;
-  line-height: 1.17;
-  letter-spacing: -0.02em;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
 }
 
 .headline-lg {
   font-family: var(--font-headline);
-  font-size: clamp(24px, 3.5vw, 32px);
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
+  font-size: clamp(24px, 3vw, 34px);
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: -0.025em;
 }
 
 .headline-md {
   font-family: var(--font-headline);
-  font-size: clamp(20px, 2.5vw, 24px);
+  font-size: clamp(18px, 2vw, 22px);
   font-weight: 600;
-  line-height: 1.33;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
 }
 
 .title-lg {
-  font-family: var(--font-body);
-  font-size: 20px;
+  font-family: var(--font-headline);
+  font-size: 18px;
   font-weight: 600;
-  line-height: 1.4;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
 }
 
 .body-lg {
   font-family: var(--font-body);
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 400;
-  line-height: 1.56;
+  line-height: 1.6;
 }
 
 .body-md {
   font-family: var(--font-body);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .body-sm {
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
-  line-height: 1.43;
+  line-height: 1.45;
 }
 
 .label-md {
-  font-family: var(--font-body);
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 600;
-  line-height: 1.33;
-  letter-spacing: 0.05em;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -180,11 +208,11 @@ body {
   padding: 0 var(--gutter);
 }
 
-/* ── Animations ── */
+/* ── Subtle Entrance Transitions ── */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
@@ -193,101 +221,56 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes scaleIn {
   from {
     opacity: 0;
-    transform: scale(0.95);
   }
   to {
     opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
   }
 }
 
 @keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
 }
 
 .animate-fade-up {
-  animation: fadeInUp 0.8s ease-out forwards;
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.6s ease-out forwards;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.6s ease-out forwards;
-}
-
-.animate-slide-left {
-  animation: slideInLeft 0.8s ease-out forwards;
-}
-
-.animate-slide-right {
-  animation: slideInRight 0.8s ease-out forwards;
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
+  animation: fadeIn 0.4s ease-out forwards;
 }
 
 /* ── Stagger delays ── */
-.delay-100 { animation-delay: 100ms; }
-.delay-200 { animation-delay: 200ms; }
-.delay-300 { animation-delay: 300ms; }
-.delay-400 { animation-delay: 400ms; }
-.delay-500 { animation-delay: 500ms; }
-.delay-600 { animation-delay: 600ms; }
-.delay-700 { animation-delay: 700ms; }
+.delay-100 {
+  animation-delay: 60ms;
+}
+.delay-200 {
+  animation-delay: 120ms;
+}
+.delay-300 {
+  animation-delay: 180ms;
+}
+.delay-400 {
+  animation-delay: 240ms;
+}
 
 /* ── Selection ── */
 ::selection {
-  background: var(--primary-fixed-dim);
+  background: var(--primary-fixed);
   color: var(--primary);
 }
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {

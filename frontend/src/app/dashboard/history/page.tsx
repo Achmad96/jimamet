@@ -15,7 +15,6 @@ interface MealRecord {
   protein: number;
   carbs: number;
   fat: number;
-  emoji: string;
   imageUrl: string | null;
 }
 
@@ -69,7 +68,6 @@ export default function HistoryPage() {
             protein: (r.protein as number) || 0,
             carbs: (r.karbohidrat as number) || (r.carbs as number) || 0,
             fat: (r.lemak as number) || (r.fat as number) || 0,
-            emoji: "🍽️",
             imageUrl: imageUrl || null,
           };
         });
@@ -105,32 +103,53 @@ export default function HistoryPage() {
       {/* Header */}
       <div className={styles.header}>
         <div>
+          <span className={styles.headerKicker}>REKAM JEJAK DIETETIKA</span>
           <h1 className={styles.title}>Histori Konsumsi</h1>
-          <p className={styles.subtitle}>Lihat riwayat asupan makanan Anda.</p>
+          <p className={styles.subtitle}>Buku besar kronologis asupan energi dan makronutrisi harian Anda.</p>
         </div>
       </div>
 
       {/* Summary Cards */}
       <div className={styles.summaryCards}>
         <div className={styles.summaryCard}>
-          <span className={styles.summaryLabel}>Total Kalori</span>
-          <span className={styles.summaryValue}>{totalCal.toLocaleString()}</span>
-          <span className={styles.summaryUnit}>kkal</span>
+          <div className={styles.summaryHeader}>
+            <span className={styles.summaryLabel}>Total Kalori</span>
+            <span className={styles.summaryIndicator} style={{ background: "var(--macro-cal)" }} />
+          </div>
+          <div className={styles.summaryMetric}>
+            <span className={styles.summaryValue}>{totalCal.toLocaleString()}</span>
+            <span className={styles.summaryUnit}>kkal</span>
+          </div>
         </div>
         <div className={styles.summaryCard}>
-          <span className={styles.summaryLabel}>Protein</span>
-          <span className={styles.summaryValue}>{totalProtein}</span>
-          <span className={styles.summaryUnit}>gram</span>
+          <div className={styles.summaryHeader}>
+            <span className={styles.summaryLabel}>Protein</span>
+            <span className={styles.summaryIndicator} style={{ background: "var(--macro-protein)" }} />
+          </div>
+          <div className={styles.summaryMetric}>
+            <span className={styles.summaryValue}>{totalProtein}</span>
+            <span className={styles.summaryUnit}>gram</span>
+          </div>
         </div>
         <div className={styles.summaryCard}>
-          <span className={styles.summaryLabel}>Karbohidrat</span>
-          <span className={styles.summaryValue}>{totalCarbs}</span>
-          <span className={styles.summaryUnit}>gram</span>
+          <div className={styles.summaryHeader}>
+            <span className={styles.summaryLabel}>Karbohidrat</span>
+            <span className={styles.summaryIndicator} style={{ background: "var(--macro-carbs)" }} />
+          </div>
+          <div className={styles.summaryMetric}>
+            <span className={styles.summaryValue}>{totalCarbs}</span>
+            <span className={styles.summaryUnit}>gram</span>
+          </div>
         </div>
         <div className={styles.summaryCard}>
-          <span className={styles.summaryLabel}>Lemak</span>
-          <span className={styles.summaryValue}>{totalFat}</span>
-          <span className={styles.summaryUnit}>gram</span>
+          <div className={styles.summaryHeader}>
+            <span className={styles.summaryLabel}>Lemak</span>
+            <span className={styles.summaryIndicator} style={{ background: "var(--macro-fat)" }} />
+          </div>
+          <div className={styles.summaryMetric}>
+            <span className={styles.summaryValue}>{totalFat}</span>
+            <span className={styles.summaryUnit}>gram</span>
+          </div>
         </div>
       </div>
 
@@ -139,16 +158,16 @@ export default function HistoryPage() {
         <div className={styles.filterTabs}>
           {(["all", "today", "week"] as const).map((f) => (
             <button key={f} className={`${styles.filterTab} ${filter === f ? styles.filterTabActive : ""}`} onClick={() => setFilter(f)}>
-              {f === "all" ? "Semua" : f === "today" ? "Hari Ini" : "7 Hari"}
+              {f === "all" ? "Semua Riwayat" : f === "today" ? "Hari Ini" : "7 Hari Terakhir"}
             </button>
           ))}
         </div>
         <div className={styles.searchWrapper}>
-          <svg className={styles.searchIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg className={styles.searchIcon} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
-          <input type="text" placeholder="Cari makanan..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className={styles.searchInput} />
+          <input type="text" placeholder="Cari spesimen makanan..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className={styles.searchInput} />
         </div>
       </div>
 
@@ -166,21 +185,29 @@ export default function HistoryPage() {
                   {meal.imageUrl ? (
                     <img src={meal.imageUrl} alt={meal.name} className={styles.mealImage} />
                   ) : (
-                    <span className={styles.mealEmoji}>{meal.emoji}</span>
+                    <div className={styles.mealIconBox}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+                        <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
+                        <line x1="6" y1="1" x2="6" y2="4" />
+                        <line x1="10" y1="1" x2="10" y2="4" />
+                        <line x1="14" y1="1" x2="14" y2="4" />
+                      </svg>
+                    </div>
                   )}
                   <div className={styles.mealInfo}>
                     <span className={styles.mealName}>{meal.name}</span>
                     <span className={styles.mealTime}>{meal.time}</span>
                   </div>
                   <div className={styles.mealNutrients}>
-                    <span className={styles.nutrientPill} style={{ background: "rgba(46,125,50,0.08)", color: "#2e7d32" }}>
-                      P: {meal.protein}g
+                    <span className={styles.nutrientPill} style={{ background: "rgba(200, 90, 50, 0.1)", color: "var(--macro-protein)" }}>
+                      P {meal.protein}g
                     </span>
-                    <span className={styles.nutrientPill} style={{ background: "rgba(76,175,80,0.08)", color: "#4caf50" }}>
-                      K: {meal.carbs}g
+                    <span className={styles.nutrientPill} style={{ background: "rgba(217, 130, 43, 0.1)", color: "var(--macro-carbs)" }}>
+                      K {meal.carbs}g
                     </span>
-                    <span className={styles.nutrientPill} style={{ background: "rgba(255,152,0,0.08)", color: "#f57c00" }}>
-                      L: {meal.fat}g
+                    <span className={styles.nutrientPill} style={{ background: "rgba(43, 111, 119, 0.1)", color: "var(--macro-fat)" }}>
+                      L {meal.fat}g
                     </span>
                   </div>
                   <span className={styles.mealCal}>{meal.calories} kkal</span>
@@ -191,7 +218,7 @@ export default function HistoryPage() {
         ))}
         {filteredData.length === 0 && (
           <div className={styles.emptyState}>
-            <p>Tidak ada data yang cocok.</p>
+            <p>Tidak ada rekaman konsumsi yang sesuai dengan filter.</p>
           </div>
         )}
       </div>

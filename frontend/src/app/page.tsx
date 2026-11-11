@@ -1,155 +1,87 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import styles from "./page.module.css";
 
-function useInView(threshold = 0.15) {
-  const nodeRef = useRef<HTMLDivElement>(null);
-  const [isInView, setIsInView] = useState(false);
-
-  useEffect(() => {
-    const el = nodeRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true);
-          obs.unobserve(el);
-        }
-      },
-      { threshold }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [threshold]);
-
-  return { nodeRef, isInView };
-}
-
-function Counter({ end, suffix = "", duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
-  const [count, setCount] = useState(0);
-  const { nodeRef: ref, isInView } = useInView();
-
-  useEffect(() => {
-    if (!isInView) return;
-    let start = 0;
-    const step = end / (duration / 16);
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= end) {
-        setCount(end);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(start * 10) / 10);
-      }
-    }, 16);
-    return () => clearInterval(timer);
-  }, [isInView, end, duration]);
-
-  return (
-    <span ref={ref}>
-      {count}
-      {suffix}
-    </span>
-  );
-}
-
-const features = [
+const capabilities = [
   {
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-        <circle cx="12" cy="13" r="4" />
-      </svg>
-    ),
-    title: "Analisis Gambar AI",
-    desc: "Ambil foto makanan Anda dan biarkan AI kami menghitung nutrisinya secara instan. Mengidentifikasi ratusan jenis bahan makanan dengan presisi tinggi.",
-    color: "#2e7d32"
+    index: "01",
+    tag: "COMPUTER VISION",
+    title: "Deteksi Hidangan Multi-Modal",
+    desc: "Mengidentifikasi berbagai hidangan khas Indonesia melalui kamera real-time, unggahan foto, maupun pemindaian video menggunakan model deteksi objek YOLOv8 yang dikalibrasi khusus.",
+    specLabel: "Input Didukung",
+    specValue: "Live Stream · JPG/PNG · MP4",
   },
   {
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-      </svg>
-    ),
-    title: "Pelacakan Presisi",
-    desc: "Pantau kalori, makronutrien, dan serat dengan akurasi standar klinis. Dashboard interaktif untuk visualisasi data nutrisi harian.",
-    color: "#4caf50"
+    index: "02",
+    tag: "TELEMETRI GIZI",
+    title: "Kuantifikasi Makro & Mikronutrien",
+    desc: "Setiap hidangan yang terdeteksi dipetakan langsung ke basis data komposisi pangan untuk menghitung kalori, protein, karbohidrat, lemak, serat, dan gula secara proporsional.",
+    specLabel: "Parameter",
+    specValue: "Energi (kkal) · P / K / L · Serat & Gula",
   },
   {
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        <path d="M8 10h.01M12 10h.01M16 10h.01" />
-      </svg>
-    ),
-    title: "NutriCoach AI",
-    desc: "Konsultasi nutrisi kapan saja dengan asisten AI cerdas yang memahami riwayat kesehatan Anda dan memberikan rekomendasi personal.",
-    color: "#1b6d24"
-  }
+    index: "03",
+    tag: "PENDAMPINGAN KLINIS",
+    title: "NutriCoach AI & Eskalasi Ahli Gizi",
+    desc: "Asisten gizi kontekstual yang mengevaluasi riwayat asupan harian Anda dan secara otomatis mengarahkan kasus klinis ke Ahli Gizi terdaftar melalui sesi konsultasi real-time.",
+    specLabel: "Protokol",
+    specValue: "AI Triage + Konsultasi WebSocket",
+  },
 ];
 
-const steps = [
+const protocolSteps = [
   {
-    num: "01",
-    title: "Foto Makanan",
-    desc: "Gunakan kamera smartphone Anda untuk memotret makanan di piring.",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-        <circle cx="8.5" cy="8.5" r="1.5" />
-        <polyline points="21 15 16 10 5 21" />
-      </svg>
-    )
+    code: "TAHAP 01",
+    title: "Akuisisi Citra Hidangan",
+    desc: "Arahkan kamera perangkat secara langsung ke piring makan atau unggah dokumentasi foto dan video makanan sebelum dikonsumsi.",
+    artifact: "Frame terkalibrasi & lokalisasi bounding box",
   },
   {
-    num: "02",
-    title: "Analisis AI",
-    desc: "Sistem klinis kami mengidentifikasi komponen makanan secara otomatis.",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 2a4 4 0 0 1 4 4c0 1.95-1.4 3.58-3.25 3.93L12 22" />
-        <path d="M12 2a4 4 0 0 0-4 4c0 1.95 1.4 3.58 3.25 3.93" />
-        <path d="M8.56 13a8 8 0 0 0-2.3 3.5" />
-        <path d="M15.44 13a8 8 0 0 1 2.3 3.5" />
-      </svg>
-    )
+    code: "TAHAP 02",
+    title: "Verifikasi Komposisi & Takaran",
+    desc: "Sistem mencocokkan label hidangan terhadap tabel komposisi gizi Indonesia dan menampilkan rincian makronutrien per porsi standar.",
+    artifact: " Profil kalori, protein, karbohidrat, lemak, serat",
   },
   {
-    num: "03",
-    title: "Lihat Laporan",
-    desc: "Dapatkan rincian nutrisi akurat langsung di dashboard Anda.",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-        <line x1="16" y1="13" x2="8" y2="13" />
-        <line x1="16" y1="17" x2="8" y2="17" />
-        <polyline points="10 9 9 9 8 9" />
-      </svg>
-    )
-  }
+    code: "TAHAP 03",
+    title: "Pencatatan Rekam Gizi & Evaluasi",
+    desc: "Simpan hasil analisis ke jurnal harian untuk memantau tren defisit/surplus kalori atau diskusikan langsung bersama NutriCoach dan Ahli Gizi.",
+    artifact: "Log harian, grafik mingguan & rujukan klinis",
+  },
 ];
 
-const stats = [
-  { value: 98.5, suffix: "%", label: "Akurasi Analisis" },
-  { value: 500, suffix: "+", label: "Jenis Makanan" },
-  { value: 10, suffix: "rb+", label: "Pengguna Aktif" },
-  { value: 24, suffix: "/7", label: "AI Tersedia" }
+const benchmarks = [
+  {
+    metric: "98.5%",
+    label: "Presisi Identifikasi",
+    detail: "Akurasi pengenalan visual pada pengujian hidangan Nusantara",
+  },
+  {
+    metric: "500+",
+    label: "Indeks Pangan Lokal",
+    detail: "Basis data nutrisi mencakup makanan pokok, lauk, dan jajanan",
+  },
+  {
+    metric: "<120ms",
+    label: "Inferensi Real-Time",
+    detail: "Deteksi kamera langsung berlatensi rendah via WebSocket",
+  },
+  {
+    metric: "2-Tier",
+    label: "Arsitektur Konsultasi",
+    detail: "Kombinasi asisten AI instan dan rujukan Ahli Gizi Klinik",
+  },
 ];
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const featuresSection = useInView(0.1);
-  const stepsSection = useInView(0.1);
-  const statsSection = useInView(0.1);
-  const ctaSection = useInView(0.1);
-
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
+    const handleScroll = () => setScrolled(window.scrollY > 24);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -159,27 +91,44 @@ export default function LandingPage() {
       {/* ── NAVBAR ── */}
       <header className={`${styles.navbar} ${scrolled ? styles.navScrolled : ""}`}>
         <div className={`${styles.navInner} container`}>
-          <a href="#" className={styles.logo}>
-            <Image src="/jimamet_logo.webp" alt="Jimamet Logo" width={48} height={48} style={{ objectFit: 'contain' }} />
+          <Link href="/" className={styles.logo}>
+            <Image
+              src="/jimamet_logo.webp"
+              alt="Jimamet Logo"
+              width={36}
+              height={36}
+              style={{ objectFit: "contain" }}
+            />
             <span className={styles.logoText}>Jimamet</span>
-          </a>
+            <span className={styles.logoDivider} />
+            <span className={styles.logoSub}>Clinical Nutrition</span>
+          </Link>
 
           <nav className={`${styles.navLinks} ${mobileMenuOpen ? styles.navOpen : ""}`}>
             <a href="#features" onClick={() => setMobileMenuOpen(false)}>
-              Fitur
+              Kapabilitas
             </a>
             <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)}>
-              Cara Kerja
+              Protokol Kerja
             </a>
             <a href="#stats" onClick={() => setMobileMenuOpen(false)}>
-              Data Klinis
+              Standar Data
             </a>
-            <a href="/login" className={styles.navCta}>
-              Masuk
-            </a>
+            <div className={styles.navAuthGroup}>
+              <Link href="/login" className={styles.navLoginLink} onClick={() => setMobileMenuOpen(false)}>
+                Masuk
+              </Link>
+              <Link href="/register" className={styles.navCta} onClick={() => setMobileMenuOpen(false)}>
+                Mulai Analisis
+              </Link>
+            </div>
           </nav>
 
-          <button className={styles.hamburger} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
+          <button
+            className={styles.hamburger}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
             <span className={mobileMenuOpen ? styles.hamburgerOpen : ""} />
           </button>
         </div>
@@ -187,149 +136,224 @@ export default function LandingPage() {
 
       {/* ── HERO ── */}
       <section className={styles.hero}>
-        <div className={styles.heroBg}>
-          <div className={styles.heroOrb1} />
-          <div className={styles.heroOrb2} />
-          <div className={styles.heroOrb3} />
-        </div>
         <div className={`${styles.heroInner} container`}>
           <div className={styles.heroContent}>
-            <span className={`${styles.heroBadge} animate-fade-up`}>
-              <span className={styles.heroBadgeDot} />
-              Clinical Nutrition AI Platform
-            </span>
-            <h1 className={`display-lg animate-fade-up delay-100`}>
-              Nutrisi Klinis
-              <br />
-              di <span className={styles.heroGradient}>Ujung Jari</span> Anda
+            <div className={styles.heroKicker}>
+              <span className={styles.heroKickerCode}>SYS // NUTRI-VISION v2.4</span>
+              <span className={styles.heroKickerSep}>·</span>
+              <span>YOLOv8 + Basis Data Gizi Indonesia</span>
+            </div>
+
+            <h1 className={styles.heroTitle}>
+              Pemantauan nutrisi klinis dengan{" "}
+              <span className={styles.heroSerif}>presisi terukur.</span>
             </h1>
-            <p className={`body-lg animate-fade-up delay-200`} style={{ color: "var(--on-surface-variant)", maxWidth: 540 }}>
-              Transformasikan kesehatan Anda dengan analisis nutrisi berbasis AI yang presisi. Jimamet membantu Anda memantau asupan makanan secara klinis dan profesional.
+
+            <p className={styles.heroLead}>
+              Jimamet menggabungkan deteksi visual hidangan Nusantara secara real-time dengan
+              pencatatan makronutrien terstruktur dan akses konsultasi langsung bersama Ahli Gizi.
             </p>
-            <div className={`${styles.heroActions} animate-fade-up delay-300`}>
-              <a href="/register" className={styles.btnPrimary}>
-                Mulai Gratis
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+
+            <div className={styles.heroActions}>
+              <Link href="/register" className={styles.btnPrimary}>
+                Buat Akun Pasien
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="5" y1="12" x2="19" y2="12" />
                   <polyline points="12 5 19 12 12 19" />
                 </svg>
-              </a>
-              <a href="#how-it-works" className={styles.btnOutline}>
-                Lihat Demo
-              </a>
+              </Link>
+              <Link href="/login" className={styles.btnOutline}>
+                Masuk ke Portal
+              </Link>
             </div>
-          </div>
-          <div className={`${styles.heroImage} animate-slide-right delay-300`}>
-            <div className={styles.heroImageWrapper}>
-              <Image src="/hero-nutrition.png" alt="Healthy nutritious food for medical nutrition analysis" width={600} height={450} priority className={styles.heroImg} />
-              <div className={styles.heroFloatingCard}>
-                <div className={styles.floatingCardIcon}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#2e7d32" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-                  </svg>
-                </div>
-                <div>
-                  <div className={styles.floatingCardLabel}>Kalori Terdeteksi</div>
-                  <div className={styles.floatingCardValue}>324 kkal</div>
-                </div>
+
+            <div className={styles.heroSpecs}>
+              <div className={styles.heroSpecItem}>
+                <span className={styles.heroSpecLabel}>DETEKSI OBJEK</span>
+                <span className={styles.heroSpecVal}>Kamera Live, Foto & Video</span>
               </div>
-              <div className={styles.heroFloatingCard2}>
-                <div className={styles.floatingCardIcon}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#4caf50" strokeWidth="2">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" strokeLinecap="round" strokeLinejoin="round" />
-                    <polyline points="22 4 12 14.01 9 11.01" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                <div>
-                  <div className={styles.floatingCardLabel}>Protein</div>
-                  <div className={styles.floatingCardValue}>28g ✓</div>
-                </div>
+              <div className={styles.heroSpecItem}>
+                <span className={styles.heroSpecLabel}>VALIDASI DATA</span>
+                <span className={styles.heroSpecVal}>Tabel Komposisi Pangan</span>
+              </div>
+              <div className={styles.heroSpecItem}>
+                <span className={styles.heroSpecLabel}>PENDAMPINGAN</span>
+                <span className={styles.heroSpecVal}>AI & Ahli Gizi Klinik</span>
               </div>
             </div>
           </div>
-        </div>
-        <div className={styles.heroWave}>
-          <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
-            <path d="M0,40 C360,100 720,0 1080,60 C1260,90 1380,50 1440,40 L1440,100 L0,100 Z" fill="var(--surface)" />
-          </svg>
+
+          {/* ── Right Column: Clinical Specimen Frame ── */}
+          <div className={styles.heroSpecimen}>
+            <div className={styles.specimenCard}>
+              <div className={styles.specimenHeader}>
+                <div className={styles.specimenMeta}>
+                  <span className={styles.specimenDot} />
+                  <span className={styles.specimenCode}>SAMPEL ANALISIS // ID-042</span>
+                </div>
+                <span className={styles.specimenConfidence}>98.4% CONFIDENCE</span>
+              </div>
+
+              <div className={styles.specimenViewport}>
+                <Image
+                  src="/hero-nutrition.png"
+                  alt="Visualisasi deteksi nutrisi makanan"
+                  width={600}
+                  height={420}
+                  priority
+                  className={styles.specimenImg}
+                />
+                <div className={styles.specimenOverlayTag}>
+                  <span className={styles.overlayTagName}>Hidangan Seimbang Terdeteksi</span>
+                  <span className={styles.overlayTagPortion}>Estimasi porsi: 380g</span>
+                </div>
+              </div>
+
+              <div className={styles.specimenReadout}>
+                <div className={styles.readoutPrimary}>
+                  <div>
+                    <span className={styles.readoutLabel}>ESTIMASI ENERGI</span>
+                    <div className={styles.readoutCalories}>
+                      524 <small>kkal</small>
+                    </div>
+                  </div>
+                  <div className={styles.readoutTargetBadge}>26% dari target 2.000 kkal</div>
+                </div>
+
+                <div className={styles.readoutMacros}>
+                  <div className={styles.readoutMacroItem}>
+                    <div className={styles.readoutMacroTop}>
+                      <span className={styles.macroDot} style={{ background: "var(--macro-protein)" }} />
+                      <span className={styles.macroName}>Protein</span>
+                      <span className={styles.macroVal}>32.4g</span>
+                    </div>
+                    <div className={styles.macroBar}>
+                      <div style={{ width: "64%", background: "var(--macro-protein)" }} />
+                    </div>
+                  </div>
+
+                  <div className={styles.readoutMacroItem}>
+                    <div className={styles.readoutMacroTop}>
+                      <span className={styles.macroDot} style={{ background: "var(--macro-carbs)" }} />
+                      <span className={styles.macroName}>Karbohidrat</span>
+                      <span className={styles.macroVal}>54.0g</span>
+                    </div>
+                    <div className={styles.macroBar}>
+                      <div style={{ width: "52%", background: "var(--macro-carbs)" }} />
+                    </div>
+                  </div>
+
+                  <div className={styles.readoutMacroItem}>
+                    <div className={styles.readoutMacroTop}>
+                      <span className={styles.macroDot} style={{ background: "var(--macro-fat)" }} />
+                      <span className={styles.macroName}>Lemak</span>
+                      <span className={styles.macroVal}>16.8g</span>
+                    </div>
+                    <div className={styles.macroBar}>
+                      <div style={{ width: "38%", background: "var(--macro-fat)" }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ── FEATURES ── */}
-      <section id="features" className={styles.features} ref={featuresSection.nodeRef}>
+      {/* ── CAPABILITIES ── */}
+      <section id="features" className={styles.capabilities}>
         <div className="container">
-          <div className={styles.sectionHeader}>
-            <span className={`label-md ${styles.sectionTag}`}>FITUR UNGGULAN</span>
-            <h2 className="headline-lg">
-              Fitur Unggulan <span className={styles.textGreen}>Jimamet</span>
-            </h2>
-            <p className="body-lg" style={{ color: "var(--on-surface-variant)", maxWidth: 600 }}>
-              Teknologi kelas medis yang didesain untuk kemudahan penggunaan sehari-hari, memberikan wawasan nutrisi mendalam tanpa kerumitan.
+          <div className={styles.sectionHeaderRow}>
+            <div>
+              <span className={styles.sectionKicker}>01 // ARSITEKTUR PLATFORM</span>
+              <h2 className={styles.sectionTitle}>
+                Dirancang untuk akurasi pencatatan gizi harian.
+              </h2>
+            </div>
+            <p className={styles.sectionDesc}>
+              Menggantikan pencatatan manual yang rumit dengan pengenalan visual otomatis dan
+              parameter gizi yang terstandarisasi.
             </p>
           </div>
 
-          <div className={styles.featuresGrid}>
-            {features.map((f, i) => (
-              <div key={f.title} className={`${styles.featureCard} ${featuresSection.isInView ? "animate-fade-up" : ""}`} style={{ animationDelay: `${(i + 1) * 150}ms`, opacity: featuresSection.isInView ? undefined : 0 }}>
-                <div className={styles.featureIcon} style={{ background: `${f.color}14`, color: f.color }}>
-                  {f.icon}
+          <div className={styles.capabilityGrid}>
+            {capabilities.map((item) => (
+              <article key={item.index} className={styles.capabilityCard}>
+                <div className={styles.capabilityTop}>
+                  <span className={styles.capabilityIndex}>{item.index}</span>
+                  <span className={styles.capabilityTag}>{item.tag}</span>
                 </div>
-                <h3 className="title-lg">{f.title}</h3>
-                <p className="body-md" style={{ color: "var(--on-surface-variant)" }}>
-                  {f.desc}
-                </p>
-                <a href="#" className={styles.featureLink}>
-                  Pelajari lebih lanjut
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                    <polyline points="12 5 19 12 12 19" />
-                  </svg>
-                </a>
-              </div>
+                <h3 className={styles.capabilityTitle}>{item.title}</h3>
+                <p className={styles.capabilityBody}>{item.desc}</p>
+                <div className={styles.capabilityFooter}>
+                  <span className={styles.capabilitySpecLabel}>{item.specLabel}</span>
+                  <span className={styles.capabilitySpecVal}>{item.specValue}</span>
+                </div>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ── */}
-      <section id="how-it-works" className={styles.howItWorks} ref={stepsSection.nodeRef}>
+      {/* ── PROTOCOL / HOW IT WORKS ── */}
+      <section id="how-it-works" className={styles.protocol}>
         <div className="container">
-          <div className={styles.sectionHeader}>
-            <span className={`label-md ${styles.sectionTag}`}>CARA KERJA</span>
-            <h2 className="headline-lg">
-              Cara Kerja yang <span className={styles.textGreen}>Sederhana</span>
-            </h2>
-            <p className="body-lg" style={{ color: "var(--on-surface-variant)", maxWidth: 560 }}>
-              Tiga langkah mudah menuju pemantauan nutrisi yang lebih baik.
-            </p>
-          </div>
+          <div className={styles.protocolLayout}>
+            <div className={styles.protocolIntro}>
+              <span className={styles.sectionKicker}>02 // PROTOKOL ANALISIS</span>
+              <h2 className={styles.sectionTitle}>
+                Dari bidikan kamera hingga rekam nutrisi klinis.
+              </h2>
+              <p className={styles.sectionDesc}>
+                Setiap analisis melewati tiga tahapan terstruktur untuk memastikan estimasi kalori
+                dan makronutrien dapat dipertanggungjawabkan secara praktis.
+              </p>
+              <Link href="/register" className={styles.protocolLink}>
+                Coba Analisis Sekarang
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </Link>
+            </div>
 
-          <div className={styles.stepsGrid}>
-            {steps.map((s, i) => (
-              <div key={s.num} className={`${styles.stepCard} ${stepsSection.isInView ? "animate-fade-up" : ""}`} style={{ animationDelay: `${(i + 1) * 200}ms`, opacity: stepsSection.isInView ? undefined : 0 }}>
-                <div className={styles.stepNum}>{s.num}</div>
-                <div className={styles.stepIcon}>{s.icon}</div>
-                <h3 className="title-lg">{s.title}</h3>
-                <p className="body-md" style={{ color: "var(--on-surface-variant)" }}>
-                  {s.desc}
-                </p>
-                {i < steps.length - 1 && <div className={styles.stepConnector} />}
-              </div>
-            ))}
+            <div className={styles.protocolList}>
+              {protocolSteps.map((step) => (
+                <div key={step.code} className={styles.protocolRow}>
+                  <div className={styles.protocolCodeCol}>
+                    <span className={styles.protocolCode}>{step.code}</span>
+                  </div>
+                  <div className={styles.protocolBodyCol}>
+                    <h3 className={styles.protocolStepTitle}>{step.title}</h3>
+                    <p className={styles.protocolStepDesc}>{step.desc}</p>
+                    <div className={styles.protocolArtifact}>
+                      <span className={styles.artifactLabel}>OUTPUT:</span>
+                      <span>{step.artifact}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── STATS ── */}
-      <section id="stats" className={styles.stats} ref={statsSection.nodeRef}>
+      {/* ── BENCHMARKS / STATS ── */}
+      <section id="stats" className={styles.benchmarks}>
         <div className="container">
-          <div className={styles.statsGrid}>
-            {stats.map((s, i) => (
-              <div key={s.label} className={`${styles.statCard} ${statsSection.isInView ? "animate-scale-in" : ""}`} style={{ animationDelay: `${(i + 1) * 100}ms`, opacity: statsSection.isInView ? undefined : 0 }}>
-                <div className={styles.statValue}>
-                  <Counter end={s.value} suffix={s.suffix} />
-                </div>
-                <div className={styles.statLabel}>{s.label}</div>
+          <div className={styles.benchmarksHeader}>
+            <span className={styles.benchmarksKicker}>03 // PARAMETER & CAKUPAN</span>
+            <h2 className={styles.benchmarksTitle}>
+              Spesifikasi teknis yang mendukung pemantauan nutrisi Anda.
+            </h2>
+          </div>
+
+          <div className={styles.benchmarksGrid}>
+            {benchmarks.map((b) => (
+              <div key={b.label} className={styles.benchmarkCell}>
+                <div className={styles.benchmarkValue}>{b.metric}</div>
+                <div className={styles.benchmarkLabel}>{b.label}</div>
+                <p className={styles.benchmarkDetail}>{b.detail}</p>
               </div>
             ))}
           </div>
@@ -337,24 +361,30 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className={styles.cta} ref={ctaSection.nodeRef}>
+      <section className={styles.ctaSection}>
         <div className="container">
-          <div className={`${styles.ctaCard} ${ctaSection.isInView ? "animate-scale-in" : ""}`} style={{ opacity: ctaSection.isInView ? undefined : 0 }}>
-            <div className={styles.ctaOrb} />
-            <h2 className="headline-lg" style={{ color: "white", position: "relative" }}>
-              Mulai Perjalanan Sehat Anda Hari Ini
-            </h2>
-            <p className="body-lg" style={{ color: "rgba(255,255,255,0.85)", maxWidth: 560, position: "relative" }}>
-              Bergabunglah dengan ribuan tenaga medis dan pasien yang telah mempercayakan manajemen nutrisi mereka pada Jimamet.
-            </p>
-            <div className={styles.ctaActions} style={{ position: "relative" }}>
-              <a href="/register" className={styles.btnWhite}>
-                Daftar Sekarang — Gratis
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <div className={styles.ctaBox}>
+            <div className={styles.ctaContent}>
+              <span className={styles.sectionKicker}>MULAI PEMANTAUAN</span>
+              <h2 className={styles.ctaHeading}>
+                Kelola asupan gizi harian dengan data yang terukur.
+              </h2>
+              <p className={styles.ctaSubtext}>
+                Buat akun gratis untuk mengakses deteksi makanan berbasis kamera, log nutrisi
+                harian, serta konsultasi terintegrasi dengan Ahli Gizi.
+              </p>
+            </div>
+            <div className={styles.ctaActions}>
+              <Link href="/register" className={styles.btnPrimary}>
+                Daftar Akun Gratis
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="5" y1="12" x2="19" y2="12" />
                   <polyline points="12 5 19 12 12 19" />
                 </svg>
-              </a>
+              </Link>
+              <Link href="/login" className={styles.btnOutline}>
+                Masuk ke Akun
+              </Link>
             </div>
           </div>
         </div>
@@ -366,47 +396,46 @@ export default function LandingPage() {
           <div className={styles.footerTop}>
             <div className={styles.footerBrand}>
               <div className={styles.logo}>
-                <Image src="/jimamet_logo.webp" alt="Jimamet Logo" width={48} height={48} style={{ objectFit: 'contain' }} />
-                <span className={styles.logoText}>Jimamet</span>
+                <Image
+                  src="/jimamet_logo.webp"
+                  alt="Jimamet Logo"
+                  width={32}
+                  height={32}
+                  style={{ objectFit: "contain" }}
+                />
+                <span className={styles.footerLogoText}>Jimamet</span>
               </div>
-              <p className="body-sm" style={{ color: "rgba(255, 255, 255, 0.9)", maxWidth: 320, marginTop: 12 }}>
-                Clinical precision in every byte. Platform nutrisi medis berbasis AI untuk pemantauan kesehatan yang lebih baik.
+              <p className={styles.footerTagline}>
+                Platform analisis nutrisi dan telemetri diet berbasis visi komputer untuk pemantauan
+                kesehatan klinis maupun mandiri.
               </p>
             </div>
 
             <div className={styles.footerLinks}>
               <div className={styles.footerCol}>
-                <h4 className="label-md" style={{ marginBottom: 16 }}>
-                  Platform
-                </h4>
-                <a href="#features">Fitur</a>
-                <a href="#how-it-works">Cara Kerja</a>
-                <a href="#stats">Data Klinis</a>
-                <a href="#">Pricing</a>
+                <h4>Platform</h4>
+                <a href="#features">Kapabilitas</a>
+                <a href="#how-it-works">Protokol Kerja</a>
+                <a href="#stats">Standar Data</a>
               </div>
               <div className={styles.footerCol}>
-                <h4 className="label-md" style={{ marginBottom: 16 }}>
-                  Legal
-                </h4>
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Service</a>
-                <a href="#">HIPAA Compliance</a>
+                <h4>Akses</h4>
+                <Link href="/login">Masuk Pasien</Link>
+                <Link href="/register">Registrasi Baru</Link>
+                <Link href="/login">Portal Ahli Gizi</Link>
               </div>
               <div className={styles.footerCol}>
-                <h4 className="label-md" style={{ marginBottom: 16 }}>
-                  Support
-                </h4>
-                <a href="#">Contact Support</a>
-                <a href="#">Research Papers</a>
-                <a href="#">Documentation</a>
+                <h4>Informasi</h4>
+                <a href="#features">Metodologi YOLOv8</a>
+                <a href="#stats">Basis Data Gizi</a>
+                <a href="#how-it-works">Panduan Penggunaan</a>
               </div>
             </div>
           </div>
 
           <div className={styles.footerBottom}>
-            <p className="body-sm" style={{ color: "var(--outline)" }}>
-              © 2024 Jimamet Medical Nutrition. All rights reserved.
-            </p>
+            <span>© {new Date().getFullYear()} Jimamet Clinical Nutrition System.</span>
+            <span className={styles.footerMeta}>INDONESIAN FOOD NUTRITION TELEMETRY</span>
           </div>
         </div>
       </footer>

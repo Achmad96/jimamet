@@ -33,9 +33,9 @@ function formatDate(iso: string) {
 }
 
 const statusStyle = {
-  pending:   { bg: "#fff3cd", color: "#856404", label: "Menunggu" },
-  completed:    { bg: "rgba(76,175,80,0.12)", color: "#2e7d32", label: "Selesai" },
-  cancelled: { bg: "#f5f5f5", color: "#707a6c", label: "Dibatalkan" },
+  pending:   { bg: "rgba(217, 130, 43, 0.12)", color: "#b36214", label: "Menunggu" },
+  completed: { bg: "rgba(20, 54, 37, 0.1)", color: "#143625", label: "Selesai" },
+  cancelled: { bg: "var(--surface-container)", color: "var(--outline)", label: "Dibatalkan" },
 };
 
 export default function KonsultasiPage() {
@@ -129,12 +129,6 @@ export default function KonsultasiPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const handleOpenDetail = (item: Consultation) => {
-    setSelected(item);
-    setCatatan(item.nutritionist_notes || "");
-    setChatInput("");
-  };
-
   const handleSendChat = async (e: FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim() || !selected || chatSending) return;
@@ -226,56 +220,57 @@ export default function KonsultasiPage() {
     <div>
       {/* ── Header ── */}
       <div className={styles.pageHeader}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16 }}>
           <div>
+            <span className={styles.headerKicker}>ANTREAN INTERVENSI GIZI</span>
             <h1>Konsultasi Pasien</h1>
-            <p>Daftar pasien yang diarahkan CoachBot untuk berkonsultasi dengan Anda.</p>
+            <p>Daftar rujukan pasien dari sistem NutriCoach AI yang memerlukan supervisi klinis.</p>
           </div>
           <button
             onClick={fetchData}
             className={styles.btnSecondary}
-            style={{ display: "flex", alignItems: "center", gap: 6 }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>refresh</span>
-            Refresh
+            <span className="material-symbols-outlined" style={{ fontSize: 17 }}>refresh</span>
+            Muat Ulang
           </button>
         </div>
       </div>
 
       {error && (
-        <div style={{ background: "#ffdad6", color: "#ba1a1a", padding: "12px 16px", borderRadius: 8, marginBottom: 16, fontSize: 14 }}>
+        <div style={{ background: "var(--error-container)", color: "var(--error)", padding: "12px 16px", borderRadius: 8, marginBottom: 16, fontSize: 13 }}>
           {error}
         </div>
       )}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 20 }}>
         {[
-          { label: "Total Masuk", count: items.length, color: "#0d631b" },
-          { label: "Menunggu",    count: countMenunggu, color: "#f57c00" },
-          { label: "Ditangani",   count: countAktif,    color: "#1976d2" },
-          { label: "Selesai",     count: countSelesai,  color: "#2e7d32" },
+          { label: "Total Tiket", count: items.length, color: "var(--on-surface)" },
+          { label: "Menunggu",    count: countMenunggu, color: "#d9822b" },
+          { label: "Ditangani",   count: countAktif,    color: "#2b6f77" },
+          { label: "Selesai",     count: countSelesai,  color: "#143625" },
         ].map(({ label, count, color }) => (
           <div key={label} className={styles.statCard}>
             <div className={styles.statLabel}>{label}</div>
-            <div style={{ fontSize: 32, fontWeight: 700, color, fontFamily: "Plus Jakarta Sans", lineHeight: 1 }}>{count}</div>
+            <div style={{ fontSize: 30, fontWeight: 700, color, fontFamily: "var(--font-mono)", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{count}</div>
           </div>
         ))}
       </div>
 
       {/* ── Filter tabs ── */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+      <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
         {(["semua", "pending", "completed"] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             style={{
-              padding: "7px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
-              border: filter === f ? "2px solid var(--ag-primary-dark)" : "1px solid var(--ag-border)",
-              background: filter === f ? "rgba(46,125,50,0.08)" : "#fff",
-              color: filter === f ? "var(--ag-primary-dark)" : "var(--ag-on-variant)",
+              padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
+              border: filter === f ? "1px solid var(--primary)" : "1px solid var(--surface-container-high)",
+              background: filter === f ? "var(--primary)" : "var(--surface-container-lowest)",
+              color: filter === f ? "var(--on-primary)" : "var(--on-surface-variant)",
+              transition: "all 0.15s",
             }}
           >
-            {f === "semua" ? "Semua" : f === "pending" ? "Menunggu" : "Selesai"}
+            {f === "semua" ? "Semua Tiket" : f === "pending" ? "Menunggu" : "Selesai"}
           </button>
         ))}
       </div>
@@ -283,31 +278,31 @@ export default function KonsultasiPage() {
       {/* ── List ── */}
       {loading ? (
         <div className={styles.loading}>
-          <span className="material-symbols-outlined" style={{ fontSize: 32, marginRight: 10 }}>hourglass_top</span>
-          Memuat data konsultasi...
+          <span className="material-symbols-outlined" style={{ fontSize: 24, marginRight: 10 }}>hourglass_top</span>
+          Memuat antrean konsultasi...
         </div>
       ) : displayed.length === 0 ? (
         <div className={styles.card} style={{ textAlign: "center", padding: 48 }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 48, color: "var(--ag-border)", display: "block", marginBottom: 12 }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 40, color: "var(--outline-variant)", display: "block", marginBottom: 10 }}>
             inbox
           </span>
-          <div style={{ color: "var(--ag-outline)", fontSize: 15 }}>
+          <div style={{ color: "var(--on-surface-variant)", fontSize: 14 }}>
             {filter === "semua"
-              ? "Belum ada pasien yang dirujuk CoachBot."
+              ? "Belum ada pasien yang dirujuk oleh sistem."
               : `Tidak ada konsultasi berstatus "${filter === "pending" ? "Menunggu" : "Selesai"}".`}
           </div>
         </div>
       ) : (
         <div className={styles.card}>
           <div className={styles.sectionHeader} style={{ marginBottom: 12 }}>
-            <h2>Daftar Konsultasi ({displayed.length})</h2>
+            <h2>Daftar Rujukan ({displayed.length})</h2>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
             {displayed.map((item) => {
-              let rawStatus = item.status || "pending";
+              const rawStatus = item.status || "pending";
               let s = statusStyle[rawStatus as keyof typeof statusStyle] || statusStyle.pending;
               if (item.handled_by && rawStatus === "pending") {
-                s = { bg: "rgba(25,118,210,0.12)", color: "#1976d2", label: `Ditangani: ${item.handled_by}` };
+                s = { bg: "rgba(43, 111, 119, 0.12)", color: "#2b6f77", label: `Ditangani: ${item.handled_by}` };
               }
               return (
                 <div
@@ -315,56 +310,62 @@ export default function KonsultasiPage() {
                   onClick={() => router.push(`/ahli-gizi/pasien/${item.id}`)}
                   style={{
                     display: "flex", alignItems: "flex-start", gap: 16,
-                    padding: "16px 0", borderBottom: "1px solid var(--ag-border)",
-                    cursor: "pointer", transition: "background 0.1s",
+                    padding: "16px 8px", borderBottom: "1px solid var(--surface-container)",
+                    cursor: "pointer", transition: "background 0.15s", borderRadius: 8,
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "var(--ag-surface-low)")}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "var(--surface-container-low)")}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                 >
                   {/* Avatar */}
                   <div style={{
-                    width: 42, height: 42, borderRadius: "50%", flexShrink: 0,
-                    background: "rgba(46,125,50,0.12)", display: "flex",
+                    width: 40, height: 40, borderRadius: 8, flexShrink: 0,
+                    background: "rgba(20, 54, 37, 0.08)", display: "flex",
                     alignItems: "center", justifyContent: "center",
-                    fontSize: 18, fontWeight: 700, color: "var(--ag-primary-dark)",
-                    fontFamily: "Plus Jakarta Sans",
+                    fontSize: 16, fontWeight: 700, color: "var(--primary)",
+                    fontFamily: "var(--font-headline)",
                   }}>
                     {item.full_name?.[0]?.toUpperCase() ?? "?"}
                   </div>
 
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                      <span style={{ fontWeight: 600, fontSize: 14, color: "var(--ag-on-surface)" }}>
+                      <span style={{ fontWeight: 700, fontSize: 14, color: "var(--on-surface)", fontFamily: "var(--font-headline)" }}>
                         {item.full_name}
                       </span>
-                      <span style={{ fontSize: 12, color: "var(--ag-outline)" }}>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--outline)" }}>
                         {formatDate(item.created_at)}
                       </span>
                     </div>
-                    <div style={{ fontSize: 13, color: "var(--ag-on-variant)", marginBottom: 6, lineHeight: 1.5,
+                    <div style={{ fontSize: 13, color: "var(--on-surface-variant)", marginBottom: 8, lineHeight: 1.5,
                       overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      🤖 {item.coach_message}
+                      {item.coach_message}
                     </div>
-                    <span style={{ background: s.bg, color: s.color, padding: "2px 10px", borderRadius: 999, fontSize: 11, fontWeight: 600 }}>
+                    <span style={{ background: s.bg, color: s.color, padding: "3px 10px", borderRadius: 6, fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600 }}>
                       {s.label}
                     </span>
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                     <button
                       onClick={(e) => handleDeleteKonsultasi(item.id, e)}
                       title="Hapus Konsultasi"
                       style={{
-                        background: "transparent", border: "none", color: "#d32f2f", cursor: "pointer",
-                        padding: 8, display: "flex", alignItems: "center", justifyContent: "center",
-                        borderRadius: "50%", transition: "background 0.2s"
+                        background: "transparent", border: "none", color: "var(--outline)", cursor: "pointer",
+                        padding: 6, display: "flex", alignItems: "center", justifyContent: "center",
+                        borderRadius: 6, transition: "color 0.15s, background 0.15s"
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(211,47,47,0.1)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "var(--error-container)";
+                        e.currentTarget.style.color = "var(--error)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "transparent";
+                        e.currentTarget.style.color = "var(--outline)";
+                      }}
                     >
-                      <span className="material-symbols-outlined" style={{ fontSize: 20 }}>delete</span>
+                      <span className="material-symbols-outlined" style={{ fontSize: 18 }}>delete</span>
                     </button>
-                    <span className="material-symbols-outlined" style={{ fontSize: 20, color: "var(--ag-outline)" }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 18, color: "var(--outline)" }}>
                       chevron_right
                     </span>
                   </div>
@@ -378,65 +379,64 @@ export default function KonsultasiPage() {
       {/* ── Detail Modal ── */}
       {selected && (
         <div
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}
+          style={{ position: "fixed", inset: 0, background: "rgba(20, 26, 22, 0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}
           onClick={() => setSelected(null)}
         >
           <div
-            style={{ background: "#fff", borderRadius: 16, padding: 32, width: 560, maxWidth: "90vw", boxShadow: "0 20px 60px rgba(0,0,0,0.15)", maxHeight: "85vh", overflowY: "auto" }}
+            style={{ background: "var(--surface-container-lowest)", border: "1px solid var(--surface-container-high)", borderRadius: 14, padding: 28, width: 560, maxWidth: "90vw", boxShadow: "var(--shadow-lg)", maxHeight: "85vh", overflowY: "auto" }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
               <div>
-                <h3 style={{ fontFamily: "Plus Jakarta Sans", fontSize: 18, fontWeight: 700, color: "var(--ag-on-surface)", margin: "0 0 4px" }}>
+                <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 18, fontWeight: 700, color: "var(--on-surface)", margin: "0 0 4px" }}>
                   Detail Konsultasi
                 </h3>
-                <p style={{ fontSize: 13, color: "var(--ag-outline)", margin: 0 }}>
+                <p style={{ fontSize: 13, color: "var(--on-surface-variant)", margin: 0 }}>
                   {selected.full_name} · {selected.email}
                 </p>
               </div>
-              <span style={{ background: statusStyle[selected.status].bg, color: statusStyle[selected.status].color, padding: "3px 12px", borderRadius: 999, fontSize: 12, fontWeight: 700 }}>
+              <span style={{ background: statusStyle[selected.status].bg, color: statusStyle[selected.status].color, padding: "4px 10px", borderRadius: 6, fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600 }}>
                 {statusStyle[selected.status].label}
               </span>
             </div>
 
             {/* Pesan CoachBot */}
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ag-outline)", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>
-                Pesan dari CoachBot
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600, color: "var(--outline)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
+                Ringkasan Eskalasi NutriCoach AI
               </div>
-              <div style={{ background: "rgba(46,125,50,0.06)", border: "1px solid rgba(46,125,50,0.2)", borderRadius: 10, padding: 14, fontSize: 14, color: "var(--ag-on-surface)", lineHeight: 1.7 }}>
-                🤖 {selected.coach_message}
+              <div style={{ background: "var(--surface-container-low)", border: "1px solid var(--surface-container-high)", borderRadius: 10, padding: 14, fontSize: 13, color: "var(--on-surface)", lineHeight: 1.6 }}>
+                {selected.coach_message}
               </div>
             </div>
 
             {/* Waktu */}
-            <div style={{ fontSize: 12, color: "var(--ag-outline)", marginBottom: 16 }}>
-              📅 Dikirim: {formatDate(selected.created_at)}
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--outline)", marginBottom: 16 }}>
+              Waktu rujukan: {formatDate(selected.created_at)}
             </div>
 
             {/* Chat Ahli Gizi */}
             {selected.status === "pending" ? (
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ag-outline)", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>
-                  Live Chat dengan Pasien
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600, color: "var(--outline)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
+                  Kanal Komunikasi Pasien
                 </div>
                 <div style={{
-                  border: "1px solid var(--ag-border)",
-                  borderRadius: 8,
+                  border: "1px solid var(--surface-container-high)",
+                  borderRadius: 10,
                   display: "flex",
                   flexDirection: "column",
                   maxHeight: 300,
                   overflow: "hidden"
                 }}>
-                  {/* Daftar pesan */}
                   <div style={{
-                    flex: 1, overflowY: "auto", padding: 12, background: "#fafafa",
+                    flex: 1, overflowY: "auto", padding: 12, background: "var(--surface)",
                     display: "flex", flexDirection: "column", gap: 8, maxHeight: 200
                   }}>
                     {chatMsgs.length === 0 ? (
-                      <div style={{ textAlign: "center", fontSize: 12, color: "#888", padding: 20 }}>
-                        Belum ada pesan chat.
+                      <div style={{ textAlign: "center", fontSize: 12, color: "var(--outline)", padding: 20 }}>
+                        Belum ada pesan percakapan.
                       </div>
                     ) : (
                       chatMsgs.map((m) => (
@@ -451,26 +451,25 @@ export default function KonsultasiPage() {
                           }}>
                             <div style={{
                               maxWidth: "100%", padding: "8px 12px",
-                              borderRadius: m.sender === "nutritionist" ? "14px 14px 2px 14px" : "14px 14px 14px 2px",
-                              background: m.sender === "nutritionist" ? "#2e7d32" : "#fff",
-                              color: m.sender === "nutritionist" ? "#fff" : "#1a1c1c",
-                              border: m.sender === "user" ? "1px solid #eee" : "none",
-                              fontSize: 13, lineHeight: 1.5, boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+                              borderRadius: m.sender === "nutritionist" ? "10px 10px 2px 10px" : "10px 10px 10px 2px",
+                              background: m.sender === "nutritionist" ? "var(--primary)" : "var(--surface-container-lowest)",
+                              color: m.sender === "nutritionist" ? "var(--on-primary)" : "var(--on-surface)",
+                              border: m.sender === "user" ? "1px solid var(--surface-container-high)" : "none",
+                              fontSize: 13, lineHeight: 1.5
                             }}>
                               {m.sender === "user" && (
-                                <div style={{ fontSize: 10, fontWeight: 700, color: "#666", marginBottom: 3 }}>
-                                  👤 Pasien
+                                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600, color: "var(--outline)", marginBottom: 3 }}>
+                                  PASIEN
                                 </div>
                               )}
                               {m.message}
                             </div>
                             
-                            {/* Tombol Hapus (ikon trash) */}
                             <button
                               onClick={() => handleDeleteChat(m.id)}
                               title="Hapus pesan"
                               style={{
-                                background: "transparent", border: "none", color: "#d32f2f", cursor: "pointer",
+                                background: "transparent", border: "none", color: "var(--error)", cursor: "pointer",
                                 padding: 4, display: "flex", alignItems: "center", justifyContent: "center",
                                 opacity: 0.6, transition: "opacity 0.2s"
                               }}
@@ -481,16 +480,15 @@ export default function KonsultasiPage() {
                             </button>
                           </div>
                           
-                          <span style={{ fontSize: 10, color: "#888", marginTop: 2 }}>{formatDate(m.sent_at).split(' ')[1]}</span>
+                          <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--outline)", marginTop: 2 }}>{formatDate(m.sent_at).split(' ')[1]}</span>
                         </div>
                       ))
                     )}
                     <div ref={chatEndRef} />
                   </div>
                   
-                  {/* Input Chat Ahli Gizi */}
                   <form onSubmit={handleSendChat} style={{
-                    display: "flex", gap: 8, padding: "8px 12px", background: "#fff", borderTop: "1px solid var(--ag-border)"
+                    display: "flex", gap: 8, padding: "10px 12px", background: "var(--surface-container-lowest)", borderTop: "1px solid var(--surface-container-high)"
                   }}>
                     <input
                       type="text"
@@ -499,18 +497,18 @@ export default function KonsultasiPage() {
                       onChange={(e) => setChatInput(e.target.value)}
                       disabled={chatSending}
                       style={{
-                        flex: 1, padding: "8px 12px", fontSize: 13, border: "1px solid var(--ag-border)",
-                        borderRadius: 20, outline: "none", fontFamily: "inherit"
+                        flex: 1, padding: "8px 12px", fontSize: 13, border: "1px solid var(--surface-container-high)",
+                        borderRadius: 8, outline: "none", fontFamily: "inherit", background: "var(--surface-container-low)"
                       }}
                     />
                     <button
                       type="submit"
                       disabled={!chatInput.trim() || chatSending}
                       style={{
-                        padding: "0 16px", borderRadius: 20, border: "none",
-                        background: chatInput.trim() ? "#2e7d32" : "#ccc",
+                        padding: "0 16px", borderRadius: 8, border: "none",
+                        background: chatInput.trim() ? "var(--primary)" : "var(--surface-container-highest)",
                         color: "#fff", cursor: chatInput.trim() ? "pointer" : "default",
-                        fontSize: 13, fontWeight: 600, transition: "background 0.2s"
+                        fontSize: 13, fontWeight: 600, transition: "background 0.15s"
                       }}
                     >
                       Kirim
@@ -520,10 +518,10 @@ export default function KonsultasiPage() {
               </div>
             ) : selected.nutritionist_notes ? (
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ag-outline)", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>
-                  Catatan Ahli Gizi
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600, color: "var(--outline)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
+                  Catatan Klinis Ahli Gizi
                 </div>
-                <div style={{ background: "var(--ag-surface-low)", borderRadius: 8, padding: 12, fontSize: 14, color: "var(--ag-on-surface)", lineHeight: 1.6 }}>
+                <div style={{ background: "var(--surface-container-low)", borderRadius: 8, padding: 12, fontSize: 13, color: "var(--on-surface)", lineHeight: 1.6 }}>
                   {selected.nutritionist_notes}
                 </div>
               </div>
@@ -538,7 +536,7 @@ export default function KonsultasiPage() {
                     Batalkan
                   </button>
                   <button className={styles.btnPrimary} onClick={() => handleUpdate("completed")} disabled={saving}>
-                    {saving ? "Menyimpan..." : "✓ Tandai Selesai"}
+                    {saving ? "Menyimpan..." : "Tandai Selesai"}
                   </button>
                 </>
               )}

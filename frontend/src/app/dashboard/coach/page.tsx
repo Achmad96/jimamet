@@ -56,21 +56,26 @@ function formatRelativeTime(iso: string) {
     const diffHours = Math.round(diffMins / 60);
     const diffDays = Math.round(diffHours / 24);
 
-    if (diffMins < 60) return `${diffMins || 1}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays === 1) return "Yesterday";
-    return `${diffDays}d ago`;
+    if (diffMins < 60) return `${diffMins || 1}m lalu`;
+    if (diffHours < 24) return `${diffHours}j lalu`;
+    if (diffDays === 1) return "Kemarin";
+    return `${diffDays}h lalu`;
   } catch {
     return "";
   }
 }
 
-const quickReplies = ["Analisis nutrisi hari ini", "Rekomendasi makan malam", "Tips diet sehat", "Saya punya keluhan kesehatan"];
+const quickReplies = [
+  "Evaluasi rasio makronutrisi hari ini",
+  "Rekomendasi menu makan malam tinggi protein",
+  "Strategi defisit kalori berkelanjutan",
+  "Saya memiliki keluhan pencernaan / klinis",
+];
 
 const statusLabels: Record<string, { label: string; color: string }> = {
-  pending: { label: "Menunggu", color: "#f59e0b" },
-  completed: { label: "Selesai", color: "#22c55e" },
-  cancelled: { label: "Dibatalkan", color: "#9ca3af" }
+  pending: { label: "Menunggu", color: "#d9822b" },
+  completed: { label: "Selesai", color: "#143625" },
+  cancelled: { label: "Dibatalkan", color: "#6f7771" }
 };
 
 type ViewMode = "coach" | "consultation";
@@ -154,7 +159,7 @@ export default function NutriCoachPage() {
 
   const handleNewSession = async () => {
     try {
-      const { ok, data } = await apiCreateCoachSession("New Consultation");
+      const { ok, data } = await apiCreateCoachSession("Sesi Konsultasi Baru");
       if (ok && data) {
         setSessions([data, ...sessions]);
         setActiveSession(data.id);
@@ -268,7 +273,7 @@ export default function NutriCoachPage() {
           id: `closing-${Date.now()}`,
           session_id: activeSession || "",
           sender: "ai",
-          message: '✅ Permintaan konsultasimu sudah saya teruskan ke Ahli Gizi! 🩺\n\nSilakan cek menu **"Konsultasi Ahli Gizi"** di sidebar untuk melanjutkan percakapan dengan ahli gizi kami. Semoga lekas mendapat solusi terbaik! 💪',
+          message: 'Permintaan konsultasi klinis Anda telah diteruskan ke **Ahli Gizi**.\n\nSilakan buka panel **"Konsultasi Ahli Gizi"** di sidebar kiri untuk melanjutkan diskusi secara langsung.',
           needs_consultation: false,
           sent_at: new Date().toISOString()
         };
@@ -435,6 +440,7 @@ export default function NutriCoachPage() {
       {/* Sidebar */}
       <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ""}`}>
         <div className={styles.sidebarHeader}>
+          <span className={styles.sidebarKicker}>ASISTEN DIETETIKA</span>
           <h2>NutriCoach AI</h2>
           <button className={styles.newSessionBtn} onClick={handleNewSession}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -446,16 +452,16 @@ export default function NutriCoachPage() {
         </div>
         <div className={styles.sessionList}>
           {sessions.length === 0 ? (
-            <div className={styles.emptySidebar}>Belum ada sesi AI</div>
+            <div className={styles.emptySidebar}>Belum ada riwayat sesi AI</div>
           ) : (
             sessions.map((s) => (
               <div key={s.id} className={`${styles.sessionItem} ${viewMode === "coach" && activeSession === s.id ? styles.activeSession : ""}`} onClick={() => selectSession(s.id)}>
                 <div className={styles.sessionItemContent}>
-                  <div className={styles.sessionTitle}>🤖 {s.title}</div>
+                  <div className={styles.sessionTitle}>{s.title}</div>
                   <div className={styles.sessionTime}>{formatRelativeTime(s.updated_at)}</div>
                 </div>
                 <button className={styles.deleteSessionBtn} onClick={(e) => handleDeleteSession(e, s.id)} title="Hapus sesi">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <polyline points="3 6 5 6 21 6"></polyline>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                   </svg>
@@ -467,25 +473,25 @@ export default function NutriCoachPage() {
 
         {/* Consultation Section — lazy loaded */}
         <div className={styles.sidebarDivider} onClick={handleShowConsultations} style={{ cursor: "pointer" }}>
-          <span>🩺 Konsultasi Ahli Gizi {!consultationsLoaded && "(klik untuk muat)"}</span>
+          <span>Konsultasi Ahli Gizi {!consultationsLoaded && "· Muat"}</span>
         </div>
         {consultationsLoaded && (
           <div className={styles.sessionList}>
             {consultations.length === 0 ? (
-              <div className={styles.emptySidebar}>Belum ada konsultasi</div>
+              <div className={styles.emptySidebar}>Belum ada tiket konsultasi</div>
             ) : (
               consultations.map((c) => {
-                let rawStatus = c.status || "pending";
+                const rawStatus = c.status || "pending";
                 let st = statusLabels[rawStatus] || statusLabels.pending;
 
                 if (c.handled_by && rawStatus === "pending") {
-                  st = { label: `Terhubung dengan ${c.handled_by}`, color: "#3b82f6" };
+                  st = { label: `Ditangani ${c.handled_by}`, color: "#2b6f77" };
                 }
 
                 return (
                   <div key={c.id} className={`${styles.sessionItem} ${viewMode === "consultation" && activeConsultation === c.id ? styles.activeSession : ""}`} onClick={() => selectConsultation(c.id)}>
                     <div className={styles.sessionItemContent}>
-                      <div className={styles.sessionTitle}>🩺 Konsultasi</div>
+                      <div className={styles.sessionTitle}>Konsultasi Klinis</div>
                       <div className={styles.sessionTime}>
                         <span className={styles.statusBadge} style={{ color: st.color }}>
                           ● {st.label}
@@ -515,20 +521,24 @@ export default function NutriCoachPage() {
           {viewMode === "coach" ? (
             <>
               <div className={styles.aiAvatar}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
               </div>
               <div className={styles.headerInfo}>
                 <h2>NutriCoach AI</h2>
                 <span className={styles.onlineStatus}>
-                  <span className={styles.onlineDot}></span> Online
+                  <span className={styles.onlineDot}></span> Asisten Kontekstual Aktif
                 </span>
               </div>
             </>
           ) : (
             <>
-              <div className={styles.doctorAvatar}>🩺</div>
+              <div className={styles.doctorAvatar}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                </svg>
+              </div>
               <div className={styles.headerInfo}>
                 <h2>
                   {(() => {
@@ -536,16 +546,16 @@ export default function NutriCoachPage() {
                       const c = consultations.find((c) => c.id === activeConsultation);
                       if (c?.handled_by && c.status === "pending") return `Terhubung dengan ${c.handled_by}`;
                     }
-                    return "Chat Ahli Gizi";
+                    return "Konsultasi Ahli Gizi";
                   })()}
                 </h2>
                 <span className={styles.onlineStatus}>
                   <span className={wsConnected ? styles.onlineDot : styles.onlineDotRed}></span>
-                  {wsConnected ? "Real-time" : "Offline"}
+                  {wsConnected ? "Kanal Real-time" : "Terputus"}
                 </span>
               </div>
-              <div className={styles.wsBadge} style={{ background: wsConnected ? "#e8f5e9" : "#fce4ec", color: wsConnected ? "#2e7d32" : "#c62828" }}>
-                ● {wsConnected ? "WebSocket Terhubung" : "WebSocket Terputus"}
+              <div className={styles.wsBadge} style={{ background: wsConnected ? "rgba(20, 54, 37, 0.08)" : "rgba(180, 35, 24, 0.08)", color: wsConnected ? "#143625" : "#b42318" }}>
+                ● {wsConnected ? "WebSocket Aktif" : "WebSocket Terputus"}
               </div>
             </>
           )}
@@ -557,18 +567,23 @@ export default function NutriCoachPage() {
             <>
               {!activeSession ? (
                 <div className={styles.emptyState}>
-                  <div className={styles.emptyIcon}>🤖</div>
-                  <h3>Selamat Datang di NutriCoach AI</h3>
-                  <p>Mulai sesi baru untuk berkonsultasi tentang gizi dan kesehatan Anda.</p>
+                  <div className={styles.emptyIconBox}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                  </div>
+                  <h3>Mulai Konsultasi NutriCoach AI</h3>
+                  <p>Diskusikan hasil pemindaian nutrisi, target kalori, atau keluhan dietetika Anda.</p>
                   <button className={styles.startBtn} onClick={handleNewSession}>
-                    Mulai Sesi Pertama
+                    Buat Sesi Konsultasi
                   </button>
                 </div>
               ) : (
                 <>
                   {messages.length === 0 && (
                     <div className={styles.welcomeState}>
-                      <p>Halo! 👋 Saya NutriCoach AI. Ada yang bisa saya bantu?</p>
+                      <span className={styles.welcomeKicker}>TOPIK CEPAT</span>
+                      <p>Pilih topik diskusi di bawah atau ketik pertanyaan spesifik Anda:</p>
                       <div className={styles.quickReplies}>
                         {quickReplies.map((q) => (
                           <button key={q} className={styles.quickBtn} onClick={() => sendMessage(q)}>
@@ -582,15 +597,23 @@ export default function NutriCoachPage() {
                   {messages.map((msg, i) => (
                     <div key={msg.id || i} className={`${styles.msgRow} ${msg.sender === "user" ? styles.msgRowUser : styles.msgRowAi}`}>
                       <div className={`${styles.bubble} ${msg.sender === "user" ? styles.bubbleUser : styles.bubbleAi}`}>
-                        <p>{msg.message}</p>
+                        {msg.sender === "ai" ? (
+                          <div className={styles.markdownWrapper}>
+                            <ReactMarkdown>{msg.message}</ReactMarkdown>
+                          </div>
+                        ) : (
+                          <p>{msg.message}</p>
+                        )}
                         <span className={styles.msgTime}>{formatTime(msg.sent_at)}</span>
 
                         {msg.needs_consultation && konsultasiStatus[msg.id] !== "sent" && (
                           <button onClick={() => handleKirimKonsultasi(msg.id, msg.message)} disabled={konsultasiStatus[msg.id] === "loading"} className={styles.konsultasiBtn}>
-                            🩺 {konsultasiStatus[msg.id] === "loading" ? "Mengirim..." : "Hubungi Ahli Gizi Sekarang"}
+                            {konsultasiStatus[msg.id] === "loading" ? "Meneruskan ke Ahli Gizi..." : "Eskalasi ke Ahli Gizi Klinis →"}
                           </button>
                         )}
-                        {msg.needs_consultation && konsultasiStatus[msg.id] === "sent" && <div className={styles.konsultasiSent}>✅ Permintaan terkirim — cek sidebar &quot;Konsultasi Ahli Gizi&quot;</div>}
+                        {msg.needs_consultation && konsultasiStatus[msg.id] === "sent" && (
+                          <div className={styles.konsultasiSent}>Permintaan terkirim — periksa bagian &quot;Konsultasi Ahli Gizi&quot; di sidebar.</div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -616,23 +639,27 @@ export default function NutriCoachPage() {
             <>
               {!activeConsultation ? (
                 <div className={styles.emptyState}>
-                  <div className={styles.emptyIcon}>🩺</div>
+                  <div className={styles.emptyIconBox}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                    </svg>
+                  </div>
                   <h3>Konsultasi Ahli Gizi</h3>
-                  <p>Pilih sesi konsultasi di sidebar untuk melihat percakapan.</p>
+                  <p>Pilih sesi konsultasi di sidebar kiri untuk membuka riwayat pesan klinis.</p>
                 </div>
               ) : (
                 <>
                   {consultationChats.length === 0 && (
                     <div className={styles.welcomeState}>
-                      <p>Menunggu balasan dari ahli gizi... 🩺</p>
-                      <p style={{ fontSize: "0.85rem", color: "#999", marginTop: "0.5rem" }}>Pesan akan muncul otomatis secara real-time via WebSocket.</p>
+                      <p>Menunggu respons dari Ahli Gizi yang bertugas...</p>
+                      <p style={{ fontSize: "12px", color: "var(--outline)", marginTop: "6px" }}>Pesan disinkronisasikan secara langsung melalui WebSocket.</p>
                     </div>
                   )}
 
                   {consultationChats.map((msg, i) => (
                     <div key={msg.id || i} className={`${styles.msgRow} ${msg.sender === "user" ? styles.msgRowUser : styles.msgRowAi}`}>
                       <div className={`${styles.bubble} ${msg.sender === "user" ? styles.bubbleUser : styles.bubbleDoctor}`}>
-                        {msg.sender === "nutritionist" && <div className={styles.senderLabel}>🩺 Ahli Gizi</div>}
+                        {msg.sender === "nutritionist" && <div className={styles.senderLabel}>AHLI GIZI KLINIS</div>}
                         <p>{msg.message}</p>
                         <span className={styles.msgTime}>{formatTime(msg.sent_at)}</span>
                       </div>
@@ -649,7 +676,7 @@ export default function NutriCoachPage() {
         {/* Input Area */}
         {viewMode === "coach" && activeSession && (
           <form onSubmit={handleSubmit} className={styles.inputArea}>
-            <input type="text" placeholder="Ketik pertanyaan tentang gizi..." value={input} onChange={(e) => setInput(e.target.value)} className={styles.inputField} disabled={isTyping} />
+            <input type="text" placeholder="Tanyakan analisis gizi atau rencana diet..." value={input} onChange={(e) => setInput(e.target.value)} className={styles.inputField} disabled={isTyping} />
             <button type="submit" className={styles.sendBtn} disabled={!input.trim() || isTyping}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="22" y1="2" x2="11" y2="13" />
@@ -662,10 +689,10 @@ export default function NutriCoachPage() {
         {viewMode === "consultation" && activeConsultation && (
           <form onSubmit={handleSendConsultationChat} className={styles.inputArea}>
             {consultations.find((c) => c.id === activeConsultation)?.status === "completed" ? (
-              <div style={{ width: "100%", padding: "12px", textAlign: "center", color: "#707a6c", fontSize: "14px", background: "#f5f7f5", borderRadius: "8px" }}>Konsultasi ini telah diselesaikan. Anda tidak dapat mengirim pesan lagi.</div>
+              <div className={styles.closedNotice}>Sesi konsultasi ini telah diselesaikan oleh Ahli Gizi.</div>
             ) : (
               <>
-                <input type="text" placeholder="Balas pesan ahli gizi..." value={consultationInput} onChange={(e) => setConsultationInput(e.target.value)} className={styles.inputField} disabled={consultationSending} />
+                <input type="text" placeholder="Ketik balasan untuk Ahli Gizi..." value={consultationInput} onChange={(e) => setConsultationInput(e.target.value)} className={styles.inputField} disabled={consultationSending} />
                 <button type="submit" className={styles.sendBtn} disabled={!consultationInput.trim() || consultationSending}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <line x1="22" y1="2" x2="11" y2="13" />

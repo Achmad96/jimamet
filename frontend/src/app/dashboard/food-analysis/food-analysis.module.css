@@ -1,37 +1,50 @@
 /* ═══════════════════════════════════════════════════
-   FOOD ANALYSIS PAGE — Styles
+   FOOD ANALYSIS PAGE — Clinical Telemetry Styles
    ═══════════════════════════════════════════════════ */
 
 .page {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 24px;
 }
 
 /* ── Header ── */
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: flex-end;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--surface-container-high);
+}
+
+.headerKicker {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--primary-container);
+  margin-bottom: 4px;
 }
 
 .title {
   font-family: var(--font-headline);
-  font-size: clamp(22px, 3vw, 28px);
+  font-size: clamp(22px, 2.6vw, 28px);
   font-weight: 700;
   color: var(--on-surface);
+  letter-spacing: -0.02em;
 }
 
 .subtitle {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--on-surface-variant);
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 /* ── Content Grid ── */
 .content {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.05fr 0.95fr;
   gap: 24px;
   align-items: start;
 }
@@ -40,45 +53,45 @@
 .uploadSection {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 /* ── Drop Zone ── */
 .dropZone {
-  border: 2px dashed var(--surface-container-high);
-  border-radius: var(--radius-xl);
-  padding: 64px 40px;
+  border: 1.5px dashed var(--outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 56px 36px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
   background: var(--surface-container-lowest);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .dropZone:hover,
 .dropZoneActive {
-  border-color: var(--primary-container);
-  background: rgba(46, 125, 50, 0.03);
+  border-color: var(--primary);
+  background: var(--surface-bright);
 }
 
 .dropZoneActive {
   border-style: solid;
-  transform: scale(1.01);
 }
 
 .dropIcon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: rgba(46, 125, 50, 0.08);
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--secondary-container);
+  border: 1px solid rgba(45, 106, 79, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 14px;
-  color: var(--primary-container);
+  padding: 12px;
+  color: var(--primary);
   margin-bottom: 4px;
 }
 
@@ -89,23 +102,26 @@
 
 .dropZone h3 {
   font-family: var(--font-headline);
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 16.5px;
+  font-weight: 700;
   color: var(--on-surface);
+  letter-spacing: -0.01em;
 }
 
 .dropZone p {
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--on-surface-variant);
 }
 
 .dropFormats {
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   color: var(--outline);
-  background: var(--surface-container);
-  padding: 4px 12px;
-  border-radius: var(--radius-full);
-  margin-top: 4px;
+  background: var(--surface-container-low);
+  border: 1px solid var(--surface-container-high);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  margin-top: 6px;
 }
 
 /* ── Upload Buttons ── */
@@ -120,51 +136,51 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 14px 20px;
+  gap: 8px;
+  padding: 12.5px 18px;
   border-radius: var(--radius-md);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.25s;
+  transition: all 0.15s ease;
 }
 
 .uploadBtn {
   background: var(--surface-container-lowest);
-  color: var(--primary-container);
-  border: 1.5px solid var(--surface-container-high);
+  color: var(--on-surface);
+  border: 1px solid var(--surface-container-highest);
 }
 
 .uploadBtn:hover {
-  border-color: var(--primary-container);
-  background: rgba(46, 125, 50, 0.04);
+  border-color: var(--outline);
+  background: var(--surface-container-low);
 }
 
 .cameraBtn {
-  background: var(--primary-container);
-  color: white;
-  border: none;
-  box-shadow: 0 4px 16px rgba(46, 125, 50, 0.25);
+  background: var(--primary);
+  color: #ffffff;
+  border: 1px solid var(--primary);
 }
 
 .cameraBtn:hover {
-  background: var(--primary);
-  transform: translateY(-1px);
+  background: var(--primary-hover);
 }
 
 /* ── Preview ── */
 .previewCard {
   background: var(--surface-container-lowest);
-  border: 1px solid var(--surface-container-high);
-  border-radius: var(--radius-xl);
+  border: 1px solid var(--surface-container-highest);
+  border-radius: var(--radius-lg);
   overflow: hidden;
+  box-shadow: var(--shadow-low);
 }
 
 .previewImageWrapper {
   position: relative;
   aspect-ratio: 4 / 3;
   overflow: hidden;
+  background: #121814;
 }
 
 .previewImage {
@@ -177,7 +193,7 @@
 .scanOverlay {
   position: absolute;
   inset: 0;
-  background: rgba(46, 125, 50, 0.08);
+  background: rgba(18, 24, 20, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -187,9 +203,9 @@
   position: absolute;
   left: 0;
   right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, var(--primary-container), transparent);
-  box-shadow: 0 0 16px rgba(46, 125, 50, 0.5);
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #74c69d, transparent);
+  box-shadow: 0 0 12px rgba(116, 198, 157, 0.6);
   animation: scanMove 2s ease-in-out infinite;
 }
 
@@ -199,73 +215,74 @@
 }
 
 .scanText {
-  background: rgba(46, 125, 50, 0.9);
-  color: white;
-  padding: 8px 20px;
-  border-radius: var(--radius-full);
-  font-size: 14px;
+  font-family: var(--font-mono);
+  background: rgba(18, 24, 20, 0.88);
+  color: #ffffff;
+  padding: 7px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  font-size: 12px;
   font-weight: 600;
   z-index: 1;
-  animation: pulse-soft 1.5s ease-in-out infinite;
 }
 
 .previewInfo {
-  padding: 20px;
+  padding: 16px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  border-top: 1px solid var(--surface-container);
 }
 
 .previewName {
-  font-size: 14px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
   font-weight: 500;
   color: var(--on-surface-variant);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 200px;
+  max-width: 180px;
 }
 
 .previewActions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .analyzeBtn {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 22px;
-  background: var(--primary-container);
-  color: white;
+  padding: 9px 18px;
+  background: var(--primary);
+  color: #ffffff;
   border: none;
   border-radius: var(--radius-md);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.25s;
-  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.25);
+  transition: background 0.15s ease;
 }
 
 .analyzeBtn:hover {
-  background: var(--primary);
-  transform: translateY(-1px);
+  background: var(--primary-hover);
 }
 
 .resetBtn {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 16px;
+  padding: 9px 14px;
   background: transparent;
   color: var(--on-surface-variant);
-  border: 1.5px solid var(--surface-container-high);
+  border: 1px solid var(--surface-container-highest);
   border-radius: var(--radius-md);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
 }
 
 .resetBtn:hover {
@@ -275,33 +292,34 @@
 
 /* ── Result Section ── */
 .resultSection {
-  min-height: 400px;
+  min-height: 380px;
 }
 
 /* Empty State */
 .emptyResult {
   background: var(--surface-container-lowest);
-  border: 1px solid var(--surface-container-high);
-  border-radius: var(--radius-xl);
-  padding: 80px 40px;
+  border: 1px solid var(--surface-container-highest);
+  border-radius: var(--radius-lg);
+  padding: 72px 36px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .emptyIcon {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: var(--surface-container);
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  background: var(--surface-container-low);
+  border: 1px solid var(--surface-container-high);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
-  color: var(--outline-variant);
-  margin-bottom: 8px;
+  padding: 14px;
+  color: var(--outline);
+  margin-bottom: 6px;
 }
 
 .emptyIcon svg {
@@ -311,35 +329,35 @@
 
 .emptyResult h3 {
   font-family: var(--font-headline);
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   color: var(--on-surface);
 }
 
 .emptyResult p {
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--on-surface-variant);
-  max-width: 300px;
+  max-width: 310px;
   line-height: 1.6;
 }
 
 /* ── Analyzing State ── */
 .analyzingState {
   background: var(--surface-container-lowest);
-  border: 1px solid var(--surface-container-high);
-  border-radius: var(--radius-xl);
-  padding: 60px 40px;
+  border: 1px solid var(--surface-container-highest);
+  border-radius: var(--radius-lg);
+  padding: 56px 36px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
 .analyzingSpinner {
   position: relative;
-  width: 72px;
-  height: 72px;
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -348,10 +366,10 @@
 .spinRing {
   position: absolute;
   inset: 0;
-  border: 3px solid var(--surface-container);
-  border-top-color: var(--primary-container);
+  border: 2.5px solid var(--surface-container);
+  border-top-color: var(--primary);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.9s linear infinite;
 }
 
 @keyframes spin {
@@ -359,18 +377,18 @@
 }
 
 .spinIcon {
-  color: var(--primary-container);
+  color: var(--primary);
 }
 
 .analyzingState h3 {
   font-family: var(--font-headline);
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   color: var(--on-surface);
 }
 
 .analyzingState p {
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--on-surface-variant);
 }
 
@@ -379,36 +397,31 @@
   flex-direction: column;
   gap: 6px;
   margin-top: 8px;
+  font-family: var(--font-mono);
 }
 
 .stepDone {
-  font-size: 13px;
-  color: var(--primary-container);
-  font-weight: 500;
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 600;
 }
 
 .stepActive {
-  font-size: 13px;
-  color: var(--on-surface-variant);
+  font-size: 12px;
+  color: var(--outline);
   font-weight: 500;
-  animation: pulse-soft 1s ease-in-out infinite;
 }
 
 /* ── Result Card ── */
 .resultCard {
   background: var(--surface-container-lowest);
-  border: 1px solid var(--surface-container-high);
-  border-radius: var(--radius-xl);
-  padding: 28px;
+  border: 1px solid var(--surface-container-highest);
+  border-radius: var(--radius-lg);
+  padding: 26px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  animation: fadeUp 0.5s ease-out;
-}
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  gap: 22px;
+  box-shadow: var(--shadow-low);
 }
 
 .resultHeader {
@@ -416,29 +429,35 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--surface-container);
 }
 
 .foodName {
   font-family: var(--font-headline);
-  font-size: 22px;
+  font-size: 21px;
   font-weight: 700;
   color: var(--on-surface);
+  letter-spacing: -0.015em;
 }
 
 .portion {
-  font-size: 13px;
-  color: var(--on-surface-variant);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--outline);
 }
 
 .confidenceBadge {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
-  background: rgba(46, 125, 50, 0.08);
-  color: var(--primary-container);
-  border-radius: var(--radius-full);
-  font-size: 13px;
+  padding: 5px 10px;
+  background: var(--secondary-container);
+  border: 1px solid rgba(45, 106, 79, 0.2);
+  color: var(--primary);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -447,43 +466,46 @@
 .calorieSection {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
 }
 
 .tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .tag {
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
-  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 600;
-  background: rgba(46, 125, 50, 0.08);
-  color: var(--primary-container);
-  border: 1px solid rgba(46, 125, 50, 0.12);
+  background: var(--surface-container-low);
+  color: var(--on-surface-variant);
+  border: 1px solid var(--surface-container-high);
 }
 
 .tagWarn {
-  background: rgba(255, 152, 0, 0.08);
-  color: #e65100;
-  border-color: rgba(255, 152, 0, 0.15);
+  background: rgba(217, 130, 43, 0.1);
+  color: #b54708;
+  border-color: rgba(217, 130, 43, 0.25);
 }
 
 /* ── Nutrients ── */
 .nutrientsList {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .nutrientsList h4 {
-  font-family: var(--font-headline);
-  font-size: 15px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 600;
-  color: var(--on-surface);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--outline);
   margin-bottom: 2px;
 }
 
@@ -496,66 +518,77 @@
 .nutrientName {
   font-size: 13px;
   font-weight: 500;
-  color: var(--on-surface-variant);
-  width: 90px;
+  color: var(--on-surface);
+  width: 92px;
   flex-shrink: 0;
 }
 
 .nutrientBar {
   flex: 1;
-  height: 8px;
+  height: 6px;
   background: var(--surface-container);
-  border-radius: var(--radius-full);
+  border-radius: 2px;
   overflow: hidden;
 }
 
 .nutrientBar > div {
   height: 100%;
-  border-radius: var(--radius-full);
-  transition: width 0.8s ease-out;
+  border-radius: 2px;
+  transition: width 0.6s ease-out;
 }
 
 .nutrientVal {
-  font-size: 13px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--on-surface);
   width: 60px;
   text-align: right;
   flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Recommendation ── */
 .recoCard {
   display: flex;
-  gap: 14px;
-  background: rgba(46, 125, 50, 0.04);
-  border: 1px solid rgba(46, 125, 50, 0.1);
-  border-radius: var(--radius-lg);
-  padding: 18px 20px;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--surface-container-low);
+  border: 1px solid var(--surface-container-high);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
 }
 
 .recoIcon {
-  font-size: 24px;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--surface-container-high);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
 .recoCard h4 {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--primary-container);
-  margin-bottom: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--on-surface);
+  margin-bottom: 3px;
 }
 
 .recoCard p {
   font-size: 13px;
   color: var(--on-surface-variant);
-  line-height: 1.6;
+  line-height: 1.55;
 }
 
 /* ── Action Buttons ── */
 .resultActions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
 }
 
 .saveBtn {
@@ -564,32 +597,31 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 12px 20px;
-  background: var(--primary-container);
-  color: white;
+  padding: 11px 18px;
+  background: var(--primary);
+  color: #ffffff;
   border: none;
   border-radius: var(--radius-md);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.25s;
+  transition: background 0.15s ease;
 }
 
 .saveBtn:hover {
-  background: var(--primary);
-  transform: translateY(-1px);
+  background: var(--primary-hover);
 }
 
 .newBtn {
-  padding: 12px 20px;
+  padding: 11px 18px;
   background: transparent;
   color: var(--on-surface-variant);
-  border: 1.5px solid var(--surface-container-high);
+  border: 1px solid var(--surface-container-highest);
   border-radius: var(--radius-md);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
 }
 
 .newBtn:hover {

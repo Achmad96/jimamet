@@ -16,7 +16,7 @@ class ConsultationChatConsumer(AsyncWebsocketConsumer):
     """
     WebSocket consumer for consultation chat rooms.
     URL: ws://localhost:8000/ws/consultation/<consultation_id>/
-    
+
     Messages sent/received format:
     {
         "type": "chat_message",
@@ -64,24 +64,28 @@ class ConsultationChatConsumer(AsyncWebsocketConsumer):
 
     async def chat_message(self, event):
         """Receive message from room group and send to WebSocket client."""
-        await self.send(text_data=json.dumps({
-            "type": "chat_message",
-            "id": event.get("id", ""),
-            "message": event["message"],
-            "sender": event["sender"],
-            "sent_at": event["sent_at"],
-        }))
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "type": "chat_message",
+                    "id": event.get("id", ""),
+                    "message": event["message"],
+                    "sender": event["sender"],
+                    "sent_at": event["sent_at"],
+                }
+            )
+        )
 
 
 class DetectionStreamConsumer(AsyncWebsocketConsumer):
     """
     Ultra-low latency WebSocket stream consumer for real-time food detection
     from live camera feeds or video playback.
-    
+
     Accepts:
       - JSON text: {"frame": "<base64>", "ts": 123456789, "conf": 0.25, "imgsz": 320}
       - Binary bytes: raw JPEG frame buffer
-    
+
     Returns JSON:
       {
         "status": "success",
@@ -145,8 +149,12 @@ class DetectionStreamConsumer(AsyncWebsocketConsumer):
 
         except Exception as e:
             logger.error("DetectionStream error: %s", e)
-            await self.send(text_data=json.dumps({
-                "status": "error",
-                "message": str(e),
-                "ts": ts,
-            }))
+            await self.send(
+                text_data=json.dumps(
+                    {
+                        "status": "error",
+                        "message": str(e),
+                        "ts": ts,
+                    }
+                )
+            )
