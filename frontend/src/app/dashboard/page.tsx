@@ -20,7 +20,7 @@ export default function DashboardPage() {
     total_carbs: 0,
     total_fat: 0,
     meals: [] as any[],
-    weekly_data: [] as { date: string; calories: number }[],
+    weekly_data: [] as { date: string; calories: number }[]
   });
 
   useEffect(() => {
@@ -69,7 +69,7 @@ export default function DashboardPage() {
     { name: "Protein", value: prot, target: DEFAULT_PROTEIN_TARGET, color: "#c85a32", unit: "g" },
     { name: "Karbohidrat", value: carbs, target: DEFAULT_CARB_TARGET, color: "#d9822b", unit: "g" },
     { name: "Lemak", value: fat, target: DEFAULT_FAT_TARGET, color: "#2b6f77", unit: "g" },
-    { name: "Serat", value: 0, target: DEFAULT_FIBER_TARGET, color: "#588157", unit: "g" },
+    { name: "Serat", value: 0, target: DEFAULT_FIBER_TARGET, color: "#588157", unit: "g" }
   ];
 
   const rawMacroSum = prot + carbs + fat;
@@ -77,7 +77,7 @@ export default function DashboardPage() {
   const nutrientDonut = [
     { name: "Protein", pct: rawMacroSum ? Math.round((prot / totalMacros) * 100) : 0, color: "#c85a32", value: prot },
     { name: "Karbohidrat", pct: rawMacroSum ? Math.round((carbs / totalMacros) * 100) : 0, color: "#d9822b", value: carbs },
-    { name: "Lemak", pct: rawMacroSum ? Math.round((fat / totalMacros) * 100) : 0, color: "#2b6f77", value: fat },
+    { name: "Lemak", pct: rawMacroSum ? Math.round((fat / totalMacros) * 100) : 0, color: "#2b6f77", value: fat }
   ];
 
   const calorieData = Array.from({ length: 7 }).map((_, i) => {
@@ -110,14 +110,7 @@ export default function DashboardPage() {
     return (
       <div className="flex flex-col sm:flex-row items-center justify-center gap-7">
         <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
-          <circle
-            cx={cx}
-            cy={cy}
-            r={r}
-            fill="none"
-            stroke="var(--surface-container)"
-            strokeWidth="18"
-          />
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--surface-container)" strokeWidth="18" />
           {rawMacroSum > 0 &&
             nutrientDonut.map((seg) => {
               const dash = (seg.pct / 100) * circumference;
@@ -149,50 +142,19 @@ export default function DashboardPage() {
 
           {hoveredMacro ? (
             <>
-              <text
-                x={cx}
-                y={cy - 2}
-                textAnchor="middle"
-                fill="var(--on-surface)"
-                fontSize="22"
-                fontWeight="700"
-                fontFamily="JetBrains Mono, monospace"
-              >
+              <text x={cx} y={cy - 2} textAnchor="middle" fill="var(--on-surface)" fontSize="22" fontWeight="700" fontFamily="JetBrains Mono, monospace">
                 {nutrientDonut.find((n) => n.name === hoveredMacro)?.value}g
               </text>
-              <text
-                x={cx}
-                y={cy + 16}
-                textAnchor="middle"
-                fill={nutrientDonut.find((n) => n.name === hoveredMacro)?.color}
-                fontSize="11.5"
-                fontWeight="600"
-                fontFamily="Inter, sans-serif"
-              >
+              <text x={cx} y={cy + 16} textAnchor="middle" fill={nutrientDonut.find((n) => n.name === hoveredMacro)?.color} fontSize="11.5" fontWeight="600" fontFamily="Inter, sans-serif">
                 {hoveredMacro}
               </text>
             </>
           ) : (
             <>
-              <text
-                x={cx}
-                y={cy - 4}
-                textAnchor="middle"
-                fill="var(--on-surface)"
-                fontSize="21"
-                fontWeight="700"
-                fontFamily="JetBrains Mono, monospace"
-              >
+              <text x={cx} y={cy - 4} textAnchor="middle" fill="var(--on-surface)" fontSize="21" fontWeight="700" fontFamily="JetBrains Mono, monospace">
                 {cals}
               </text>
-              <text
-                x={cx}
-                y={cy + 14}
-                textAnchor="middle"
-                fill="var(--outline)"
-                fontSize="11"
-                fontFamily="JetBrains Mono, monospace"
-              >
+              <text x={cx} y={cy + 14} textAnchor="middle" fill="var(--outline)" fontSize="11" fontFamily="JetBrains Mono, monospace">
                 / {target} kkal
               </text>
             </>
@@ -224,34 +186,13 @@ export default function DashboardPage() {
       <svg viewBox={`0 0 ${chartW + 44} ${chartH + 40}`} className="w-full h-auto">
         {[0, 0.25, 0.5, 0.75, 1].map((pct) => (
           <g key={pct}>
-            <line
-              x1="40"
-              y1={chartH - chartH * pct + 12}
-              x2={chartW + 40}
-              y2={chartH - chartH * pct + 12}
-              stroke="var(--surface-container-high)"
-              strokeWidth="1"
-            />
-            <text
-              x="0"
-              y={chartH - chartH * pct + 16}
-              fill="var(--outline)"
-              fontSize="10"
-              fontFamily="JetBrains Mono, monospace"
-            >
+            <line x1="40" y1={chartH - chartH * pct + 12} x2={chartW + 40} y2={chartH - chartH * pct + 12} stroke="var(--surface-container-high)" strokeWidth="1" />
+            <text x="0" y={chartH - chartH * pct + 16} fill="var(--outline)" fontSize="10" fontFamily="JetBrains Mono, monospace">
               {Math.round(maxVal * pct)}
             </text>
           </g>
         ))}
-        <line
-          x1="40"
-          y1={chartH - (target / maxVal) * chartH + 12}
-          x2={chartW + 40}
-          y2={chartH - (target / maxVal) * chartH + 12}
-          stroke="#d9822b"
-          strokeWidth="1.25"
-          strokeDasharray="5 4"
-        />
+        <line x1="40" y1={chartH - (target / maxVal) * chartH + 12} x2={chartW + 40} y2={chartH - (target / maxVal) * chartH + 12} stroke="#d9822b" strokeWidth="1.25" strokeDasharray="5 4" />
         {calorieData.map((d, i) => {
           const h = Math.max(d.value > 0 ? 4 : 2, (d.value / maxVal) * chartH);
           const x = 44 + i * (barW + gap);
@@ -259,52 +200,16 @@ export default function DashboardPage() {
           const opacity = hoveredDay && !isHovered ? 0.4 : 1;
 
           return (
-            <g
-              key={d.day}
-              onMouseEnter={() => setHoveredDay(d.day)}
-              onMouseLeave={() => setHoveredDay(null)}
-              className="cursor-pointer transition-opacity duration-150"
-              opacity={opacity}
-            >
+            <g key={d.day} onMouseEnter={() => setHoveredDay(d.day)} onMouseLeave={() => setHoveredDay(null)} className="cursor-pointer transition-opacity duration-150" opacity={opacity}>
               <rect x={x - gap / 2} y="0" width={barW + gap} height={chartH + 30} fill="transparent" />
 
-              <rect
-                x={x}
-                y={chartH - h + 12}
-                width={barW}
-                height={h}
-                rx="4"
-                ry="4"
-                fill={
-                  d.value === 0
-                    ? "var(--surface-container-high)"
-                    : d.value > d.target
-                    ? "#c85a32"
-                    : "#1b4332"
-                }
-                className="transition-all duration-300"
-              />
+              <rect x={x} y={chartH - h + 12} width={barW} height={h} rx="4" ry="4" fill={d.value === 0 ? "var(--surface-container-high)" : d.value > d.target ? "#c85a32" : "#1b4332"} className="transition-all duration-300" />
 
-              <text
-                x={x + barW / 2}
-                y={chartH + 30}
-                textAnchor="middle"
-                fill={isHovered ? "var(--on-surface)" : "var(--on-surface-variant)"}
-                fontSize="11.5"
-                fontWeight={isHovered || i === 6 ? "600" : "400"}
-              >
+              <text x={x + barW / 2} y={chartH + 30} textAnchor="middle" fill={isHovered ? "var(--on-surface)" : "var(--on-surface-variant)"} fontSize="11.5" fontWeight={isHovered || i === 6 ? "600" : "400"}>
                 {d.day}
               </text>
               {d.value > 0 && (
-                <text
-                  x={x + barW / 2}
-                  y={chartH - h + 6}
-                  textAnchor="middle"
-                  fill="var(--outline)"
-                  fontSize="10"
-                  fontFamily="JetBrains Mono, monospace"
-                  opacity={isHovered ? 0 : 1}
-                >
+                <text x={x + barW / 2} y={chartH - h + 6} textAnchor="middle" fill="var(--outline)" fontSize="10" fontFamily="JetBrains Mono, monospace" opacity={isHovered ? 0 : 1}>
                   {d.value}
                 </text>
               )}
@@ -313,15 +218,7 @@ export default function DashboardPage() {
                 <g transform={`translate(${x + barW / 2}, ${chartH - h - 12})`}>
                   <rect x="-38" y="-24" width="76" height="22" rx="4" fill="var(--on-surface)" />
                   <polygon points="-5,-2 5,-2 0,4" fill="var(--on-surface)" />
-                  <text
-                    x="0"
-                    y="-9"
-                    textAnchor="middle"
-                    fill="var(--surface)"
-                    fontSize="11"
-                    fontWeight="600"
-                    fontFamily="JetBrains Mono, monospace"
-                  >
+                  <text x="0" y="-9" textAnchor="middle" fill="var(--surface)" fontSize="11" fontWeight="600" fontFamily="JetBrains Mono, monospace">
                     {d.value} kkal
                   </text>
                 </g>
@@ -339,15 +236,11 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 pb-4 border-b border-surface-high">
         <div>
-          <span className="block font-mono text-[11px] font-semibold tracking-wider text-primary mb-1.5">
-            TELEMETRI ASUPAN HARIAN
-          </span>
+          <span className="block font-mono text-[11px] font-semibold tracking-wider text-primary mb-1.5">MONITORING ASUPAN HARIAN</span>
           <h1 className="font-headline text-2xl sm:text-[28px] font-bold text-on-surface tracking-tight">
             {greeting}, {user?.full_name?.split(" ")[0] || user?.username || "Pasien"}
           </h1>
-          <p className="text-sm text-on-surface-variant mt-1">
-            Ringkasan keseimbangan energi dan makronutrien berdasarkan catatan konsumsi Anda.
-          </p>
+          <p className="text-sm text-on-surface-variant mt-1">Ringkasan keseimbangan energi dan makronutrien berdasarkan catatan konsumsi Anda.</p>
         </div>
         <div className="flex items-center gap-3">
           <span className="inline-flex items-center gap-2 font-mono text-xs font-medium text-on-surface-variant px-3.5 py-2 bg-surface-lowest rounded-md border border-surface-high">
@@ -361,7 +254,7 @@ export default function DashboardPage() {
               weekday: "long",
               day: "numeric",
               month: "long",
-              year: "numeric",
+              year: "numeric"
             })}
           </span>
         </div>
@@ -371,20 +264,12 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-surface-lowest border border-surface-high rounded-lg p-5 flex flex-col gap-2.5 hover:border-outline-variant transition-colors">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-[11px] font-semibold tracking-wider text-on-surface-variant">
-              ENERGI HARI INI
-            </span>
-            <span className="font-mono text-[11px] font-semibold text-primary px-2 py-0.5 bg-primary-fixed rounded-sm">
-              {Math.round(calPct)}%
-            </span>
+            <span className="font-mono text-[11px] font-semibold tracking-wider text-on-surface-variant">ENERGI HARI INI</span>
+            <span className="font-mono text-[11px] font-semibold text-primary px-2 py-0.5 bg-primary-fixed rounded-sm">{Math.round(calPct)}%</span>
           </div>
           <div className="flex items-baseline justify-between gap-2">
-            <span className="font-mono text-[26px] font-semibold text-on-surface tracking-tight leading-tight tabular-nums">
-              {cals.toLocaleString("id-ID")}
-            </span>
-            <span className="font-mono text-[11px] text-outline">
-              target {target.toLocaleString("id-ID")} kkal
-            </span>
+            <span className="font-mono text-[26px] font-semibold text-on-surface tracking-tight leading-tight tabular-nums">{cals.toLocaleString("id-ID")}</span>
+            <span className="font-mono text-[11px] text-outline">target {target.toLocaleString("id-ID")} kkal</span>
           </div>
           <div className="w-full h-1 bg-surface-container rounded-full overflow-hidden mt-1">
             <div className="h-full rounded-full transition-all duration-500 bg-macro-cal" style={{ width: `${calPct}%` }} />
@@ -393,18 +278,12 @@ export default function DashboardPage() {
 
         <div className="bg-surface-lowest border border-surface-high rounded-lg p-5 flex flex-col gap-2.5 hover:border-outline-variant transition-colors">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-[11px] font-semibold tracking-wider text-on-surface-variant">
-              PROTEIN
-            </span>
+            <span className="font-mono text-[11px] font-semibold tracking-wider text-on-surface-variant">PROTEIN</span>
             <span className="w-2 h-2 rounded-[2px] bg-macro-protein" />
           </div>
           <div className="flex items-baseline justify-between gap-2">
-            <span className="font-mono text-[26px] font-semibold text-on-surface tracking-tight leading-tight tabular-nums">
-              {prot}g
-            </span>
-            <span className="font-mono text-[11px] text-outline">
-              target {DEFAULT_PROTEIN_TARGET}g
-            </span>
+            <span className="font-mono text-[26px] font-semibold text-on-surface tracking-tight leading-tight tabular-nums">{prot}g</span>
+            <span className="font-mono text-[11px] text-outline">target {DEFAULT_PROTEIN_TARGET}g</span>
           </div>
           <div className="w-full h-1 bg-surface-container rounded-full overflow-hidden mt-1">
             <div className="h-full rounded-full transition-all duration-500 bg-macro-protein" style={{ width: `${protPct}%` }} />
@@ -413,18 +292,12 @@ export default function DashboardPage() {
 
         <div className="bg-surface-lowest border border-surface-high rounded-lg p-5 flex flex-col gap-2.5 hover:border-outline-variant transition-colors">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-[11px] font-semibold tracking-wider text-on-surface-variant">
-              KARBOHIDRAT
-            </span>
+            <span className="font-mono text-[11px] font-semibold tracking-wider text-on-surface-variant">KARBOHIDRAT</span>
             <span className="w-2 h-2 rounded-[2px] bg-macro-carbs" />
           </div>
           <div className="flex items-baseline justify-between gap-2">
-            <span className="font-mono text-[26px] font-semibold text-on-surface tracking-tight leading-tight tabular-nums">
-              {carbs}g
-            </span>
-            <span className="font-mono text-[11px] text-outline">
-              target {DEFAULT_CARB_TARGET}g
-            </span>
+            <span className="font-mono text-[26px] font-semibold text-on-surface tracking-tight leading-tight tabular-nums">{carbs}g</span>
+            <span className="font-mono text-[11px] text-outline">target {DEFAULT_CARB_TARGET}g</span>
           </div>
           <div className="w-full h-1 bg-surface-container rounded-full overflow-hidden mt-1">
             <div className="h-full rounded-full transition-all duration-500 bg-macro-carbs" style={{ width: `${carbPct}%` }} />
@@ -433,18 +306,12 @@ export default function DashboardPage() {
 
         <div className="bg-surface-lowest border border-surface-high rounded-lg p-5 flex flex-col gap-2.5 hover:border-outline-variant transition-colors">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-[11px] font-semibold tracking-wider text-on-surface-variant">
-              LEMAK
-            </span>
+            <span className="font-mono text-[11px] font-semibold tracking-wider text-on-surface-variant">LEMAK</span>
             <span className="w-2 h-2 rounded-[2px] bg-macro-fat" />
           </div>
           <div className="flex items-baseline justify-between gap-2">
-            <span className="font-mono text-[26px] font-semibold text-on-surface tracking-tight leading-tight tabular-nums">
-              {fat}g
-            </span>
-            <span className="font-mono text-[11px] text-outline">
-              target {DEFAULT_FAT_TARGET}g
-            </span>
+            <span className="font-mono text-[26px] font-semibold text-on-surface tracking-tight leading-tight tabular-nums">{fat}g</span>
+            <span className="font-mono text-[11px] text-outline">target {DEFAULT_FAT_TARGET}g</span>
           </div>
           <div className="w-full h-1 bg-surface-container rounded-full overflow-hidden mt-1">
             <div className="h-full rounded-full transition-all duration-500 bg-macro-fat" style={{ width: `${fatPct}%` }} />
@@ -457,12 +324,8 @@ export default function DashboardPage() {
         <div className="lg:col-span-7 bg-surface-lowest border border-surface-high rounded-lg p-6">
           <div className="flex flex-wrap justify-between items-start gap-3 mb-5 pb-3.5 border-b border-surface-container">
             <div>
-              <h3 className="font-headline text-base font-bold text-on-surface tracking-tight">
-                Tren Asupan Energi (7 Hari)
-              </h3>
-              <p className="text-xs text-outline mt-0.5">
-                Perbandingan asupan harian terhadap batas target kalori
-              </p>
+              <h3 className="font-headline text-base font-bold text-on-surface tracking-tight">Tren Asupan Energi (7 Hari)</h3>
+              <p className="text-xs text-outline mt-0.5">Perbandingan asupan harian terhadap batas target kalori</p>
             </div>
             <div className="flex items-center gap-3.5 font-mono text-[11px] text-on-surface-variant">
               <span className="inline-flex items-center gap-1.5">
@@ -481,12 +344,8 @@ export default function DashboardPage() {
         <div className="lg:col-span-5 bg-surface-lowest border border-surface-high rounded-lg p-6">
           <div className="flex justify-between items-start mb-5 pb-3.5 border-b border-surface-container">
             <div>
-              <h3 className="font-headline text-base font-bold text-on-surface tracking-tight">
-                Proporsi Makronutrien
-              </h3>
-              <p className="text-xs text-outline mt-0.5">
-                Rasio distribusi gramasi hari ini
-              </p>
+              <h3 className="font-headline text-base font-bold text-on-surface tracking-tight">Proporsi Makronutrien</h3>
+              <p className="text-xs text-outline mt-0.5">Rasio distribusi gramasi hari ini</p>
             </div>
           </div>
           {renderDonutChart()}
@@ -498,39 +357,24 @@ export default function DashboardPage() {
         <div className="bg-surface-lowest border border-surface-high rounded-lg p-6">
           <div className="flex justify-between items-start mb-5 pb-3.5 border-b border-surface-container">
             <div>
-              <h3 className="font-headline text-base font-bold text-on-surface tracking-tight">
-                Log Konsumsi Hari Ini
-              </h3>
-              <p className="text-xs text-outline mt-0.5">
-                {summary.meals.length} entri makanan tercatat
-              </p>
+              <h3 className="font-headline text-base font-bold text-on-surface tracking-tight">Log Konsumsi Hari Ini</h3>
+              <p className="text-xs text-outline mt-0.5">{summary.meals.length} entri makanan tercatat</p>
             </div>
-            <Link
-              href="/dashboard/food-analysis"
-              className="px-3.5 py-2 bg-primary hover:bg-primary-container text-on-primary border-none rounded-md text-xs font-semibold font-headline no-underline transition-colors"
-            >
+            <Link href="/dashboard/food-analysis" className="px-3.5 py-2 bg-primary hover:bg-primary-container text-on-primary border-none rounded-md text-xs font-semibold font-headline no-underline transition-colors">
               + Catat Makanan
             </Link>
           </div>
           <div className="flex flex-col gap-2">
             {summary.meals.length === 0 ? (
               <div className="py-9 px-4 text-center bg-surface-low border border-dashed border-surface-high rounded-md">
-                <p className="text-[13px] text-on-surface-variant mb-2">
-                  Belum ada makanan yang dicatat hari ini.
-                </p>
-                <Link
-                  href="/dashboard/food-analysis"
-                  className="text-xs font-semibold text-primary no-underline hover:underline"
-                >
+                <p className="text-[13px] text-on-surface-variant mb-2">Belum ada makanan yang dicatat hari ini.</p>
+                <Link href="/dashboard/food-analysis" className="text-xs font-semibold text-primary no-underline hover:underline">
                   Mulai analisis foto atau kamera →
                 </Link>
               </div>
             ) : (
               summary.meals.map((meal, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3.5 px-3.5 py-3 rounded-md bg-surface-low border border-transparent hover:border-surface-high hover:bg-surface-container transition-all"
-                >
+                <div key={i} className="flex items-center gap-3.5 px-3.5 py-3 rounded-md bg-surface-low border border-transparent hover:border-surface-high hover:bg-surface-container transition-all">
                   <div className="w-9 h-9 rounded-md bg-surface-lowest border border-surface-high text-primary flex items-center justify-center shrink-0">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
@@ -541,16 +385,10 @@ export default function DashboardPage() {
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <span className="block text-sm font-semibold text-on-surface truncate">
-                      {formatFoodLabel(meal.food_name || meal.nama_makanan)}
-                    </span>
-                    <span className="font-mono text-[11px] text-outline">
-                      {formatTime(meal.recorded_at || meal.tanggal)}
-                    </span>
+                    <span className="block text-sm font-semibold text-on-surface truncate">{formatFoodLabel(meal.food_name || meal.nama_makanan)}</span>
+                    <span className="font-mono text-[11px] text-outline">{formatTime(meal.recorded_at || meal.tanggal)}</span>
                   </div>
-                  <span className="font-mono text-[13px] font-semibold text-primary shrink-0 tabular-nums">
-                    {meal.calories || meal.kalori} kkal
-                  </span>
+                  <span className="font-mono text-[13px] font-semibold text-primary shrink-0 tabular-nums">{meal.calories || meal.kalori} kkal</span>
                 </div>
               ))
             )}
@@ -560,12 +398,8 @@ export default function DashboardPage() {
         <div className="bg-surface-lowest border border-surface-high rounded-lg p-6">
           <div className="flex justify-between items-start mb-5 pb-3.5 border-b border-surface-container">
             <div>
-              <h3 className="font-headline text-base font-bold text-on-surface tracking-tight">
-                Target Kecukupan Makronutrien
-              </h3>
-              <p className="text-xs text-outline mt-0.5">
-                Pencapaian gramasi harian per kategori gizi
-              </p>
+              <h3 className="font-headline text-base font-bold text-on-surface tracking-tight">Target Kecukupan Makronutrien</h3>
+              <p className="text-xs text-outline mt-0.5">Pencapaian gramasi harian per kategori gizi</p>
             </div>
           </div>
           <div className="flex flex-col gap-4">
@@ -587,7 +421,7 @@ export default function DashboardPage() {
                     className="h-full rounded-full transition-all duration-500"
                     style={{
                       width: `${Math.min((m.value / m.target) * 100, 100)}%`,
-                      background: m.color,
+                      background: m.color
                     }}
                   />
                 </div>

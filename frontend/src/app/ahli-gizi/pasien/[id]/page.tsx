@@ -3,15 +3,7 @@
 import { useState, useEffect, useCallback, useRef, FormEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  apiGetPatientDetails,
-  apiListChat,
-  apiSendChat,
-  apiDeleteChat,
-  apiUpdateConsultation,
-  apiGetMe,
-  getWsConsultationUrl,
-} from "@/lib/api";
+import { apiGetPatientDetails, apiListChat, apiSendChat, apiDeleteChat, apiUpdateConsultation, apiGetMe, getWsConsultationUrl } from "@/lib/api";
 import { formatFoodLabel } from "@/lib/food-labels";
 
 interface ChatMsg {
@@ -49,7 +41,7 @@ function formatDateShort(iso: string) {
     day: "numeric",
     month: "short",
     hour: "2-digit",
-    minute: "2-digit",
+    minute: "2-digit"
   });
 }
 
@@ -58,13 +50,13 @@ const activityLabels: Record<string, string> = {
   light: "Ringan",
   moderate: "Moderat",
   active: "Aktif",
-  veryActive: "Sangat Aktif",
+  veryActive: "Sangat Aktif"
 };
 
 const goalLabels: Record<string, string> = {
   lose: "Reduksi Massa",
   maintain: "Pemeliharaan",
-  gain: "Surplus Anabolik",
+  gain: "Surplus Anabolik"
 };
 
 export default function ConsultationChatPage() {
@@ -129,9 +121,7 @@ export default function ConsultationChatPage() {
   const connectWebSocket = useCallback(() => {
     if (wsRef.current) wsRef.current.close();
 
-    const ws = new WebSocket(
-      getWsConsultationUrl(consultationId)
-    );
+    const ws = new WebSocket(getWsConsultationUrl(consultationId));
 
     ws.onopen = () => {
       console.log("[WS Chat Page] Connected");
@@ -149,8 +139,8 @@ export default function ConsultationChatPage() {
               id: data.id || `ws-${Date.now()}`,
               sender: data.sender,
               message: data.message,
-              sent_at: data.sent_at,
-            },
+              sent_at: data.sent_at
+            }
           ];
         });
       }
@@ -194,7 +184,7 @@ export default function ConsultationChatPage() {
             id: data?.id || `sent-${Date.now()}`,
             message: text,
             sender: "nutritionist",
-            sent_at: new Date().toISOString(),
+            sent_at: new Date().toISOString()
           })
         );
       } else {
@@ -204,8 +194,8 @@ export default function ConsultationChatPage() {
             id: data?.id || `local-${Date.now()}`,
             sender: "nutritionist",
             message: text,
-            sent_at: new Date().toISOString(),
-          },
+            sent_at: new Date().toISOString()
+          }
         ]);
       }
     }
@@ -221,24 +211,24 @@ export default function ConsultationChatPage() {
 
   const handleSelesai = async () => {
     if (!confirm("Tandai konsultasi ini sebagai selesai?")) return;
-    
+
     const closingText = "Sesi konsultasi klinis ini telah diselesaikan oleh Ahli Gizi. Terima kasih telah menggunakan layanan NutriCoach.";
     const { ok: chatOk, data } = await apiSendChat(consultationId, closingText, "nutritionist");
-    
+
     if (chatOk && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(
         JSON.stringify({
           id: data?.id || `sent-${Date.now()}`,
           message: closingText,
           sender: "nutritionist",
-          sent_at: new Date().toISOString(),
+          sent_at: new Date().toISOString()
         })
       );
     }
-    
+
     await apiUpdateConsultation(consultationId, { status: "completed" });
     setConsultationStatus("completed");
-    
+
     router.push("/ahli-gizi/pasien");
   };
 
@@ -262,12 +252,12 @@ export default function ConsultationChatPage() {
       }
     } catch {}
     await apiUpdateConsultation(consultationId, { handled_by: nama.trim() });
-    
+
     setConsultationStatus("active");
-    
+
     const welcomeText = `Halo! Saya Ahli Gizi ${nama.trim()} yang akan membantu Anda hari ini. Ada keluhan atau pertanyaan apa yang bisa saya bantu?`;
     const { ok, data } = await apiSendChat(consultationId, welcomeText, "nutritionist");
-    
+
     if (ok) {
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(
@@ -275,7 +265,7 @@ export default function ConsultationChatPage() {
             id: data?.id || `sent-${Date.now()}`,
             message: welcomeText,
             sender: "nutritionist",
-            sent_at: new Date().toISOString(),
+            sent_at: new Date().toISOString()
           })
         );
       } else {
@@ -285,32 +275,21 @@ export default function ConsultationChatPage() {
             id: data?.id || `local-${Date.now()}`,
             sender: "nutritionist",
             message: welcomeText,
-            sent_at: new Date().toISOString(),
-          },
+            sent_at: new Date().toISOString()
+          }
         ]);
       }
     }
   };
 
   // Calculate BMI
-  const bmi =
-    profile?.weight && profile?.height
-      ? (
-          profile.weight /
-          ((profile.height / 100) * (profile.height / 100))
-        ).toFixed(1)
-      : null;
+  const bmi = profile?.weight && profile?.height ? (profile.weight / ((profile.height / 100) * (profile.height / 100))).toFixed(1) : null;
 
   // Today's food summary
   const today = new Date().toISOString().split("T")[0];
-  const todayFoods = foodHistory.filter((f) =>
-    f.recorded_at?.startsWith(today)
-  );
+  const todayFoods = foodHistory.filter((f) => f.recorded_at?.startsWith(today));
   const todayCal = todayFoods.reduce((sum, f) => sum + (f.calories || 0), 0);
-  const todayProtein = todayFoods.reduce(
-    (sum, f) => sum + (f.protein || 0),
-    0
-  );
+  const todayProtein = todayFoods.reduce((sum, f) => sum + (f.protein || 0), 0);
   const todayCarbs = todayFoods.reduce((sum, f) => sum + (f.carbs || 0), 0);
   const todayFat = todayFoods.reduce((sum, f) => sum + (f.fat || 0), 0);
 
@@ -328,37 +307,18 @@ export default function ConsultationChatPage() {
       {/* ── Left: Patient Info Panel ── */}
       <aside className="flex w-[360px] shrink-0 flex-col border-r border-surface-high bg-surface-low">
         <div className="border-b border-surface-high bg-surface-lowest p-5">
-          <Link
-            href="/ahli-gizi/pasien"
-            className="mb-2 inline-flex items-center gap-1 font-mono text-xs font-medium text-primary hover:underline"
-          >
+          <Link href="/ahli-gizi/pasien" className="mb-2 inline-flex items-center gap-1 font-mono text-xs font-medium text-primary hover:underline">
             ← Kembali ke Antrean
           </Link>
-          <h2 className="font-headline text-[19px] font-bold tracking-[-0.02em] text-on-surface">
-            {profile?.full_name || "Pasien"}
-          </h2>
+          <h2 className="font-headline text-[19px] font-bold tracking-[-0.02em] text-on-surface">{profile?.full_name || "Pasien"}</h2>
           <p className="mt-0.5 text-xs text-on-surface-variant">{profile?.email}</p>
         </div>
 
         <div className="flex border-b border-surface-high bg-surface-lowest">
-          <button
-            className={`flex-1 cursor-pointer border-b-2 py-2.5 text-xs font-semibold transition-all ${
-              sidebarTab === "profile"
-                ? "border-primary text-primary"
-                : "border-transparent text-outline hover:text-on-surface"
-            }`}
-            onClick={() => setSidebarTab("profile")}
-          >
+          <button className={`flex-1 cursor-pointer border-b-2 py-2.5 text-xs font-semibold transition-all ${sidebarTab === "profile" ? "border-primary text-primary" : "border-transparent text-outline hover:text-on-surface"}`} onClick={() => setSidebarTab("profile")}>
             Antropometri
           </button>
-          <button
-            className={`flex-1 cursor-pointer border-b-2 py-2.5 text-xs font-semibold transition-all ${
-              sidebarTab === "food"
-                ? "border-primary text-primary"
-                : "border-transparent text-outline hover:text-on-surface"
-            }`}
-            onClick={() => setSidebarTab("food")}
-          >
+          <button className={`flex-1 cursor-pointer border-b-2 py-2.5 text-xs font-semibold transition-all ${sidebarTab === "food" ? "border-primary text-primary" : "border-transparent text-outline hover:text-on-surface"}`} onClick={() => setSidebarTab("food")}>
             Log Konsumsi
           </button>
         </div>
@@ -368,99 +328,57 @@ export default function ConsultationChatPage() {
             <div className="flex flex-col gap-4">
               <div className="grid grid-cols-2 gap-2.5">
                 <div className="flex flex-col gap-1 rounded-md border border-surface-high bg-surface-lowest p-3">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">
-                    Usia
-                  </span>
-                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">
-                    {profile?.age ?? "—"} thn
-                  </span>
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">Usia</span>
+                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">{profile?.age ?? "—"} thn</span>
                 </div>
                 <div className="flex flex-col gap-1 rounded-md border border-surface-high bg-surface-lowest p-3">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">
-                    Berat
-                  </span>
-                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">
-                    {profile?.weight ?? "—"} kg
-                  </span>
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">Berat</span>
+                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">{profile?.weight ?? "—"} kg</span>
                 </div>
                 <div className="flex flex-col gap-1 rounded-md border border-surface-high bg-surface-lowest p-3">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">
-                    Tinggi
-                  </span>
-                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">
-                    {profile?.height ?? "—"} cm
-                  </span>
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">Tinggi</span>
+                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">{profile?.height ?? "—"} cm</span>
                 </div>
                 <div className="flex flex-col gap-1 rounded-md border border-surface-high bg-surface-lowest p-3">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">
-                    IMT (BMI)
-                  </span>
-                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">
-                    {bmi ?? "—"}
-                  </span>
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">IMT (BMI)</span>
+                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">{bmi ?? "—"}</span>
                 </div>
                 <div className="flex flex-col gap-1 rounded-md border border-surface-high bg-surface-lowest p-3">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">
-                    Gender
-                  </span>
-                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">
-                    {profile?.gender === "male" ? "Laki-laki" : profile?.gender === "female" ? "Perempuan" : "—"}
-                  </span>
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">Gender</span>
+                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">{profile?.gender === "male" ? "Laki-laki" : profile?.gender === "female" ? "Perempuan" : "—"}</span>
                 </div>
                 <div className="flex flex-col gap-1 rounded-md border border-surface-high bg-surface-lowest p-3">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">
-                    Aktivitas
-                  </span>
-                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">
-                    {activityLabels[profile?.activity_level || ""] || "—"}
-                  </span>
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">Aktivitas</span>
+                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">{activityLabels[profile?.activity_level || ""] || "—"}</span>
                 </div>
                 <div className="flex flex-col gap-1 rounded-md border border-surface-high bg-surface-lowest p-3">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">
-                    Orientasi
-                  </span>
-                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">
-                    {goalLabels[profile?.goal || ""] || "—"}
-                  </span>
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">Orientasi</span>
+                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">{goalLabels[profile?.goal || ""] || "—"}</span>
                 </div>
                 <div className="flex flex-col gap-1 rounded-md border border-surface-high bg-surface-lowest p-3">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">
-                    Target TDEE
-                  </span>
-                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">
-                    {profile?.daily_calorie_target ?? "—"} kkal
-                  </span>
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">Target TDEE</span>
+                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">{profile?.daily_calorie_target ?? "—"} kkal</span>
                 </div>
               </div>
 
               {/* Today's Summary */}
               <div className="rounded-md border border-surface-high bg-surface-lowest p-3.5">
-                <h4 className="mb-3 font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-on-surface-variant">
-                  TELEMETRI ASUPAN HARI INI
-                </h4>
+                <h4 className="mb-3 font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-on-surface-variant">MONITORING ASUPAN HARI INI</h4>
                 <div className="grid grid-cols-4 gap-2">
                   <div className="flex flex-col items-center gap-0.5">
-                    <span className="font-mono text-[15px] font-bold tabular-nums text-primary">
-                      {Math.round(todayCal)}
-                    </span>
+                    <span className="font-mono text-[15px] font-bold tabular-nums text-primary">{Math.round(todayCal)}</span>
                     <span className="font-mono text-[10px] text-outline">kkal</span>
                   </div>
                   <div className="flex flex-col items-center gap-0.5">
-                    <span className="font-mono text-[15px] font-bold tabular-nums text-macro-protein">
-                      {Math.round(todayProtein)}g
-                    </span>
+                    <span className="font-mono text-[15px] font-bold tabular-nums text-macro-protein">{Math.round(todayProtein)}g</span>
                     <span className="font-mono text-[10px] text-outline">Protein</span>
                   </div>
                   <div className="flex flex-col items-center gap-0.5">
-                    <span className="font-mono text-[15px] font-bold tabular-nums text-macro-carbs">
-                      {Math.round(todayCarbs)}g
-                    </span>
+                    <span className="font-mono text-[15px] font-bold tabular-nums text-macro-carbs">{Math.round(todayCarbs)}g</span>
                     <span className="font-mono text-[10px] text-outline">Karbo</span>
                   </div>
                   <div className="flex flex-col items-center gap-0.5">
-                    <span className="font-mono text-[15px] font-bold tabular-nums text-macro-fat">
-                      {Math.round(todayFat)}g
-                    </span>
+                    <span className="font-mono text-[15px] font-bold tabular-nums text-macro-fat">{Math.round(todayFat)}g</span>
                     <span className="font-mono text-[10px] text-outline">Lemak</span>
                   </div>
                 </div>
@@ -468,9 +386,7 @@ export default function ConsultationChatPage() {
 
               {/* Notes Section */}
               <div className="mb-4 flex flex-col gap-2 rounded-md border border-surface-high bg-surface-lowest p-3.5">
-                <h4 className="font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-on-surface-variant">
-                  CATATAN KLINIS AHLI GIZI
-                </h4>
+                <h4 className="font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-on-surface-variant">CATATAN KLINIS AHLI GIZI</h4>
                 <textarea
                   value={catatan}
                   onChange={(e) => setCatatan(e.target.value)}
@@ -478,20 +394,13 @@ export default function ConsultationChatPage() {
                   className="w-full resize-y rounded-sm border border-outline-variant bg-surface-low p-2.5 text-xs leading-[1.5] text-on-surface outline-none transition-colors focus:border-primary"
                   rows={4}
                 />
-                <button
-                  className="cursor-pointer rounded-sm bg-primary px-3 py-2 text-xs font-semibold text-on-primary transition-colors hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-60"
-                  onClick={handleSaveNotes}
-                  disabled={savingCatatan}
-                >
+                <button className="cursor-pointer rounded-sm bg-primary px-3 py-2 text-xs font-semibold text-on-primary transition-colors hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-60" onClick={handleSaveNotes} disabled={savingCatatan}>
                   {savingCatatan ? "Menyimpan..." : "Simpan Catatan Klinis"}
                 </button>
               </div>
 
               {consultationStatus !== "completed" && (
-                <button
-                  className="w-full cursor-pointer rounded-md border border-outline-variant bg-surface-lowest p-2.5 text-xs font-semibold text-on-surface transition-all hover:border-primary hover:bg-primary/[0.06] hover:text-primary"
-                  onClick={handleSelesai}
-                >
+                <button className="w-full cursor-pointer rounded-md border border-outline-variant bg-surface-lowest p-2.5 text-xs font-semibold text-on-surface transition-all hover:border-primary hover:bg-primary/[0.06] hover:text-primary" onClick={handleSelesai}>
                   Selesaikan Sesi Konsultasi
                 </button>
               )}
@@ -501,29 +410,20 @@ export default function ConsultationChatPage() {
           {sidebarTab === "food" && (
             <div className="flex flex-col">
               {foodHistory.length === 0 ? (
-                <p className="py-10 text-center text-xs text-outline">
-                  Belum ada rekaman konsumsi pasien.
-                </p>
+                <p className="py-10 text-center text-xs text-outline">Belum ada rekaman konsumsi pasien.</p>
               ) : (
                 <div className="flex flex-col gap-2">
                   {foodHistory.map((f) => (
-                    <div
-                      key={f.id}
-                      className="flex items-start gap-2.5 rounded-md border border-surface-high bg-surface-lowest p-3"
-                    >
+                    <div key={f.id} className="flex items-start gap-2.5 rounded-md border border-surface-high bg-surface-lowest p-3">
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-surface-container text-primary">
                         <span className="material-symbols-outlined text-[16px]">restaurant</span>
                       </div>
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-[13px] font-semibold text-on-surface">
-                          {formatFoodLabel(f.food_name)}
-                        </span>
+                        <span className="text-[13px] font-semibold text-on-surface">{formatFoodLabel(f.food_name)}</span>
                         <span className="font-mono text-[11px] text-on-surface-variant">
                           {f.calories} kkal · P {f.protein || 0}g · K {f.carbs || 0}g · L {f.fat || 0}g
                         </span>
-                        <span className="font-mono text-[10px] text-outline">
-                          {formatDateShort(f.recorded_at)}
-                        </span>
+                        <span className="font-mono text-[10px] text-outline">{formatDateShort(f.recorded_at)}</span>
                       </div>
                     </div>
                   ))}
@@ -542,15 +442,9 @@ export default function ConsultationChatPage() {
               <span className="material-symbols-outlined text-[18px]">forum</span>
             </div>
             <div>
-              <h3 className="font-headline text-[15px] font-bold text-on-surface">
-                Konsultasi: {profile?.full_name || "Pasien"}
-              </h3>
+              <h3 className="font-headline text-[15px] font-bold text-on-surface">Konsultasi: {profile?.full_name || "Pasien"}</h3>
               <span className="mt-0.5 flex items-center gap-1.5 font-mono text-[11px] text-outline">
-                <span
-                  className={`inline-block h-1.5 w-1.5 rounded-full ${
-                    wsConnected ? "bg-macro-protein" : "bg-error"
-                  }`}
-                />
+                <span className={`inline-block h-1.5 w-1.5 rounded-full ${wsConnected ? "bg-macro-protein" : "bg-error"}`} />
                 {wsConnected ? "WebSocket Real-time Aktif" : "Offline"}
               </span>
             </div>
@@ -565,30 +459,13 @@ export default function ConsultationChatPage() {
           )}
 
           {chatMsgs.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex ${
-                msg.sender === "nutritionist" ? "justify-end" : "justify-start"
-              }`}
-            >
-              <div
-                className={`max-w-[65%] px-4 py-3 text-[13px] leading-[1.55] ${
-                  msg.sender === "nutritionist"
-                    ? "rounded-[12px_12px_2px_12px] bg-primary text-on-primary"
-                    : "rounded-[12px_12px_12px_2px] border border-surface-high bg-surface-lowest text-on-surface"
-                }`}
-              >
+            <div key={msg.id} className={`flex ${msg.sender === "nutritionist" ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-[65%] px-4 py-3 text-[13px] leading-[1.55] ${msg.sender === "nutritionist" ? "rounded-[12px_12px_2px_12px] bg-primary text-on-primary" : "rounded-[12px_12px_12px_2px] border border-surface-high bg-surface-lowest text-on-surface"}`}>
                 <p>{msg.message}</p>
                 <div className="mt-1.5 flex items-center justify-end gap-2">
-                  <span className="font-mono text-[10px] opacity-65">
-                    {formatDateShort(msg.sent_at)}
-                  </span>
+                  <span className="font-mono text-[10px] opacity-65">{formatDateShort(msg.sent_at)}</span>
                   {msg.sender === "nutritionist" && (
-                    <button
-                      className="flex cursor-pointer items-center p-0.5 text-inherit opacity-55 transition-opacity hover:opacity-100"
-                      onClick={() => handleDeleteMsg(msg.id)}
-                      title="Hapus pesan"
-                    >
+                    <button className="flex cursor-pointer items-center p-0.5 text-inherit opacity-55 transition-opacity hover:opacity-100" onClick={() => handleDeleteMsg(msg.id)} title="Hapus pesan">
                       <span className="material-symbols-outlined text-[14px]">delete</span>
                     </button>
                   )}
@@ -601,35 +478,24 @@ export default function ConsultationChatPage() {
 
         {consultationStatus === "pending" ? (
           <div className="flex justify-center border-t border-surface-high bg-surface-lowest p-4.5">
-            <button
-              onClick={handleTangani}
-              className="cursor-pointer rounded-md bg-primary px-6 py-2.5 text-[13px] font-semibold text-on-primary transition-colors hover:bg-primary-container"
-            >
+            <button onClick={handleTangani} className="cursor-pointer rounded-md bg-primary px-6 py-2.5 text-[13px] font-semibold text-on-primary transition-colors hover:bg-primary-container">
               Ambil Alih & Tangani Pasien
             </button>
           </div>
         ) : (
-          <form
-            className="flex gap-2.5 border-t border-surface-high bg-surface-lowest px-5 py-3.5"
-            onSubmit={handleSend}
-          >
+          <form className="flex gap-2.5 border-t border-surface-high bg-surface-lowest px-5 py-3.5" onSubmit={handleSend}>
             <input
               type="text"
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
-              placeholder={
-                consultationStatus === "completed"
-                  ? "Sesi konsultasi telah diselesaikan"
-                  : "Ketik arahan klinis untuk pasien..."
-              }
+              placeholder={consultationStatus === "completed" ? "Sesi konsultasi telah diselesaikan" : "Ketik arahan klinis untuk pasien..."}
               className="flex-1 rounded-md border border-outline-variant bg-surface-low px-3.5 py-2.5 text-[13px] text-on-surface outline-none transition-colors focus:border-primary focus:bg-surface-lowest"
               disabled={chatSending || consultationStatus === "completed"}
             />
             <button
               type="submit"
               className="cursor-pointer rounded-md bg-primary px-5 py-2.5 text-[13px] font-semibold text-on-primary transition-colors hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-45"
-              disabled={chatSending || !chatInput.trim() || consultationStatus === "completed"}
-            >
+              disabled={chatSending || !chatInput.trim() || consultationStatus === "completed"}>
               {chatSending ? "..." : "Kirim"}
             </button>
           </form>

@@ -30,7 +30,7 @@ function LoginForm() {
     age: "",
     weight: "",
     height: "",
-    activity_level: "moderate",
+    activity_level: "moderate"
   });
 
   const handleLogin = async (e: FormEvent) => {
@@ -84,7 +84,7 @@ function LoginForm() {
         age: registerData.age ? parseInt(registerData.age) : undefined,
         weight: registerData.weight ? parseFloat(registerData.weight) : undefined,
         height: registerData.height ? parseFloat(registerData.height) : undefined,
-        activity_level: registerData.activity_level,
+        activity_level: registerData.activity_level
       });
 
       if (ok) {
@@ -100,7 +100,7 @@ function LoginForm() {
           age: "",
           weight: "",
           height: "",
-          activity_level: "moderate",
+          activity_level: "moderate"
         });
       } else {
         setError(data.error || data.detail || (data && JSON.stringify(data)) || "Registrasi gagal.");
@@ -118,37 +118,24 @@ function LoginForm() {
     setSuccess("");
   };
 
-  const inputBaseClass =
-    "w-full py-2.5 pl-10 pr-3.5 border border-surface-high rounded-md font-body text-sm text-on-surface bg-surface-lowest outline-none transition-all focus:border-primary focus:ring-3 focus:ring-primary/10 placeholder:text-outline";
+  const inputBaseClass = "w-full py-2.5 pl-10 pr-3.5 border border-surface-high rounded-md font-body text-sm text-on-surface bg-surface-lowest outline-none transition-all focus:border-primary focus:ring-3 focus:ring-primary/10 placeholder:text-outline";
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen bg-surface">
       {/* ── LEFT PANEL — Clinical Editorial Showcase ── */}
       <div className="hidden lg:flex relative overflow-hidden items-end p-12 border-r border-surface-high">
         <div className="absolute inset-0 bg-gradient-to-t from-[#0d2418]/95 via-[#143625]/82 to-[#143625]/68 z-10" />
-        <img
-          src="/hero-nutrition.png"
-          alt="Healthy nutritious food"
-          className="absolute inset-0 w-full h-full object-cover saturate-85"
-        />
+        <img src="/hero-nutrition.png" alt="Healthy nutritious food" className="absolute inset-0 w-full h-full object-cover saturate-85" />
         <div className="relative z-20 text-white flex flex-col gap-9 max-w-[480px] w-full">
           <Link href="/" className="inline-flex items-center gap-2.5 no-underline text-white">
             <Image src="/jimamet_logo.webp" alt="Jimamet Logo" width={40} height={40} className="object-contain" />
             <span className="font-headline text-xl font-bold tracking-tight">Jimamet</span>
-            <span className="font-mono text-[10px] font-semibold tracking-widest px-2 py-0.5 rounded-sm bg-white/14 text-primary-fixed">
-              CLINICAL
-            </span>
+            <span className="font-mono text-[10px] font-semibold tracking-widest px-2 py-0.5 rounded-sm bg-white/14 text-primary-fixed">CLINICAL</span>
           </Link>
           <div>
-            <span className="block font-mono text-[11px] font-semibold tracking-widest text-primary-fixed-dim mb-2.5">
-              TELEMETRI NUTRISI & DIETETIKA
-            </span>
-            <h1 className="font-headline text-3xl xl:text-[34px] font-bold leading-[1.16] tracking-[-0.025em] mb-3.5">
-              Rekam gizi presisi untuk keputusan klinis harian.
-            </h1>
-            <p className="text-[15px] leading-[1.65] text-white/80">
-              Identifikasi komponen makronutrien makanan secara otomatis melalui visi komputer dan terhubung langsung dengan evaluasi Ahli Gizi.
-            </p>
+            <span className="block font-mono text-[11px] font-semibold tracking-widest text-primary-fixed-dim mb-2.5">MONITORING NUTRISI & DIETETIKA</span>
+            <h1 className="font-headline text-3xl xl:text-[34px] font-bold leading-[1.16] tracking-[-0.025em] mb-3.5">Rekam gizi presisi untuk keputusan klinis harian.</h1>
+            <p className="text-[15px] leading-[1.65] text-white/80">Identifikasi komponen makronutrien makanan secara otomatis melalui visi komputer dan terhubung langsung dengan evaluasi Ahli Gizi.</p>
           </div>
           <div className="flex items-center gap-6 px-5 py-4 bg-black/28 border border-white/14 rounded-lg backdrop-blur-md">
             <div className="flex flex-col gap-0.5">
@@ -174,36 +161,22 @@ function LoginForm() {
         <div className="w-full max-w-[440px]">
           {/* Header */}
           <div className="mb-6">
-            <h2 className="font-headline text-[26px] font-bold text-on-surface tracking-tight mb-1.5">
-              Selamat Datang
-            </h2>
-            <p className="text-sm text-on-surface-variant">
-              Silakan masuk atau daftar untuk melanjutkan.
-            </p>
+            <h2 className="font-headline text-[26px] font-bold text-on-surface tracking-tight mb-1.5">Selamat Datang</h2>
+            <p className="text-sm text-on-surface-variant">Silakan masuk atau daftar untuk melanjutkan.</p>
           </div>
 
           {/* Tabs */}
           <div className="grid grid-cols-2 bg-surface-container border border-surface-high rounded-md p-1 mb-6">
             <button
               type="button"
-              className={`py-2.5 px-4 border-none rounded-[6px] font-headline text-[13px] font-semibold cursor-pointer transition-all ${
-                activeTab === "login"
-                  ? "bg-surface-lowest text-primary shadow-xs"
-                  : "bg-transparent text-on-surface-variant hover:text-on-surface"
-              }`}
-              onClick={() => switchTab("login")}
-            >
+              className={`py-2.5 px-4 border-none rounded-[6px] font-headline text-[13px] font-semibold cursor-pointer transition-all ${activeTab === "login" ? "bg-surface-lowest text-primary shadow-xs" : "bg-transparent text-on-surface-variant hover:text-on-surface"}`}
+              onClick={() => switchTab("login")}>
               Login
             </button>
             <button
               type="button"
-              className={`py-2.5 px-4 border-none rounded-[6px] font-headline text-[13px] font-semibold cursor-pointer transition-all ${
-                activeTab === "register"
-                  ? "bg-surface-lowest text-primary shadow-xs"
-                  : "bg-transparent text-on-surface-variant hover:text-on-surface"
-              }`}
-              onClick={() => switchTab("register")}
-            >
+              className={`py-2.5 px-4 border-none rounded-[6px] font-headline text-[13px] font-semibold cursor-pointer transition-all ${activeTab === "register" ? "bg-surface-lowest text-primary shadow-xs" : "bg-transparent text-on-surface-variant hover:text-on-surface"}`}
+              onClick={() => switchTab("register")}>
               Registrasi
             </button>
           </div>
@@ -241,15 +214,7 @@ function LoginForm() {
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                     <circle cx="12" cy="7" r="4" />
                   </svg>
-                  <input
-                    id="login-username"
-                    type="text"
-                    placeholder="Masukkan username"
-                    value={loginData.username}
-                    onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
-                    className={inputBaseClass}
-                    required
-                  />
+                  <input id="login-username" type="text" placeholder="Masukkan username" value={loginData.username} onChange={(e) => setLoginData({ ...loginData, username: e.target.value })} className={inputBaseClass} required />
                 </div>
               </div>
 
@@ -262,21 +227,12 @@ function LoginForm() {
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
-                  <input
-                    id="login-password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Masukkan password"
-                    value={loginData.password}
-                    onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                    className={`${inputBaseClass} pr-10`}
-                    required
-                  />
+                  <input id="login-password" type={showPassword ? "text" : "password"} placeholder="Masukkan password" value={loginData.password} onChange={(e) => setLoginData({ ...loginData, password: e.target.value })} className={`${inputBaseClass} pr-10`} required />
                   <button
                     type="button"
                     className="absolute right-3 bg-transparent border-none text-outline hover:text-on-surface cursor-pointer p-1 flex items-center justify-center"
                     onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
-                  >
+                    aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}>
                     {showPassword ? (
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
@@ -295,8 +251,7 @@ function LoginForm() {
               <button
                 type="submit"
                 className="flex items-center justify-center gap-2 w-full py-3 px-5 mt-1 bg-primary hover:bg-primary-container text-on-primary border-none rounded-md font-headline text-sm font-semibold cursor-pointer transition-colors disabled:opacity-65 disabled:cursor-not-allowed"
-                disabled={isLoading}
-              >
+                disabled={isLoading}>
                 {isLoading ? (
                   <span className="w-[18px] h-[18px] border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
@@ -324,15 +279,7 @@ function LoginForm() {
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                     <circle cx="12" cy="7" r="4" />
                   </svg>
-                  <input
-                    id="reg-fullname"
-                    type="text"
-                    placeholder="Nama lengkap Anda"
-                    value={registerData.full_name}
-                    onChange={(e) => setRegisterData({ ...registerData, full_name: e.target.value })}
-                    className={inputBaseClass}
-                    required
-                  />
+                  <input id="reg-fullname" type="text" placeholder="Nama lengkap Anda" value={registerData.full_name} onChange={(e) => setRegisterData({ ...registerData, full_name: e.target.value })} className={inputBaseClass} required />
                 </div>
               </div>
 
@@ -345,15 +292,7 @@ function LoginForm() {
                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                     <polyline points="22,6 12,13 2,6" />
                   </svg>
-                  <input
-                    id="reg-email"
-                    type="email"
-                    placeholder="nama@email.com"
-                    value={registerData.email}
-                    onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-                    className={inputBaseClass}
-                    required
-                  />
+                  <input id="reg-email" type="email" placeholder="nama@email.com" value={registerData.email} onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })} className={inputBaseClass} required />
                 </div>
               </div>
 
@@ -366,15 +305,7 @@ function LoginForm() {
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                     <circle cx="12" cy="7" r="4" />
                   </svg>
-                  <input
-                    id="reg-username"
-                    type="text"
-                    placeholder="Pilih username"
-                    value={registerData.username}
-                    onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
-                    className={inputBaseClass}
-                    required
-                  />
+                  <input id="reg-username" type="text" placeholder="Pilih username" value={registerData.username} onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })} className={inputBaseClass} required />
                 </div>
               </div>
 
@@ -388,22 +319,12 @@ function LoginForm() {
                       <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                     </svg>
-                    <input
-                      id="reg-password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Min. 8 karakter"
-                      value={registerData.password}
-                      onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-                      className={`${inputBaseClass} pr-10`}
-                      required
-                      minLength={8}
-                    />
+                    <input id="reg-password" type={showPassword ? "text" : "password"} placeholder="Min. 8 karakter" value={registerData.password} onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })} className={`${inputBaseClass} pr-10`} required minLength={8} />
                     <button
                       type="button"
                       className="absolute right-3 bg-transparent border-none text-outline hover:text-on-surface cursor-pointer p-1 flex items-center justify-center"
                       onClick={() => setShowPassword(!showPassword)}
-                      aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
-                    >
+                      aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}>
                       {showPassword ? (
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
@@ -441,8 +362,7 @@ function LoginForm() {
                       type="button"
                       className="absolute right-3 bg-transparent border-none text-outline hover:text-on-surface cursor-pointer p-1 flex items-center justify-center"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      aria-label={showConfirmPassword ? "Sembunyikan konfirmasi password" : "Tampilkan konfirmasi password"}
-                    >
+                      aria-label={showConfirmPassword ? "Sembunyikan konfirmasi password" : "Tampilkan konfirmasi password"}>
                       {showConfirmPassword ? (
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
@@ -461,9 +381,7 @@ function LoginForm() {
 
               {/* Data Fisik */}
               <div className="flex items-center gap-3 mt-1 before:content-[''] before:flex-1 before:h-px before:bg-surface-high after:content-[''] after:flex-1 after:h-px after:bg-surface-high">
-                <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-outline">
-                  Data Antropometri
-                </span>
+                <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-outline">Data Antropometri</span>
               </div>
               <div className="grid grid-cols-3 gap-2.5">
                 <div className="flex flex-col gap-1.5">
@@ -522,8 +440,7 @@ function LoginForm() {
                     value={registerData.activity_level}
                     onChange={(e) => setRegisterData({ ...registerData, activity_level: e.target.value })}
                     className="w-full py-2.5 pl-3.5 pr-9 border border-surface-high rounded-md font-body text-sm text-on-surface bg-surface-lowest outline-none transition-all focus:border-primary focus:ring-3 focus:ring-primary/10 appearance-none cursor-pointer"
-                    required
-                  >
+                    required>
                     <option value="sedentary">Sangat Jarang Olahraga</option>
                     <option value="light">Jarang Olahraga (1-3 hari/minggu)</option>
                     <option value="moderate">Normal Olahraga (3-5 hari/minggu)</option>
@@ -538,8 +455,7 @@ function LoginForm() {
               <button
                 type="submit"
                 className="flex items-center justify-center gap-2 w-full py-3 px-5 mt-1 bg-primary hover:bg-primary-container text-on-primary border-none rounded-md font-headline text-sm font-semibold cursor-pointer transition-colors disabled:opacity-65 disabled:cursor-not-allowed"
-                disabled={isLoading}
-              >
+                disabled={isLoading}>
                 {isLoading ? (
                   <span className="w-[18px] h-[18px] border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
