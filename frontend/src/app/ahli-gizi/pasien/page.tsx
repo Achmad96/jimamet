@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import styles from "../ahli-gizi.module.css";
 import { apiListConsultations, apiUpdateConsultation, apiListChat, apiSendChat, apiDeleteChat, apiDeleteConsultation, getWsConsultationUrl } from "@/lib/api";
 
 interface ChatMsg {
@@ -139,7 +138,6 @@ export default function KonsultasiPage() {
     
     const { ok, data } = await apiSendChat(selected.id, text, "nutritionist");
     if (ok) {
-      // Broadcast via WebSocket
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify({
           id: data?.id || `sent-${Date.now()}`,
@@ -192,7 +190,7 @@ export default function KonsultasiPage() {
   };
 
   const handleDeleteKonsultasi = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // Mencegah membuka detail saat tombol hapus diklik
+    e.stopPropagation();
     if (!confirm("Apakah Anda yakin ingin menghapus data konsultasi ini beserta seluruh chatnya?")) return;
     
     setLoading(true);
@@ -219,56 +217,68 @@ export default function KonsultasiPage() {
   return (
     <div>
       {/* ── Header ── */}
-      <div className={styles.pageHeader}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16 }}>
+      <div className="mb-7">
+        <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <span className={styles.headerKicker}>ANTREAN INTERVENSI GIZI</span>
-            <h1>Konsultasi Pasien</h1>
-            <p>Daftar rujukan pasien dari sistem NutriCoach AI yang memerlukan supervisi klinis.</p>
+            <span className="mb-1.5 block font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-primary">
+              ANTREAN INTERVENSI GIZI
+            </span>
+            <h1 className="font-headline text-[26px] font-bold tracking-[-0.03em] text-on-surface">
+              Konsultasi Pasien
+            </h1>
+            <p className="mt-1 text-sm text-on-surface-variant">
+              Daftar rujukan pasien dari sistem NutriCoach AI yang memerlukan supervisi klinis.
+            </p>
           </div>
           <button
             onClick={fetchData}
-            className={styles.btnSecondary}
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-outline-variant bg-surface-lowest px-4 py-2 text-[13px] font-semibold text-on-surface transition-all hover:bg-surface-low"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 17 }}>refresh</span>
+            <span className="material-symbols-outlined text-[17px]">refresh</span>
             Muat Ulang
           </button>
         </div>
       </div>
 
       {error && (
-        <div style={{ background: "var(--error-container)", color: "var(--error)", padding: "12px 16px", borderRadius: 8, marginBottom: 16, fontSize: 13 }}>
+        <div className="mb-4 rounded-lg bg-error-container px-4 py-3 text-[13px] text-error">
           {error}
         </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 20 }}>
+      {/* ── Stat Cards ── */}
+      <div className="mb-5 grid grid-cols-4 gap-4 max-[900px]:grid-cols-2">
         {[
           { label: "Total Tiket", count: items.length, color: "var(--on-surface)" },
           { label: "Menunggu",    count: countMenunggu, color: "#d9822b" },
           { label: "Ditangani",   count: countAktif,    color: "#2b6f77" },
           { label: "Selesai",     count: countSelesai,  color: "#143625" },
         ].map(({ label, count, color }) => (
-          <div key={label} className={styles.statCard}>
-            <div className={styles.statLabel}>{label}</div>
-            <div style={{ fontSize: 30, fontWeight: 700, color, fontFamily: "var(--font-mono)", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{count}</div>
+          <div key={label} className="rounded-xl border border-surface-high bg-surface-lowest p-5">
+            <div className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-outline">
+              {label}
+            </div>
+            <div
+              className="font-mono text-[30px] font-bold leading-none tabular-nums"
+              style={{ color }}
+            >
+              {count}
+            </div>
           </div>
         ))}
       </div>
 
       {/* ── Filter tabs ── */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
+      <div className="mb-4 flex gap-1.5">
         {(["semua", "pending", "completed"] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            style={{
-              padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
-              border: filter === f ? "1px solid var(--primary)" : "1px solid var(--surface-container-high)",
-              background: filter === f ? "var(--primary)" : "var(--surface-container-lowest)",
-              color: filter === f ? "var(--on-primary)" : "var(--on-surface-variant)",
-              transition: "all 0.15s",
-            }}
+            className={`cursor-pointer rounded-lg border px-4 py-2 text-[13px] font-semibold transition-all ${
+              filter === f
+                ? "border-primary bg-primary text-on-primary"
+                : "border-surface-high bg-surface-lowest text-on-surface-variant hover:bg-surface-low"
+            }`}
           >
             {f === "semua" ? "Semua Tiket" : f === "pending" ? "Menunggu" : "Selesai"}
           </button>
@@ -277,27 +287,29 @@ export default function KonsultasiPage() {
 
       {/* ── List ── */}
       {loading ? (
-        <div className={styles.loading}>
-          <span className="material-symbols-outlined" style={{ fontSize: 24, marginRight: 10 }}>hourglass_top</span>
+        <div className="flex items-center justify-center p-16 text-sm text-outline">
+          <span className="material-symbols-outlined mr-2.5 text-[24px]">hourglass_top</span>
           Memuat antrean konsultasi...
         </div>
       ) : displayed.length === 0 ? (
-        <div className={styles.card} style={{ textAlign: "center", padding: 48 }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 40, color: "var(--outline-variant)", display: "block", marginBottom: 10 }}>
+        <div className="rounded-xl border border-surface-high bg-surface-lowest p-12 text-center">
+          <span className="material-symbols-outlined mb-2.5 block text-[40px] text-outline-variant">
             inbox
           </span>
-          <div style={{ color: "var(--on-surface-variant)", fontSize: 14 }}>
+          <div className="text-sm text-on-surface-variant">
             {filter === "semua"
               ? "Belum ada pasien yang dirujuk oleh sistem."
               : `Tidak ada konsultasi berstatus "${filter === "pending" ? "Menunggu" : "Selesai"}".`}
           </div>
         </div>
       ) : (
-        <div className={styles.card}>
-          <div className={styles.sectionHeader} style={{ marginBottom: 12 }}>
-            <h2>Daftar Rujukan ({displayed.length})</h2>
+        <div className="rounded-xl border border-surface-high bg-surface-lowest p-6">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-headline text-[17px] font-bold tracking-[-0.02em] text-on-surface">
+              Daftar Rujukan ({displayed.length})
+            </h2>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+          <div className="flex flex-col">
             {displayed.map((item) => {
               const rawStatus = item.status || "pending";
               let s = statusStyle[rawStatus as keyof typeof statusStyle] || statusStyle.pending;
@@ -308,64 +320,42 @@ export default function KonsultasiPage() {
                 <div
                   key={item.id}
                   onClick={() => router.push(`/ahli-gizi/pasien/${item.id}`)}
-                  style={{
-                    display: "flex", alignItems: "flex-start", gap: 16,
-                    padding: "16px 8px", borderBottom: "1px solid var(--surface-container)",
-                    cursor: "pointer", transition: "background 0.15s", borderRadius: 8,
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "var(--surface-container-low)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  className="flex cursor-pointer items-start gap-4 rounded-lg border-b border-surface-container px-2 py-4 transition-colors hover:bg-surface-low"
                 >
                   {/* Avatar */}
-                  <div style={{
-                    width: 40, height: 40, borderRadius: 8, flexShrink: 0,
-                    background: "rgba(20, 54, 37, 0.08)", display: "flex",
-                    alignItems: "center", justifyContent: "center",
-                    fontSize: 16, fontWeight: 700, color: "var(--primary)",
-                    fontFamily: "var(--font-headline)",
-                  }}>
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/[0.08] font-headline text-base font-bold text-primary">
                     {item.full_name?.[0]?.toUpperCase() ?? "?"}
                   </div>
 
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                      <span style={{ fontWeight: 700, fontSize: 14, color: "var(--on-surface)", fontFamily: "var(--font-headline)" }}>
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex items-center justify-between">
+                      <span className="font-headline text-sm font-bold text-on-surface">
                         {item.full_name}
                       </span>
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--outline)" }}>
+                      <span className="font-mono text-[11px] text-outline">
                         {formatDate(item.created_at)}
                       </span>
                     </div>
-                    <div style={{ fontSize: 13, color: "var(--on-surface-variant)", marginBottom: 8, lineHeight: 1.5,
-                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <div className="mb-2 truncate text-[13px] leading-normal text-on-surface-variant">
                       {item.coach_message}
                     </div>
-                    <span style={{ background: s.bg, color: s.color, padding: "3px 10px", borderRadius: 6, fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600 }}>
+                    <span
+                      className="inline-block rounded-md px-2.5 py-0.5 font-mono text-[11px] font-semibold"
+                      style={{ background: s.bg, color: s.color }}
+                    >
                       {s.label}
                     </span>
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                  <div className="flex shrink-0 items-center gap-1.5">
                     <button
                       onClick={(e) => handleDeleteKonsultasi(item.id, e)}
                       title="Hapus Konsultasi"
-                      style={{
-                        background: "transparent", border: "none", color: "var(--outline)", cursor: "pointer",
-                        padding: 6, display: "flex", alignItems: "center", justifyContent: "center",
-                        borderRadius: 6, transition: "color 0.15s, background 0.15s"
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "var(--error-container)";
-                        e.currentTarget.style.color = "var(--error)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = "transparent";
-                        e.currentTarget.style.color = "var(--outline)";
-                      }}
+                      className="flex cursor-pointer items-center justify-center rounded-md p-1.5 text-outline transition-colors hover:bg-error-container hover:text-error"
                     >
-                      <span className="material-symbols-outlined" style={{ fontSize: 18 }}>delete</span>
+                      <span className="material-symbols-outlined text-[18px]">delete</span>
                     </button>
-                    <span className="material-symbols-outlined" style={{ fontSize: 18, color: "var(--outline)" }}>
+                    <span className="material-symbols-outlined text-[18px] text-outline">
                       chevron_right
                     </span>
                   </div>
@@ -379,86 +369,80 @@ export default function KonsultasiPage() {
       {/* ── Detail Modal ── */}
       {selected && (
         <div
-          style={{ position: "fixed", inset: 0, background: "rgba(20, 26, 22, 0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}
+          className="fixed inset-0 z-1000 flex items-center justify-center bg-[#141a16]/45"
           onClick={() => setSelected(null)}
         >
           <div
-            style={{ background: "var(--surface-container-lowest)", border: "1px solid var(--surface-container-high)", borderRadius: 14, padding: 28, width: 560, maxWidth: "90vw", boxShadow: "var(--shadow-lg)", maxHeight: "85vh", overflowY: "auto" }}
+            className="max-h-[85vh] w-[560px] max-w-[90vw] overflow-y-auto rounded-[14px] border border-surface-high bg-surface-lowest p-7 shadow-[var(--shadow-lg)]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+            <div className="mb-5 flex items-start justify-between">
               <div>
-                <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 18, fontWeight: 700, color: "var(--on-surface)", margin: "0 0 4px" }}>
+                <h3 className="mb-1 font-headline text-lg font-bold text-on-surface">
                   Detail Konsultasi
                 </h3>
-                <p style={{ fontSize: 13, color: "var(--on-surface-variant)", margin: 0 }}>
+                <p className="text-[13px] text-on-surface-variant">
                   {selected.full_name} · {selected.email}
                 </p>
               </div>
-              <span style={{ background: statusStyle[selected.status].bg, color: statusStyle[selected.status].color, padding: "4px 10px", borderRadius: 6, fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600 }}>
+              <span
+                className="rounded-md px-2.5 py-1 font-mono text-[11px] font-semibold"
+                style={{ background: statusStyle[selected.status].bg, color: statusStyle[selected.status].color }}
+              >
                 {statusStyle[selected.status].label}
               </span>
             </div>
 
             {/* Pesan CoachBot */}
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600, color: "var(--outline)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
+            <div className="mb-4">
+              <div className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-outline">
                 Ringkasan Eskalasi NutriCoach AI
               </div>
-              <div style={{ background: "var(--surface-container-low)", border: "1px solid var(--surface-container-high)", borderRadius: 10, padding: 14, fontSize: 13, color: "var(--on-surface)", lineHeight: 1.6 }}>
+              <div className="rounded-[10px] border border-surface-high bg-surface-low p-3.5 text-[13px] leading-[1.6] text-on-surface">
                 {selected.coach_message}
               </div>
             </div>
 
             {/* Waktu */}
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--outline)", marginBottom: 16 }}>
+            <div className="mb-4 font-mono text-[11px] text-outline">
               Waktu rujukan: {formatDate(selected.created_at)}
             </div>
 
             {/* Chat Ahli Gizi */}
             {selected.status === "pending" ? (
-              <div style={{ marginBottom: 20 }}>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600, color: "var(--outline)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
+              <div className="mb-5">
+                <div className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-outline">
                   Kanal Komunikasi Pasien
                 </div>
-                <div style={{
-                  border: "1px solid var(--surface-container-high)",
-                  borderRadius: 10,
-                  display: "flex",
-                  flexDirection: "column",
-                  maxHeight: 300,
-                  overflow: "hidden"
-                }}>
-                  <div style={{
-                    flex: 1, overflowY: "auto", padding: 12, background: "var(--surface)",
-                    display: "flex", flexDirection: "column", gap: 8, maxHeight: 200
-                  }}>
+                <div className="flex max-h-[300px] flex-col overflow-hidden rounded-[10px] border border-surface-high">
+                  <div className="flex max-h-[200px] flex-1 flex-col gap-2 overflow-y-auto bg-surface p-3">
                     {chatMsgs.length === 0 ? (
-                      <div style={{ textAlign: "center", fontSize: 12, color: "var(--outline)", padding: 20 }}>
+                      <div className="p-5 text-center text-xs text-outline">
                         Belum ada pesan percakapan.
                       </div>
                     ) : (
                       chatMsgs.map((m) => (
-                        <div key={m.id} style={{
-                          display: "flex", flexDirection: "column",
-                          alignItems: m.sender === "nutritionist" ? "flex-end" : "flex-start",
-                          position: "relative"
-                        }}>
-                          <div style={{
-                            display: "flex", alignItems: "center", gap: 6,
-                            flexDirection: m.sender === "nutritionist" ? "row-reverse" : "row"
-                          }}>
-                            <div style={{
-                              maxWidth: "100%", padding: "8px 12px",
-                              borderRadius: m.sender === "nutritionist" ? "10px 10px 2px 10px" : "10px 10px 10px 2px",
-                              background: m.sender === "nutritionist" ? "var(--primary)" : "var(--surface-container-lowest)",
-                              color: m.sender === "nutritionist" ? "var(--on-primary)" : "var(--on-surface)",
-                              border: m.sender === "user" ? "1px solid var(--surface-container-high)" : "none",
-                              fontSize: 13, lineHeight: 1.5
-                            }}>
+                        <div
+                          key={m.id}
+                          className={`relative flex flex-col ${
+                            m.sender === "nutritionist" ? "items-end" : "items-start"
+                          }`}
+                        >
+                          <div
+                            className={`flex items-center gap-1.5 ${
+                              m.sender === "nutritionist" ? "flex-row-reverse" : "flex-row"
+                            }`}
+                          >
+                            <div
+                              className={`max-w-full px-3 py-2 text-[13px] leading-[1.5] ${
+                                m.sender === "nutritionist"
+                                  ? "rounded-[10px_10px_2px_10px] bg-primary text-on-primary"
+                                  : "rounded-[10px_10px_10px_2px] border border-surface-high bg-surface-lowest text-on-surface"
+                              }`}
+                            >
                               {m.sender === "user" && (
-                                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600, color: "var(--outline)", marginBottom: 3 }}>
+                                <div className="mb-0.5 font-mono text-[10px] font-semibold text-outline">
                                   PASIEN
                                 </div>
                               )}
@@ -468,48 +452,41 @@ export default function KonsultasiPage() {
                             <button
                               onClick={() => handleDeleteChat(m.id)}
                               title="Hapus pesan"
-                              style={{
-                                background: "transparent", border: "none", color: "var(--error)", cursor: "pointer",
-                                padding: 4, display: "flex", alignItems: "center", justifyContent: "center",
-                                opacity: 0.6, transition: "opacity 0.2s"
-                              }}
-                              onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-                              onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}
+                              className="flex cursor-pointer items-center justify-center p-1 text-error opacity-60 transition-opacity hover:opacity-100"
                             >
-                              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>delete</span>
+                              <span className="material-symbols-outlined text-[16px]">delete</span>
                             </button>
                           </div>
                           
-                          <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--outline)", marginTop: 2 }}>{formatDate(m.sent_at).split(' ')[1]}</span>
+                          <span className="mt-0.5 font-mono text-[10px] text-outline">
+                            {formatDate(m.sent_at).split(" ")[1]}
+                          </span>
                         </div>
                       ))
                     )}
                     <div ref={chatEndRef} />
                   </div>
                   
-                  <form onSubmit={handleSendChat} style={{
-                    display: "flex", gap: 8, padding: "10px 12px", background: "var(--surface-container-lowest)", borderTop: "1px solid var(--surface-container-high)"
-                  }}>
+                  <form
+                    onSubmit={handleSendChat}
+                    className="flex gap-2 border-t border-surface-high bg-surface-lowest px-3 py-2.5"
+                  >
                     <input
                       type="text"
                       placeholder="Balas pesan pasien..."
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
                       disabled={chatSending}
-                      style={{
-                        flex: 1, padding: "8px 12px", fontSize: 13, border: "1px solid var(--surface-container-high)",
-                        borderRadius: 8, outline: "none", fontFamily: "inherit", background: "var(--surface-container-low)"
-                      }}
+                      className="flex-1 rounded-lg border border-surface-high bg-surface-low px-3 py-2 text-[13px] outline-none focus:border-primary"
                     />
                     <button
                       type="submit"
                       disabled={!chatInput.trim() || chatSending}
-                      style={{
-                        padding: "0 16px", borderRadius: 8, border: "none",
-                        background: chatInput.trim() ? "var(--primary)" : "var(--surface-container-highest)",
-                        color: "#fff", cursor: chatInput.trim() ? "pointer" : "default",
-                        fontSize: 13, fontWeight: 600, transition: "background 0.15s"
-                      }}
+                      className={`rounded-lg px-4 text-[13px] font-semibold text-white transition-colors ${
+                        chatInput.trim()
+                          ? "cursor-pointer bg-primary hover:bg-primary-container"
+                          : "cursor-default bg-surface-highest"
+                      }`}
                     >
                       Kirim
                     </button>
@@ -517,25 +494,39 @@ export default function KonsultasiPage() {
                 </div>
               </div>
             ) : selected.nutritionist_notes ? (
-              <div style={{ marginBottom: 20 }}>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600, color: "var(--outline)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
+              <div className="mb-5">
+                <div className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-outline">
                   Catatan Klinis Ahli Gizi
                 </div>
-                <div style={{ background: "var(--surface-container-low)", borderRadius: 8, padding: 12, fontSize: 13, color: "var(--on-surface)", lineHeight: 1.6 }}>
+                <div className="rounded-lg bg-surface-low p-3 text-[13px] leading-[1.6] text-on-surface">
                   {selected.nutritionist_notes}
                 </div>
               </div>
             ) : null}
 
             {/* Actions */}
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <button className={styles.btnSecondary} onClick={() => setSelected(null)} disabled={saving}>Tutup</button>
+            <div className="flex justify-end gap-2.5">
+              <button
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-outline-variant bg-surface-lowest px-4 py-2 text-[13px] font-semibold text-on-surface transition-all hover:bg-surface-low"
+                onClick={() => setSelected(null)}
+                disabled={saving}
+              >
+                Tutup
+              </button>
               {selected.status === "pending" && (
                 <>
-                  <button className={styles.btnReject} onClick={() => handleUpdate("cancelled")} disabled={saving}>
+                  <button
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-error/25 bg-error-container px-4 py-2 text-[13px] font-semibold text-error transition-all hover:bg-error hover:text-white"
+                    onClick={() => handleUpdate("cancelled")}
+                    disabled={saving}
+                  >
                     Batalkan
                   </button>
-                  <button className={styles.btnPrimary} onClick={() => handleUpdate("completed")} disabled={saving}>
+                  <button
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-[13px] font-semibold text-on-primary transition-all hover:bg-primary-container"
+                    onClick={() => handleUpdate("completed")}
+                    disabled={saving}
+                  >
                     {saving ? "Menyimpan..." : "Tandai Selesai"}
                   </button>
                 </>

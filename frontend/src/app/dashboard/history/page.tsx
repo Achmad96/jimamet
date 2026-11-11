@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import styles from "./history.module.css";
 import { apiListFoodRecords } from "@/lib/api";
 import { SkeletonHistory } from "@/components/Skeleton";
 import { formatFoodLabel } from "@/lib/food-labels";
@@ -55,7 +54,6 @@ export default function HistoryPage() {
     apiListFoodRecords().then(({ ok, data }) => {
       if (ok && Array.isArray(data) && data.length > 0) {
         const mapped: MealRecord[] = data.map((r: Record<string, unknown>) => {
-          // Extract image URL from joined images table
           const images = r.images as Record<string, unknown> | null;
           const imageUrl = images?.file_path as string | null;
 
@@ -99,93 +97,151 @@ export default function HistoryPage() {
   if (loading) return <SkeletonHistory />;
 
   return (
-    <div className={styles.page}>
+    <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className={styles.header}>
+      <div className="flex justify-between items-end pb-4 border-b border-surface-high">
         <div>
-          <span className={styles.headerKicker}>REKAM JEJAK DIETETIKA</span>
-          <h1 className={styles.title}>Histori Konsumsi</h1>
-          <p className={styles.subtitle}>Buku besar kronologis asupan energi dan makronutrisi harian Anda.</p>
+          <span className="block font-mono text-[11px] font-semibold tracking-wider text-primary mb-1.5">
+            REKAM JEJAK DIETETIKA
+          </span>
+          <h1 className="font-headline text-2xl sm:text-[28px] font-bold text-on-surface tracking-tight">
+            Histori Konsumsi
+          </h1>
+          <p className="text-sm text-on-surface-variant mt-1">
+            Buku besar kronologis asupan energi dan makronutrisi harian Anda.
+          </p>
         </div>
       </div>
 
       {/* Summary Cards */}
-      <div className={styles.summaryCards}>
-        <div className={styles.summaryCard}>
-          <div className={styles.summaryHeader}>
-            <span className={styles.summaryLabel}>Total Kalori</span>
-            <span className={styles.summaryIndicator} style={{ background: "var(--macro-cal)" }} />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-surface-lowest border border-surface-high rounded-lg p-5 flex flex-col gap-2.5 hover:border-outline-variant transition-colors">
+          <div className="flex justify-between items-center">
+            <span className="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">
+              Total Kalori
+            </span>
+            <span className="w-2 h-2 rounded-[2px] bg-macro-cal" />
           </div>
-          <div className={styles.summaryMetric}>
-            <span className={styles.summaryValue}>{totalCal.toLocaleString()}</span>
-            <span className={styles.summaryUnit}>kkal</span>
-          </div>
-        </div>
-        <div className={styles.summaryCard}>
-          <div className={styles.summaryHeader}>
-            <span className={styles.summaryLabel}>Protein</span>
-            <span className={styles.summaryIndicator} style={{ background: "var(--macro-protein)" }} />
-          </div>
-          <div className={styles.summaryMetric}>
-            <span className={styles.summaryValue}>{totalProtein}</span>
-            <span className={styles.summaryUnit}>gram</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-mono text-[26px] font-bold text-on-surface tabular-nums tracking-tight">
+              {totalCal.toLocaleString()}
+            </span>
+            <span className="font-mono text-xs text-outline">kkal</span>
           </div>
         </div>
-        <div className={styles.summaryCard}>
-          <div className={styles.summaryHeader}>
-            <span className={styles.summaryLabel}>Karbohidrat</span>
-            <span className={styles.summaryIndicator} style={{ background: "var(--macro-carbs)" }} />
+
+        <div className="bg-surface-lowest border border-surface-high rounded-lg p-5 flex flex-col gap-2.5 hover:border-outline-variant transition-colors">
+          <div className="flex justify-between items-center">
+            <span className="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">
+              Protein
+            </span>
+            <span className="w-2 h-2 rounded-[2px] bg-macro-protein" />
           </div>
-          <div className={styles.summaryMetric}>
-            <span className={styles.summaryValue}>{totalCarbs}</span>
-            <span className={styles.summaryUnit}>gram</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-mono text-[26px] font-bold text-on-surface tabular-nums tracking-tight">
+              {totalProtein}
+            </span>
+            <span className="font-mono text-xs text-outline">gram</span>
           </div>
         </div>
-        <div className={styles.summaryCard}>
-          <div className={styles.summaryHeader}>
-            <span className={styles.summaryLabel}>Lemak</span>
-            <span className={styles.summaryIndicator} style={{ background: "var(--macro-fat)" }} />
+
+        <div className="bg-surface-lowest border border-surface-high rounded-lg p-5 flex flex-col gap-2.5 hover:border-outline-variant transition-colors">
+          <div className="flex justify-between items-center">
+            <span className="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">
+              Karbohidrat
+            </span>
+            <span className="w-2 h-2 rounded-[2px] bg-macro-carbs" />
           </div>
-          <div className={styles.summaryMetric}>
-            <span className={styles.summaryValue}>{totalFat}</span>
-            <span className={styles.summaryUnit}>gram</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-mono text-[26px] font-bold text-on-surface tabular-nums tracking-tight">
+              {totalCarbs}
+            </span>
+            <span className="font-mono text-xs text-outline">gram</span>
+          </div>
+        </div>
+
+        <div className="bg-surface-lowest border border-surface-high rounded-lg p-5 flex flex-col gap-2.5 hover:border-outline-variant transition-colors">
+          <div className="flex justify-between items-center">
+            <span className="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">
+              Lemak
+            </span>
+            <span className="w-2 h-2 rounded-[2px] bg-macro-fat" />
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-mono text-[26px] font-bold text-on-surface tabular-nums tracking-tight">
+              {totalFat}
+            </span>
+            <span className="font-mono text-xs text-outline">gram</span>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className={styles.toolbar}>
-        <div className={styles.filterTabs}>
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
+        <div className="flex gap-1 bg-surface-container border border-surface-high rounded-md p-1">
           {(["all", "today", "week"] as const).map((f) => (
-            <button key={f} className={`${styles.filterTab} ${filter === f ? styles.filterTabActive : ""}`} onClick={() => setFilter(f)}>
+            <button
+              key={f}
+              className={`px-4 py-1.5 border-none rounded-[6px] font-body text-[13px] cursor-pointer transition-all ${
+                filter === f
+                  ? "bg-surface-lowest text-primary font-semibold shadow-xs"
+                  : "bg-transparent text-on-surface-variant font-medium hover:text-on-surface"
+              }`}
+              onClick={() => setFilter(f)}
+            >
               {f === "all" ? "Semua Riwayat" : f === "today" ? "Hari Ini" : "7 Hari Terakhir"}
             </button>
           ))}
         </div>
-        <div className={styles.searchWrapper}>
-          <svg className={styles.searchIcon} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div className="relative">
+          <svg
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
-          <input type="text" placeholder="Cari spesimen makanan..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className={styles.searchInput} />
+          <input
+            type="text"
+            placeholder="Cari spesimen makanan..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full sm:w-[260px] py-2 pl-9 pr-3.5 border border-surface-high rounded-md text-[13px] font-body text-on-surface bg-surface-lowest outline-none transition-all focus:border-primary focus:ring-3 focus:ring-primary/10 placeholder:text-outline"
+          />
         </div>
       </div>
 
       {/* History List */}
-      <div className={styles.historyList}>
+      <div className="flex flex-col gap-5">
         {Object.entries(grouped).map(([date, meals]) => (
-          <div key={date} className={styles.dateGroup}>
-            <div className={styles.dateHeader}>
-              <span className={styles.dateBadge}>{date}</span>
-              <span className={styles.dateCal}>{meals.reduce((s, m) => s + m.calories, 0).toLocaleString()} kkal</span>
+          <div key={date} className="flex flex-col gap-2">
+            <div className="flex justify-between items-center px-1">
+              <span className="font-headline text-sm font-bold text-on-surface">{date}</span>
+              <span className="font-mono text-xs font-semibold text-primary tabular-nums">
+                {meals.reduce((s, m) => s + m.calories, 0).toLocaleString()} kkal
+              </span>
             </div>
-            <div className={styles.mealsTable}>
+            <div className="bg-surface-lowest border border-surface-high rounded-lg overflow-hidden">
               {meals.map((meal) => (
-                <div key={meal.id} className={styles.mealRow}>
+                <div
+                  key={meal.id}
+                  className="flex items-center gap-3.5 px-5 py-3.5 transition-colors border-b border-surface-container last:border-b-0 hover:bg-surface-low"
+                >
                   {meal.imageUrl ? (
-                    <img src={meal.imageUrl} alt={meal.name} className={styles.mealImage} />
+                    <img
+                      src={meal.imageUrl}
+                      alt={meal.name}
+                      className="w-10 h-10 rounded-md object-cover shrink-0 bg-surface-container border border-surface-high"
+                    />
                   ) : (
-                    <div className={styles.mealIconBox}>
+                    <div className="w-10 h-10 rounded-md bg-surface-low border border-surface-high text-on-surface-variant flex items-center justify-center shrink-0">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
                         <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
@@ -195,29 +251,35 @@ export default function HistoryPage() {
                       </svg>
                     </div>
                   )}
-                  <div className={styles.mealInfo}>
-                    <span className={styles.mealName}>{meal.name}</span>
-                    <span className={styles.mealTime}>{meal.time}</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="block text-sm font-semibold text-on-surface truncate">
+                      {meal.name}
+                    </span>
+                    <span className="font-mono text-[11px] text-outline tabular-nums">
+                      {meal.time}
+                    </span>
                   </div>
-                  <div className={styles.mealNutrients}>
-                    <span className={styles.nutrientPill} style={{ background: "rgba(200, 90, 50, 0.1)", color: "var(--macro-protein)" }}>
+                  <div className="hidden md:flex gap-1.5 shrink-0">
+                    <span className="px-2.5 py-1 rounded-[6px] font-mono text-[11px] font-semibold whitespace-nowrap tabular-nums bg-macro-protein/10 text-macro-protein">
                       P {meal.protein}g
                     </span>
-                    <span className={styles.nutrientPill} style={{ background: "rgba(217, 130, 43, 0.1)", color: "var(--macro-carbs)" }}>
+                    <span className="px-2.5 py-1 rounded-[6px] font-mono text-[11px] font-semibold whitespace-nowrap tabular-nums bg-macro-carbs/10 text-macro-carbs">
                       K {meal.carbs}g
                     </span>
-                    <span className={styles.nutrientPill} style={{ background: "rgba(43, 111, 119, 0.1)", color: "var(--macro-fat)" }}>
+                    <span className="px-2.5 py-1 rounded-[6px] font-mono text-[11px] font-semibold whitespace-nowrap tabular-nums bg-macro-fat/10 text-macro-fat">
                       L {meal.fat}g
                     </span>
                   </div>
-                  <span className={styles.mealCal}>{meal.calories} kkal</span>
+                  <span className="font-mono text-[13px] font-bold text-on-surface w-22 text-right shrink-0 tabular-nums">
+                    {meal.calories} kkal
+                  </span>
                 </div>
               ))}
             </div>
           </div>
         ))}
         {filteredData.length === 0 && (
-          <div className={styles.emptyState}>
+          <div className="text-center py-14 px-5 text-on-surface-variant text-sm bg-surface-lowest rounded-lg border border-surface-high">
             <p>Tidak ada rekaman konsumsi yang sesuai dengan filter.</p>
           </div>
         )}

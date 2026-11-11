@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import styles from "./page.module.css";
 
 const capabilities = [
   {
@@ -43,7 +42,7 @@ const protocolSteps = [
     code: "TAHAP 02",
     title: "Verifikasi Komposisi & Takaran",
     desc: "Sistem mencocokkan label hidangan terhadap tabel komposisi gizi Indonesia dan menampilkan rincian makronutrien per porsi standar.",
-    artifact: " Profil kalori, protein, karbohidrat, lemak, serat",
+    artifact: "Profil kalori, protein, karbohidrat, lemak, serat",
   },
   {
     code: "TAHAP 03",
@@ -87,170 +86,255 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className={styles.page}>
+    <div className="min-h-screen overflow-x-hidden bg-surface text-on-surface">
       {/* ── NAVBAR ── */}
-      <header className={`${styles.navbar} ${scrolled ? styles.navScrolled : ""}`}>
-        <div className={`${styles.navInner} container`}>
-          <Link href="/" className={styles.logo}>
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 border-b ${
+          scrolled
+            ? "bg-surface/92 backdrop-blur-md border-surface-high py-3"
+            : "bg-surface/80 backdrop-blur-sm border-transparent py-4"
+        }`}
+      >
+        <div className="max-w-[1240px] mx-auto px-6 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5 no-underline text-on-surface">
             <Image
               src="/jimamet_logo.webp"
               alt="Jimamet Logo"
               width={36}
               height={36}
-              style={{ objectFit: "contain" }}
+              className="object-contain"
             />
-            <span className={styles.logoText}>Jimamet</span>
-            <span className={styles.logoDivider} />
-            <span className={styles.logoSub}>Clinical Nutrition</span>
+            <span className="font-headline text-[19px] font-bold tracking-tight text-primary">
+              Jimamet
+            </span>
+            <span className="w-px h-4 bg-outline-variant hidden sm:inline-block" />
+            <span className="font-mono text-[11px] font-medium uppercase tracking-wider text-outline hidden sm:inline-block">
+              Clinical Nutrition
+            </span>
           </Link>
 
-          <nav className={`${styles.navLinks} ${mobileMenuOpen ? styles.navOpen : ""}`}>
-            <a href="#features" onClick={() => setMobileMenuOpen(false)}>
+          <nav
+            className={`${
+              mobileMenuOpen
+                ? "flex fixed inset-0 bg-surface flex-col justify-center items-center gap-6 z-50"
+                : "hidden md:flex items-center gap-8"
+            }`}
+          >
+            <a
+              href="#features"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors"
+            >
               Kapabilitas
             </a>
-            <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)}>
+            <a
+              href="#how-it-works"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors"
+            >
               Protokol Kerja
             </a>
-            <a href="#stats" onClick={() => setMobileMenuOpen(false)}>
+            <a
+              href="#stats"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors"
+            >
               Standar Data
             </a>
-            <div className={styles.navAuthGroup}>
-              <Link href="/login" className={styles.navLoginLink} onClick={() => setMobileMenuOpen(false)}>
+            <div className="flex flex-col md:flex-row items-center gap-3 md:ml-2 md:pl-5 md:border-l md:border-surface-high">
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-sm font-semibold text-on-surface px-3.5 py-2 rounded-md hover:bg-surface-container transition-colors"
+              >
                 Masuk
               </Link>
-              <Link href="/register" className={styles.navCta} onClick={() => setMobileMenuOpen(false)}>
+              <Link
+                href="/register"
+                onClick={() => setMobileMenuOpen(false)}
+                className="inline-flex items-center justify-center px-4 py-2.5 bg-primary hover:bg-primary-container text-on-primary rounded-md font-headline text-[13px] font-semibold transition-colors"
+              >
                 Mulai Analisis
               </Link>
             </div>
           </nav>
 
           <button
-            className={styles.hamburger}
+            className="flex md:hidden items-center justify-center w-9 h-9 bg-transparent border border-surface-high rounded-md cursor-pointer z-[60]"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
-            <span className={mobileMenuOpen ? styles.hamburgerOpen : ""} />
+            {mobileMenuOpen ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            )}
           </button>
         </div>
       </header>
 
       {/* ── HERO ── */}
-      <section className={styles.hero}>
-        <div className={`${styles.heroInner} container`}>
-          <div className={styles.heroContent}>
-            <div className={styles.heroKicker}>
-              <span className={styles.heroKickerCode}>SYS // NUTRI-VISION v2.4</span>
-              <span className={styles.heroKickerSep}>·</span>
+      <section className="pt-32 pb-20 lg:pt-36 lg:pb-24 border-b border-surface-high">
+        <div className="max-w-[1240px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center">
+          <div className="lg:col-span-7 flex flex-col items-start">
+            <div className="inline-flex items-center gap-2.5 px-3 py-1.5 bg-surface-lowest border border-surface-high rounded-sm font-mono text-[11px] font-medium text-on-surface-variant mb-6">
+              <span className="text-primary font-semibold tracking-wider">SYS // NUTRI-VISION v2.4</span>
+              <span className="text-outline-variant">·</span>
               <span>YOLOv8 + Basis Data Gizi Indonesia</span>
             </div>
 
-            <h1 className={styles.heroTitle}>
+            <h1 className="font-headline text-4xl sm:text-5xl lg:text-[54px] font-bold leading-[1.08] tracking-[-0.03em] text-on-surface mb-5">
               Pemantauan nutrisi klinis dengan{" "}
-              <span className={styles.heroSerif}>presisi terukur.</span>
+              <span className="font-serif italic font-normal text-primary text-[1.08em]">
+                presisi terukur.
+              </span>
             </h1>
 
-            <p className={styles.heroLead}>
+            <p className="text-base sm:text-[17px] leading-[1.65] text-on-surface-variant max-w-[540px] mb-8">
               Jimamet menggabungkan deteksi visual hidangan Nusantara secara real-time dengan
               pencatatan makronutrien terstruktur dan akses konsultasi langsung bersama Ahli Gizi.
             </p>
 
-            <div className={styles.heroActions}>
-              <Link href="/register" className={styles.btnPrimary}>
+            <div className="flex flex-wrap items-center gap-3 mb-12 w-full sm:w-auto">
+              <Link
+                href="/register"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-primary hover:bg-primary-container text-on-primary rounded-md font-headline text-sm font-semibold transition-all hover:-translate-y-px"
+              >
                 Buat Akun Pasien
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="5" y1="12" x2="19" y2="12" />
                   <polyline points="12 5 19 12 12 19" />
                 </svg>
               </Link>
-              <Link href="/login" className={styles.btnOutline}>
+              <Link
+                href="/login"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-surface-lowest hover:bg-surface-low text-on-surface border border-surface-high hover:border-outline rounded-md font-headline text-sm font-semibold transition-colors"
+              >
                 Masuk ke Portal
               </Link>
             </div>
 
-            <div className={styles.heroSpecs}>
-              <div className={styles.heroSpecItem}>
-                <span className={styles.heroSpecLabel}>DETEKSI OBJEK</span>
-                <span className={styles.heroSpecVal}>Kamera Live, Foto & Video</span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 w-full pt-6 border-t border-surface-high">
+              <div className="flex flex-col gap-1">
+                <span className="font-mono text-[10px] font-semibold tracking-widest text-outline uppercase">
+                  DETEKSI OBJEK
+                </span>
+                <span className="text-[13px] font-semibold text-on-surface">
+                  Kamera Live, Foto & Video
+                </span>
               </div>
-              <div className={styles.heroSpecItem}>
-                <span className={styles.heroSpecLabel}>VALIDASI DATA</span>
-                <span className={styles.heroSpecVal}>Tabel Komposisi Pangan</span>
+              <div className="flex flex-col gap-1">
+                <span className="font-mono text-[10px] font-semibold tracking-widest text-outline uppercase">
+                  VALIDASI DATA
+                </span>
+                <span className="text-[13px] font-semibold text-on-surface">
+                  Tabel Komposisi Pangan
+                </span>
               </div>
-              <div className={styles.heroSpecItem}>
-                <span className={styles.heroSpecLabel}>PENDAMPINGAN</span>
-                <span className={styles.heroSpecVal}>AI & Ahli Gizi Klinik</span>
+              <div className="flex flex-col gap-1">
+                <span className="font-mono text-[10px] font-semibold tracking-widest text-outline uppercase">
+                  PENDAMPINGAN
+                </span>
+                <span className="text-[13px] font-semibold text-on-surface">
+                  AI & Ahli Gizi Klinik
+                </span>
               </div>
             </div>
           </div>
 
           {/* ── Right Column: Clinical Specimen Frame ── */}
-          <div className={styles.heroSpecimen}>
-            <div className={styles.specimenCard}>
-              <div className={styles.specimenHeader}>
-                <div className={styles.specimenMeta}>
-                  <span className={styles.specimenDot} />
-                  <span className={styles.specimenCode}>SAMPEL ANALISIS // ID-042</span>
+          <div className="lg:col-span-5 w-full">
+            <div className="bg-surface-lowest border border-surface-high rounded-lg overflow-hidden shadow-md">
+              <div className="flex items-center justify-between px-4 py-3 bg-surface-low border-b border-surface-high">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-macro-fiber" />
+                  <span className="font-mono text-[11px] font-semibold text-on-surface-variant tracking-wider">
+                    SAMPEL ANALISIS // ID-042
+                  </span>
                 </div>
-                <span className={styles.specimenConfidence}>98.4% CONFIDENCE</span>
+                <span className="font-mono text-[11px] font-semibold text-primary px-2 py-0.5 bg-primary-fixed rounded-sm">
+                  98.4% CONFIDENCE
+                </span>
               </div>
 
-              <div className={styles.specimenViewport}>
+              <div className="relative bg-surface-container aspect-[16/10] overflow-hidden">
                 <Image
                   src="/hero-nutrition.png"
                   alt="Visualisasi deteksi nutrisi makanan"
                   width={600}
                   height={420}
                   priority
-                  className={styles.specimenImg}
+                  className="w-full h-full object-cover block"
                 />
-                <div className={styles.specimenOverlayTag}>
-                  <span className={styles.overlayTagName}>Hidangan Seimbang Terdeteksi</span>
-                  <span className={styles.overlayTagPortion}>Estimasi porsi: 380g</span>
+                <div className="absolute left-3.5 bottom-3.5 right-3.5 flex items-center justify-between px-3.5 py-2.5 bg-inverse-surface/88 backdrop-blur-md border border-white/12 rounded-md text-inverse-on-surface">
+                  <span className="font-headline text-[13px] font-semibold">
+                    Hidangan Seimbang Terdeteksi
+                  </span>
+                  <span className="font-mono text-[11px] text-primary-fixed-dim">
+                    Estimasi porsi: 380g
+                  </span>
                 </div>
               </div>
 
-              <div className={styles.specimenReadout}>
-                <div className={styles.readoutPrimary}>
+              <div className="p-5 flex flex-col gap-4">
+                <div className="flex items-baseline justify-between pb-3.5 border-b border-surface-container">
                   <div>
-                    <span className={styles.readoutLabel}>ESTIMASI ENERGI</span>
-                    <div className={styles.readoutCalories}>
-                      524 <small>kkal</small>
+                    <span className="block font-mono text-[10px] font-semibold tracking-widest text-outline mb-1">
+                      ESTIMASI ENERGI
+                    </span>
+                    <div className="font-mono text-[28px] font-semibold text-on-surface leading-none tracking-tight tabular-nums">
+                      524 <small className="text-[13px] font-medium text-outline">kkal</small>
                     </div>
                   </div>
-                  <div className={styles.readoutTargetBadge}>26% dari target 2.000 kkal</div>
+                  <div className="font-mono text-[11px] font-medium text-on-surface-variant px-2.5 py-1 bg-surface-low border border-surface-high rounded-sm">
+                    26% dari target 2.000 kkal
+                  </div>
                 </div>
 
-                <div className={styles.readoutMacros}>
-                  <div className={styles.readoutMacroItem}>
-                    <div className={styles.readoutMacroTop}>
-                      <span className={styles.macroDot} style={{ background: "var(--macro-protein)" }} />
-                      <span className={styles.macroName}>Protein</span>
-                      <span className={styles.macroVal}>32.4g</span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <span className="w-2 h-2 rounded-[2px] shrink-0 bg-macro-protein" />
+                      <span className="text-on-surface-variant font-medium flex-1">Protein</span>
+                      <span className="font-mono font-semibold text-on-surface text-xs tabular-nums">
+                        32.4g
+                      </span>
                     </div>
-                    <div className={styles.macroBar}>
-                      <div style={{ width: "64%", background: "var(--macro-protein)" }} />
-                    </div>
-                  </div>
-
-                  <div className={styles.readoutMacroItem}>
-                    <div className={styles.readoutMacroTop}>
-                      <span className={styles.macroDot} style={{ background: "var(--macro-carbs)" }} />
-                      <span className={styles.macroName}>Karbohidrat</span>
-                      <span className={styles.macroVal}>54.0g</span>
-                    </div>
-                    <div className={styles.macroBar}>
-                      <div style={{ width: "52%", background: "var(--macro-carbs)" }} />
+                    <div className="h-1 bg-surface-container rounded-full overflow-hidden">
+                      <div className="h-full rounded-full bg-macro-protein" style={{ width: "64%" }} />
                     </div>
                   </div>
 
-                  <div className={styles.readoutMacroItem}>
-                    <div className={styles.readoutMacroTop}>
-                      <span className={styles.macroDot} style={{ background: "var(--macro-fat)" }} />
-                      <span className={styles.macroName}>Lemak</span>
-                      <span className={styles.macroVal}>16.8g</span>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <span className="w-2 h-2 rounded-[2px] shrink-0 bg-macro-carbs" />
+                      <span className="text-on-surface-variant font-medium flex-1">Karbohidrat</span>
+                      <span className="font-mono font-semibold text-on-surface text-xs tabular-nums">
+                        54.0g
+                      </span>
                     </div>
-                    <div className={styles.macroBar}>
-                      <div style={{ width: "38%", background: "var(--macro-fat)" }} />
+                    <div className="h-1 bg-surface-container rounded-full overflow-hidden">
+                      <div className="h-full rounded-full bg-macro-carbs" style={{ width: "52%" }} />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <span className="w-2 h-2 rounded-[2px] shrink-0 bg-macro-fat" />
+                      <span className="text-on-surface-variant font-medium flex-1">Lemak</span>
+                      <span className="font-mono font-semibold text-on-surface text-xs tabular-nums">
+                        16.8g
+                      </span>
+                    </div>
+                    <div className="h-1 bg-surface-container rounded-full overflow-hidden">
+                      <div className="h-full rounded-full bg-macro-fat" style={{ width: "38%" }} />
                     </div>
                   </div>
                 </div>
@@ -261,33 +345,50 @@ export default function LandingPage() {
       </section>
 
       {/* ── CAPABILITIES ── */}
-      <section id="features" className={styles.capabilities}>
-        <div className="container">
-          <div className={styles.sectionHeaderRow}>
-            <div>
-              <span className={styles.sectionKicker}>01 // ARSITEKTUR PLATFORM</span>
-              <h2 className={styles.sectionTitle}>
+      <section id="features" className="py-24 bg-surface border-b border-surface-high">
+        <div className="max-w-[1240px] mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-end mb-14">
+            <div className="lg:col-span-7">
+              <span className="block font-mono text-[11px] font-semibold tracking-widest uppercase text-primary mb-2.5">
+                01 // ARSITEKTUR PLATFORM
+              </span>
+              <h2 className="font-headline text-2xl sm:text-3xl lg:text-[34px] font-bold leading-[1.16] tracking-[-0.025em] text-on-surface">
                 Dirancang untuk akurasi pencatatan gizi harian.
               </h2>
             </div>
-            <p className={styles.sectionDesc}>
+            <p className="lg:col-span-5 text-[15px] leading-[1.65] text-on-surface-variant">
               Menggantikan pencatatan manual yang rumit dengan pengenalan visual otomatis dan
               parameter gizi yang terstandarisasi.
             </p>
           </div>
 
-          <div className={styles.capabilityGrid}>
+          <div className="grid grid-cols-1 lg:grid-cols-3 bg-surface-high border border-surface-high rounded-lg overflow-hidden gap-px">
             {capabilities.map((item) => (
-              <article key={item.index} className={styles.capabilityCard}>
-                <div className={styles.capabilityTop}>
-                  <span className={styles.capabilityIndex}>{item.index}</span>
-                  <span className={styles.capabilityTag}>{item.tag}</span>
+              <article
+                key={item.index}
+                className="bg-surface-lowest p-8 flex flex-col justify-between min-h-[290px]"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="font-mono text-[13px] font-semibold text-primary">
+                      {item.index}
+                    </span>
+                    <span className="font-mono text-[10px] font-semibold tracking-wider text-outline px-2 py-1 bg-surface-low rounded-sm">
+                      {item.tag}
+                    </span>
+                  </div>
+                  <h3 className="font-headline text-xl font-bold text-on-surface tracking-tight mb-3">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm leading-[1.65] text-on-surface-variant mb-7">
+                    {item.desc}
+                  </p>
                 </div>
-                <h3 className={styles.capabilityTitle}>{item.title}</h3>
-                <p className={styles.capabilityBody}>{item.desc}</p>
-                <div className={styles.capabilityFooter}>
-                  <span className={styles.capabilitySpecLabel}>{item.specLabel}</span>
-                  <span className={styles.capabilitySpecVal}>{item.specValue}</span>
+                <div className="pt-4 border-t border-surface-container flex items-center justify-between gap-3">
+                  <span className="font-mono text-[11px] text-outline">{item.specLabel}</span>
+                  <span className="font-mono text-[11px] font-semibold text-on-surface">
+                    {item.specValue}
+                  </span>
                 </div>
               </article>
             ))}
@@ -296,19 +397,24 @@ export default function LandingPage() {
       </section>
 
       {/* ── PROTOCOL / HOW IT WORKS ── */}
-      <section id="how-it-works" className={styles.protocol}>
-        <div className="container">
-          <div className={styles.protocolLayout}>
-            <div className={styles.protocolIntro}>
-              <span className={styles.sectionKicker}>02 // PROTOKOL ANALISIS</span>
-              <h2 className={styles.sectionTitle}>
+      <section id="how-it-works" className="py-24 bg-surface-low border-b border-surface-high">
+        <div className="max-w-[1240px] mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+            <div className="lg:col-span-5 lg:sticky lg:top-28">
+              <span className="block font-mono text-[11px] font-semibold tracking-widest uppercase text-primary mb-2.5">
+                02 // PROTOKOL ANALISIS
+              </span>
+              <h2 className="font-headline text-2xl sm:text-3xl lg:text-[34px] font-bold leading-[1.16] tracking-[-0.025em] text-on-surface">
                 Dari bidikan kamera hingga rekam nutrisi klinis.
               </h2>
-              <p className={styles.sectionDesc}>
+              <p className="text-[15px] leading-[1.65] text-on-surface-variant mt-4">
                 Setiap analisis melewati tiga tahapan terstruktur untuk memastikan estimasi kalori
                 dan makronutrien dapat dipertanggungjawabkan secara praktis.
               </p>
-              <Link href="/register" className={styles.protocolLink}>
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-2 mt-6 font-headline text-sm font-bold text-primary hover:gap-3 transition-all"
+              >
                 Coba Analisis Sekarang
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="5" y1="12" x2="19" y2="12" />
@@ -317,17 +423,26 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            <div className={styles.protocolList}>
+            <div className="lg:col-span-7 flex flex-col border-t border-surface-high">
               {protocolSteps.map((step) => (
-                <div key={step.code} className={styles.protocolRow}>
-                  <div className={styles.protocolCodeCol}>
-                    <span className={styles.protocolCode}>{step.code}</span>
+                <div
+                  key={step.code}
+                  className="grid grid-cols-1 sm:grid-cols-[120px_1fr] gap-3 sm:gap-6 py-7 border-b border-surface-high"
+                >
+                  <div className="pt-1">
+                    <span className="font-mono text-xs font-semibold text-primary tracking-wider">
+                      {step.code}
+                    </span>
                   </div>
-                  <div className={styles.protocolBodyCol}>
-                    <h3 className={styles.protocolStepTitle}>{step.title}</h3>
-                    <p className={styles.protocolStepDesc}>{step.desc}</p>
-                    <div className={styles.protocolArtifact}>
-                      <span className={styles.artifactLabel}>OUTPUT:</span>
+                  <div>
+                    <h3 className="font-headline text-xl font-bold text-on-surface mb-2 tracking-tight">
+                      {step.title}
+                    </h3>
+                    <p className="text-[15px] leading-[1.6] text-on-surface-variant mb-3.5">
+                      {step.desc}
+                    </p>
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-lowest border border-surface-high rounded-sm font-mono text-[11px] text-on-surface-variant">
+                      <span className="font-semibold text-primary">OUTPUT:</span>
                       <span>{step.artifact}</span>
                     </div>
                   </div>
@@ -339,21 +454,32 @@ export default function LandingPage() {
       </section>
 
       {/* ── BENCHMARKS / STATS ── */}
-      <section id="stats" className={styles.benchmarks}>
-        <div className="container">
-          <div className={styles.benchmarksHeader}>
-            <span className={styles.benchmarksKicker}>03 // PARAMETER & CAKUPAN</span>
-            <h2 className={styles.benchmarksTitle}>
+      <section id="stats" className="py-20 bg-primary text-on-primary">
+        <div className="max-w-[1240px] mx-auto px-6">
+          <div className="mb-12 max-w-[580px]">
+            <span className="block font-mono text-[11px] font-semibold tracking-widest text-primary-fixed-dim mb-2.5">
+              03 // PARAMETER & CAKUPAN
+            </span>
+            <h2 className="font-headline text-2xl sm:text-3xl font-bold leading-snug tracking-tight text-white">
               Spesifikasi teknis yang mendukung pemantauan nutrisi Anda.
             </h2>
           </div>
 
-          <div className={styles.benchmarksGrid}>
-            {benchmarks.map((b) => (
-              <div key={b.label} className={styles.benchmarkCell}>
-                <div className={styles.benchmarkValue}>{b.metric}</div>
-                <div className={styles.benchmarkLabel}>{b.label}</div>
-                <p className={styles.benchmarkDetail}>{b.detail}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-t border-white/15">
+            {benchmarks.map((b, idx) => (
+              <div
+                key={b.label}
+                className={`py-7 pr-6 ${
+                  idx < benchmarks.length - 1 ? "lg:border-r lg:border-white/15" : ""
+                } ${idx > 0 ? "lg:pl-7" : ""} border-b sm:border-b-0 border-white/12`}
+              >
+                <div className="font-mono text-3xl sm:text-4xl font-semibold text-white tracking-tight mb-2 tabular-nums">
+                  {b.metric}
+                </div>
+                <div className="font-headline text-[15px] font-semibold text-primary-fixed mb-1.5">
+                  {b.label}
+                </div>
+                <p className="text-[13px] leading-relaxed text-white/70">{b.detail}</p>
               </div>
             ))}
           </div>
@@ -361,28 +487,36 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className={styles.ctaSection}>
-        <div className="container">
-          <div className={styles.ctaBox}>
-            <div className={styles.ctaContent}>
-              <span className={styles.sectionKicker}>MULAI PEMANTAUAN</span>
-              <h2 className={styles.ctaHeading}>
+      <section className="py-20 bg-surface border-b border-surface-high">
+        <div className="max-w-[1240px] mx-auto px-6">
+          <div className="bg-surface-lowest border border-surface-high rounded-lg p-8 sm:p-12 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+            <div className="max-w-[580px]">
+              <span className="block font-mono text-[11px] font-semibold tracking-widest uppercase text-primary mb-2.5">
+                MULAI PEMANTAUAN
+              </span>
+              <h2 className="font-headline text-2xl sm:text-3xl font-bold text-on-surface tracking-tight mb-2.5">
                 Kelola asupan gizi harian dengan data yang terukur.
               </h2>
-              <p className={styles.ctaSubtext}>
+              <p className="text-[15px] leading-relaxed text-on-surface-variant">
                 Buat akun gratis untuk mengakses deteksi makanan berbasis kamera, log nutrisi
                 harian, serta konsultasi terintegrasi dengan Ahli Gizi.
               </p>
             </div>
-            <div className={styles.ctaActions}>
-              <Link href="/register" className={styles.btnPrimary}>
+            <div className="flex flex-wrap items-center gap-3 shrink-0 w-full sm:w-auto">
+              <Link
+                href="/register"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-primary hover:bg-primary-container text-on-primary rounded-md font-headline text-sm font-semibold transition-colors"
+              >
                 Daftar Akun Gratis
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="5" y1="12" x2="19" y2="12" />
                   <polyline points="12 5 19 12 12 19" />
                 </svg>
               </Link>
-              <Link href="/login" className={styles.btnOutline}>
+              <Link
+                href="/login"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3.5 bg-surface-lowest hover:bg-surface-low text-on-surface border border-surface-high rounded-md font-headline text-sm font-semibold transition-colors"
+              >
                 Masuk ke Akun
               </Link>
             </div>
@@ -391,51 +525,77 @@ export default function LandingPage() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className={styles.footer}>
-        <div className="container">
-          <div className={styles.footerTop}>
-            <div className={styles.footerBrand}>
-              <div className={styles.logo}>
+      <footer className="pt-14 pb-9 bg-surface-low text-on-surface-variant">
+        <div className="max-w-[1240px] mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pb-10 border-b border-surface-high">
+            <div className="lg:col-span-5">
+              <div className="flex items-center gap-2.5">
                 <Image
                   src="/jimamet_logo.webp"
                   alt="Jimamet Logo"
                   width={32}
                   height={32}
-                  style={{ objectFit: "contain" }}
+                  className="object-contain"
                 />
-                <span className={styles.footerLogoText}>Jimamet</span>
+                <span className="font-headline text-lg font-bold text-on-surface">Jimamet</span>
               </div>
-              <p className={styles.footerTagline}>
+              <p className="mt-3 text-[13px] leading-relaxed text-outline max-w-[340px]">
                 Platform analisis nutrisi dan telemetri diet berbasis visi komputer untuk pemantauan
                 kesehatan klinis maupun mandiri.
               </p>
             </div>
 
-            <div className={styles.footerLinks}>
-              <div className={styles.footerCol}>
-                <h4>Platform</h4>
-                <a href="#features">Kapabilitas</a>
-                <a href="#how-it-works">Protokol Kerja</a>
-                <a href="#stats">Standar Data</a>
+            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="flex flex-col gap-2.5">
+                <h4 className="font-mono text-[11px] font-semibold uppercase tracking-wider text-on-surface mb-1">
+                  Platform
+                </h4>
+                <a href="#features" className="text-[13px] text-outline hover:text-on-surface transition-colors">
+                  Kapabilitas
+                </a>
+                <a href="#how-it-works" className="text-[13px] text-outline hover:text-on-surface transition-colors">
+                  Protokol Kerja
+                </a>
+                <a href="#stats" className="text-[13px] text-outline hover:text-on-surface transition-colors">
+                  Standar Data
+                </a>
               </div>
-              <div className={styles.footerCol}>
-                <h4>Akses</h4>
-                <Link href="/login">Masuk Pasien</Link>
-                <Link href="/register">Registrasi Baru</Link>
-                <Link href="/login">Portal Ahli Gizi</Link>
+              <div className="flex flex-col gap-2.5">
+                <h4 className="font-mono text-[11px] font-semibold uppercase tracking-wider text-on-surface mb-1">
+                  Akses
+                </h4>
+                <Link href="/login" className="text-[13px] text-outline hover:text-on-surface transition-colors">
+                  Masuk Pasien
+                </Link>
+                <Link href="/register" className="text-[13px] text-outline hover:text-on-surface transition-colors">
+                  Registrasi Baru
+                </Link>
+                <Link href="/login" className="text-[13px] text-outline hover:text-on-surface transition-colors">
+                  Portal Ahli Gizi
+                </Link>
               </div>
-              <div className={styles.footerCol}>
-                <h4>Informasi</h4>
-                <a href="#features">Metodologi YOLOv8</a>
-                <a href="#stats">Basis Data Gizi</a>
-                <a href="#how-it-works">Panduan Penggunaan</a>
+              <div className="flex flex-col gap-2.5">
+                <h4 className="font-mono text-[11px] font-semibold uppercase tracking-wider text-on-surface mb-1">
+                  Informasi
+                </h4>
+                <a href="#features" className="text-[13px] text-outline hover:text-on-surface transition-colors">
+                  Metodologi YOLOv8
+                </a>
+                <a href="#stats" className="text-[13px] text-outline hover:text-on-surface transition-colors">
+                  Basis Data Gizi
+                </a>
+                <a href="#how-it-works" className="text-[13px] text-outline hover:text-on-surface transition-colors">
+                  Panduan Penggunaan
+                </a>
               </div>
             </div>
           </div>
 
-          <div className={styles.footerBottom}>
+          <div className="pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-outline">
             <span>© {new Date().getFullYear()} Jimamet Clinical Nutrition System.</span>
-            <span className={styles.footerMeta}>INDONESIAN FOOD NUTRITION TELEMETRY</span>
+            <span className="font-mono text-[11px] tracking-wider">
+              INDONESIAN FOOD NUTRITION TELEMETRY
+            </span>
           </div>
         </div>
       </footer>

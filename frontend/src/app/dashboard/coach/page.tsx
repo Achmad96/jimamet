@@ -2,8 +2,18 @@
 
 import { useState, useRef, useEffect, FormEvent } from "react";
 import ReactMarkdown from "react-markdown";
-import styles from "./coach.module.css";
-import { apiListCoachSessions, apiGetCoachSession, apiCreateCoachSession, apiDeleteCoachSession, apiSendCoachMessage, apiCreateConsultation, apiSendChat, apiListConsultations, apiListChat, getWsConsultationUrl } from "@/lib/api";
+import {
+  apiListCoachSessions,
+  apiGetCoachSession,
+  apiCreateCoachSession,
+  apiDeleteCoachSession,
+  apiSendCoachMessage,
+  apiCreateConsultation,
+  apiSendChat,
+  apiListConsultations,
+  apiListChat,
+  getWsConsultationUrl,
+} from "@/lib/api";
 
 interface CoachSession {
   id: string;
@@ -75,7 +85,7 @@ const quickReplies = [
 const statusLabels: Record<string, { label: string; color: string }> = {
   pending: { label: "Menunggu", color: "#d9822b" },
   completed: { label: "Selesai", color: "#143625" },
-  cancelled: { label: "Dibatalkan", color: "#6f7771" }
+  cancelled: { label: "Dibatalkan", color: "#6f7771" },
 };
 
 type ViewMode = "coach" | "consultation";
@@ -99,7 +109,7 @@ export default function NutriCoachPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("coach");
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [konsultasiStatus, setKonsultasiStatus] = useState<Record<string, "idle" | "loading" | "sent" | "error">>({});
@@ -109,7 +119,6 @@ export default function NutriCoachPage() {
   useEffect(() => {
     loadSessions();
     return () => {
-      // Cleanup WebSocket on unmount
       if (wsRef.current) wsRef.current.close();
     };
   }, []);
@@ -141,7 +150,6 @@ export default function NutriCoachPage() {
     setActiveSession(sessionId);
     setActiveConsultation(null);
     setSidebarOpen(false);
-    // Disconnect WebSocket when switching to AI chat
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
@@ -208,7 +216,7 @@ export default function NutriCoachPage() {
       sender: "user",
       message: text,
       needs_consultation: false,
-      sent_at: new Date().toISOString()
+      sent_at: new Date().toISOString(),
     };
 
     setMessages((prev) => [...prev, userMsg]);
@@ -224,7 +232,7 @@ export default function NutriCoachPage() {
           sender: "ai",
           message: res.data.reply,
           needs_consultation: res.data.needs_consultation,
-          sent_at: new Date().toISOString()
+          sent_at: new Date().toISOString(),
         };
         setMessages((prev) => [...prev, aiMsg]);
 
@@ -240,8 +248,8 @@ export default function NutriCoachPage() {
             sender: "ai",
             message: "Maaf, sistem AI sedang mengalami kendala. Silakan coba beberapa saat lagi.",
             needs_consultation: false,
-            sent_at: new Date().toISOString()
-          }
+            sent_at: new Date().toISOString(),
+          },
         ]);
       }
     } catch (e) {
@@ -265,23 +273,21 @@ export default function NutriCoachPage() {
       if (ok && data?.id) {
         await apiSendChat(data.id, "Halo Ahli Gizi, saya diarahkan oleh NutriCoach AI untuk berkonsultasi.", "user");
 
-        // Tandai sebagai terkirim (menyembunyikan tombol)
         setKonsultasiStatus((prev) => ({ ...prev, [msgId]: "sent" }));
 
-        // Tampilkan pesan penutup dari CoachBot
         const closingMsg: ChatMessage = {
           id: `closing-${Date.now()}`,
           session_id: activeSession || "",
           sender: "ai",
-          message: 'Permintaan konsultasi klinis Anda telah diteruskan ke **Ahli Gizi**.\n\nSilakan buka panel **"Konsultasi Ahli Gizi"** di sidebar kiri untuk melanjutkan diskusi secara langsung.',
+          message:
+            'Permintaan konsultasi klinis Anda telah diteruskan ke **Ahli Gizi**.\n\nSilakan buka panel **"Konsultasi Ahli Gizi"** di sidebar kiri untuk melanjutkan diskusi secara langsung.',
           needs_consultation: false,
-          sent_at: new Date().toISOString()
+          sent_at: new Date().toISOString(),
         };
         setMessages((prev) => [...prev, closingMsg]);
 
         await loadConsultations();
 
-        // Tutup sesi ini setelah 3 detik agar user sempat membaca
         setTimeout(async () => {
           if (activeSession) {
             const sessionId = activeSession;
@@ -294,7 +300,7 @@ export default function NutriCoachPage() {
       } else {
         throw new Error("Failed to create consultation");
       }
-    } catch (e) {
+    } catch {
       setKonsultasiStatus((prev) => ({ ...prev, [msgId]: "error" }));
       alert("Gagal mengirim permintaan konsultasi.");
     }
@@ -320,7 +326,6 @@ export default function NutriCoachPage() {
   };
 
   const connectWebSocket = (consultationId: string) => {
-    // Close existing connection
     if (wsRef.current) {
       wsRef.current.close();
     }
@@ -329,7 +334,6 @@ export default function NutriCoachPage() {
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-      console.log("[WS] Connected to", consultationId);
       setWsConnected(true);
     };
 
@@ -341,15 +345,13 @@ export default function NutriCoachPage() {
           consultation_id: consultationId,
           sender: data.sender,
           message: data.message,
-          sent_at: data.sent_at
+          sent_at: data.sent_at,
         };
         setConsultationChats((prev) => {
-          // Prevent duplicates
           if (prev.some((m) => m.id === newMsg.id && newMsg.id !== "")) return prev;
           return [...prev, newMsg];
         });
 
-        // Refresh the consultations list to get updated status (e.g., active:Nama)
         apiListConsultations().then(({ ok, data }) => {
           if (ok && Array.isArray(data)) {
             setConsultations(data);
@@ -359,12 +361,10 @@ export default function NutriCoachPage() {
     };
 
     ws.onclose = () => {
-      console.log("[WS] Disconnected from", consultationId);
       setWsConnected(false);
     };
 
-    ws.onerror = (err) => {
-      console.warn("[WS] Error/Disconnected:", err);
+    ws.onerror = () => {
       setWsConnected(false);
     };
 
@@ -377,7 +377,6 @@ export default function NutriCoachPage() {
     setActiveSession(null);
     setSidebarOpen(false);
 
-    // Load existing messages via REST API (history)
     try {
       const { ok, data } = await apiListChat(consultationId);
       if (ok && Array.isArray(data)) {
@@ -387,7 +386,6 @@ export default function NutriCoachPage() {
       console.error(e);
     }
 
-    // Connect WebSocket for real-time updates
     connectWebSocket(consultationId);
   };
 
@@ -402,18 +400,16 @@ export default function NutriCoachPage() {
     try {
       const { ok, data } = await apiSendChat(activeConsultation, text, "user");
       if (ok) {
-        // Broadcast via WebSocket so both sides see it instantly
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
           wsRef.current.send(
             JSON.stringify({
               id: data?.id || `sent-${Date.now()}`,
               message: text,
               sender: "user",
-              sent_at: new Date().toISOString()
+              sent_at: new Date().toISOString(),
             })
           );
         } else {
-          // Fallback: add locally if WS is not connected
           setConsultationChats((prev) => [
             ...prev,
             {
@@ -421,8 +417,8 @@ export default function NutriCoachPage() {
               consultation_id: activeConsultation,
               sender: "user",
               message: text,
-              sent_at: new Date().toISOString()
-            }
+              sent_at: new Date().toISOString(),
+            },
           ]);
         }
       }
@@ -434,34 +430,69 @@ export default function NutriCoachPage() {
   };
 
   return (
-    <div className={styles.layout}>
-      {sidebarOpen && <div className={styles.sidebarOverlay} onClick={() => setSidebarOpen(false)} />}
+    <div className="flex h-[calc(100vh-116px)] bg-surface-lowest border border-surface-high rounded-lg overflow-hidden relative">
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-on-surface/40 z-20 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
       {/* Sidebar */}
-      <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ""}`}>
-        <div className={styles.sidebarHeader}>
-          <span className={styles.sidebarKicker}>ASISTEN DIETETIKA</span>
-          <h2>NutriCoach AI</h2>
-          <button className={styles.newSessionBtn} onClick={handleNewSession}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <aside
+        className={`w-[280px] bg-surface-low border-r border-surface-high flex flex-col transition-transform duration-200 z-30 absolute md:static inset-y-0 left-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        }`}
+      >
+        <div className="p-4 pt-5 border-b border-surface-high">
+          <span className="block font-mono text-[10px] font-semibold tracking-wider text-outline mb-1">
+            ASISTEN DIETETIKA
+          </span>
+          <h2 className="m-0 mb-3.5 font-headline text-[17px] text-on-surface font-bold tracking-tight">
+            NutriCoach AI
+          </h2>
+          <button
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-3.5 bg-primary hover:bg-primary-container text-on-primary border-none rounded-md font-body text-[13px] font-semibold cursor-pointer transition-colors"
+            onClick={handleNewSession}
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
             Sesi Baru
           </button>
         </div>
-        <div className={styles.sessionList}>
+
+        <div className="flex-1 overflow-y-auto p-2">
           {sessions.length === 0 ? (
-            <div className={styles.emptySidebar}>Belum ada riwayat sesi AI</div>
+            <div className="text-center py-7 px-3 text-outline text-xs">
+              Belum ada riwayat sesi AI
+            </div>
           ) : (
             sessions.map((s) => (
-              <div key={s.id} className={`${styles.sessionItem} ${viewMode === "coach" && activeSession === s.id ? styles.activeSession : ""}`} onClick={() => selectSession(s.id)}>
-                <div className={styles.sessionItemContent}>
-                  <div className={styles.sessionTitle}>{s.title}</div>
-                  <div className={styles.sessionTime}>{formatRelativeTime(s.updated_at)}</div>
+              <div
+                key={s.id}
+                className={`group flex items-center justify-between px-3 py-2.5 mb-1 rounded-md border cursor-pointer transition-all ${
+                  viewMode === "coach" && activeSession === s.id
+                    ? "bg-surface-lowest border-surface-high shadow-xs"
+                    : "border-transparent hover:bg-surface-container"
+                }`}
+                onClick={() => selectSession(s.id)}
+              >
+                <div className="flex-1 overflow-hidden">
+                  <div className="text-[13px] font-semibold text-on-surface truncate">
+                    {s.title}
+                  </div>
+                  <div className="font-mono text-[11px] text-outline mt-0.5">
+                    {formatRelativeTime(s.updated_at)}
+                  </div>
                 </div>
-                <button className={styles.deleteSessionBtn} onClick={(e) => handleDeleteSession(e, s.id)} title="Hapus sesi">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <button
+                  className="bg-transparent border-none text-outline hover:text-error cursor-pointer p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={(e) => handleDeleteSession(e, s.id)}
+                  title="Hapus sesi"
+                >
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <polyline points="3 6 5 6 21 6"></polyline>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                   </svg>
@@ -472,13 +503,20 @@ export default function NutriCoachPage() {
         </div>
 
         {/* Consultation Section — lazy loaded */}
-        <div className={styles.sidebarDivider} onClick={handleShowConsultations} style={{ cursor: "pointer" }}>
-          <span>Konsultasi Ahli Gizi {!consultationsLoaded && "· Muat"}</span>
+        <div
+          className="px-4 pt-3 pb-2 border-t border-surface-high mt-1 cursor-pointer"
+          onClick={handleShowConsultations}
+        >
+          <span className="font-mono text-[10px] font-semibold text-primary uppercase tracking-wider">
+            Konsultasi Ahli Gizi {!consultationsLoaded && "· Muat"}
+          </span>
         </div>
         {consultationsLoaded && (
-          <div className={styles.sessionList}>
+          <div className="flex-1 overflow-y-auto p-2">
             {consultations.length === 0 ? (
-              <div className={styles.emptySidebar}>Belum ada tiket konsultasi</div>
+              <div className="text-center py-7 px-3 text-outline text-xs">
+                Belum ada tiket konsultasi
+              </div>
             ) : (
               consultations.map((c) => {
                 const rawStatus = c.status || "pending";
@@ -489,11 +527,21 @@ export default function NutriCoachPage() {
                 }
 
                 return (
-                  <div key={c.id} className={`${styles.sessionItem} ${viewMode === "consultation" && activeConsultation === c.id ? styles.activeSession : ""}`} onClick={() => selectConsultation(c.id)}>
-                    <div className={styles.sessionItemContent}>
-                      <div className={styles.sessionTitle}>Konsultasi Klinis</div>
-                      <div className={styles.sessionTime}>
-                        <span className={styles.statusBadge} style={{ color: st.color }}>
+                  <div
+                    key={c.id}
+                    className={`flex items-center justify-between px-3 py-2.5 mb-1 rounded-md border cursor-pointer transition-all ${
+                      viewMode === "consultation" && activeConsultation === c.id
+                        ? "bg-surface-lowest border-surface-high shadow-xs"
+                        : "border-transparent hover:bg-surface-container"
+                    }`}
+                    onClick={() => selectConsultation(c.id)}
+                  >
+                    <div className="flex-1 overflow-hidden">
+                      <div className="text-[13px] font-semibold text-on-surface truncate">
+                        Konsultasi Klinis
+                      </div>
+                      <div className="font-mono text-[11px] text-outline mt-0.5">
+                        <span className="font-semibold" style={{ color: st.color }}>
                           ● {st.label}
                         </span>
                         {" · "}
@@ -509,10 +557,13 @@ export default function NutriCoachPage() {
       </aside>
 
       {/* Main Chat Area */}
-      <main className={styles.main}>
-        <header className={styles.chatHeader}>
-          <button className={styles.menuBtn} onClick={() => setSidebarOpen(true)}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <main className="flex-1 flex flex-col bg-surface min-w-0">
+        <header className="flex items-center px-6 py-3.5 bg-surface-lowest border-b border-surface-high">
+          <button
+            className="block md:hidden bg-transparent border-none cursor-pointer p-1.5 mr-2 text-on-surface"
+            onClick={() => setSidebarOpen(true)}
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="3" y1="12" x2="21" y2="12" />
               <line x1="3" y1="6" x2="21" y2="6" />
               <line x1="3" y1="18" x2="21" y2="18" />
@@ -520,27 +571,29 @@ export default function NutriCoachPage() {
           </button>
           {viewMode === "coach" ? (
             <>
-              <div className={styles.aiAvatar}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <div className="w-9 h-9 rounded-[8px] bg-primary flex items-center justify-center mr-3 shrink-0">
+                <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
               </div>
-              <div className={styles.headerInfo}>
-                <h2>NutriCoach AI</h2>
-                <span className={styles.onlineStatus}>
-                  <span className={styles.onlineDot}></span> Asisten Kontekstual Aktif
+              <div>
+                <h2 className="m-0 font-headline text-[15px] font-bold text-on-surface">
+                  NutriCoach AI
+                </h2>
+                <span className="font-mono text-[11px] text-on-surface-variant flex items-center gap-1.5 mt-0.5">
+                  <span className="w-1.5 h-1.5 bg-primary rounded-full" /> Asisten Kontekstual Aktif
                 </span>
               </div>
             </>
           ) : (
             <>
-              <div className={styles.doctorAvatar}>
+              <div className="w-9 h-9 rounded-[8px] bg-macro-fat flex items-center justify-center mr-3 shrink-0">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
                 </svg>
               </div>
-              <div className={styles.headerInfo}>
-                <h2>
+              <div>
+                <h2 className="m-0 font-headline text-[15px] font-bold text-on-surface">
                   {(() => {
                     if (activeConsultation) {
                       const c = consultations.find((c) => c.id === activeConsultation);
@@ -549,44 +602,61 @@ export default function NutriCoachPage() {
                     return "Konsultasi Ahli Gizi";
                   })()}
                 </h2>
-                <span className={styles.onlineStatus}>
-                  <span className={wsConnected ? styles.onlineDot : styles.onlineDotRed}></span>
+                <span className="font-mono text-[11px] text-on-surface-variant flex items-center gap-1.5 mt-0.5">
+                  <span className={`w-1.5 h-1.5 rounded-full ${wsConnected ? "bg-primary" : "bg-error"}`} />
                   {wsConnected ? "Kanal Real-time" : "Terputus"}
                 </span>
               </div>
-              <div className={styles.wsBadge} style={{ background: wsConnected ? "rgba(20, 54, 37, 0.08)" : "rgba(180, 35, 24, 0.08)", color: wsConnected ? "#143625" : "#b42318" }}>
+              <div
+                className={`ml-auto px-2.5 py-1 rounded-full font-mono text-[11px] font-semibold whitespace-nowrap ${
+                  wsConnected ? "bg-primary/8 text-primary" : "bg-error/8 text-error"
+                }`}
+              >
                 ● {wsConnected ? "WebSocket Aktif" : "WebSocket Terputus"}
               </div>
             </>
           )}
         </header>
 
-        <div className={styles.messagesContainer}>
+        <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-3.5">
           {/* ── COACH AI VIEW ── */}
           {viewMode === "coach" && (
             <>
               {!activeSession ? (
-                <div className={styles.emptyState}>
-                  <div className={styles.emptyIconBox}>
+                <div className="flex flex-col items-center justify-center h-full text-on-surface-variant text-center p-6">
+                  <div className="w-13 h-13 rounded-lg bg-surface-lowest border border-surface-high text-primary flex items-center justify-center mb-4">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                     </svg>
                   </div>
-                  <h3>Mulai Konsultasi NutriCoach AI</h3>
-                  <p>Diskusikan hasil pemindaian nutrisi, target kalori, atau keluhan dietetika Anda.</p>
-                  <button className={styles.startBtn} onClick={handleNewSession}>
+                  <h3 className="font-headline text-lg font-bold m-0 mb-1.5 text-on-surface">
+                    Mulai Konsultasi NutriCoach AI
+                  </h3>
+                  <p className="text-[13px] max-w-[360px] leading-relaxed">
+                    Diskusikan hasil pemindaian nutrisi, target kalori, atau keluhan dietetika Anda.
+                  </p>
+                  <button
+                    className="mt-4 py-2.5 px-5 bg-primary hover:bg-primary-container text-on-primary border-none rounded-md text-[13px] font-semibold cursor-pointer transition-colors"
+                    onClick={handleNewSession}
+                  >
                     Buat Sesi Konsultasi
                   </button>
                 </div>
               ) : (
                 <>
                   {messages.length === 0 && (
-                    <div className={styles.welcomeState}>
-                      <span className={styles.welcomeKicker}>TOPIK CEPAT</span>
+                    <div className="text-center my-4 mx-auto max-w-[540px] text-on-surface-variant text-[13px]">
+                      <span className="block font-mono text-[10px] font-semibold tracking-wider text-primary mb-1.5">
+                        TOPIK CEPAT
+                      </span>
                       <p>Pilih topik diskusi di bawah atau ketik pertanyaan spesifik Anda:</p>
-                      <div className={styles.quickReplies}>
+                      <div className="flex flex-wrap gap-2 justify-center mt-3.5">
                         {quickReplies.map((q) => (
-                          <button key={q} className={styles.quickBtn} onClick={() => sendMessage(q)}>
+                          <button
+                            key={q}
+                            className="py-2 px-3.5 bg-surface-lowest border border-surface-high hover:border-primary hover:text-primary text-on-surface rounded-md font-body text-xs font-medium cursor-pointer transition-colors"
+                            onClick={() => sendMessage(q)}
+                          >
                             {q}
                           </button>
                         ))}
@@ -595,36 +665,55 @@ export default function NutriCoachPage() {
                   )}
 
                   {messages.map((msg, i) => (
-                    <div key={msg.id || i} className={`${styles.msgRow} ${msg.sender === "user" ? styles.msgRowUser : styles.msgRowAi}`}>
-                      <div className={`${styles.bubble} ${msg.sender === "user" ? styles.bubbleUser : styles.bubbleAi}`}>
+                    <div
+                      key={msg.id || i}
+                      className={`flex w-full ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      <div
+                        className={`max-w-[75%] sm:max-w-[72%] py-3.5 px-4.5 rounded-lg text-sm leading-relaxed ${
+                          msg.sender === "user"
+                            ? "bg-primary text-on-primary rounded-br-[4px]"
+                            : "bg-surface-lowest text-on-surface rounded-bl-[4px] border border-surface-high"
+                        }`}
+                      >
                         {msg.sender === "ai" ? (
-                          <div className={styles.markdownWrapper}>
+                          <div className="flex flex-col gap-2 break-words [&_p]:m-0 [&_p]:whitespace-pre-wrap [&_ul]:m-0 [&_ul]:pl-5 [&_ol]:m-0 [&_ol]:pl-5">
                             <ReactMarkdown>{msg.message}</ReactMarkdown>
                           </div>
                         ) : (
-                          <p>{msg.message}</p>
+                          <p className="m-0 whitespace-pre-wrap">{msg.message}</p>
                         )}
-                        <span className={styles.msgTime}>{formatTime(msg.sent_at)}</span>
+                        <span className="block font-mono text-[10px] mt-2 opacity-65 text-right">
+                          {formatTime(msg.sent_at)}
+                        </span>
 
                         {msg.needs_consultation && konsultasiStatus[msg.id] !== "sent" && (
-                          <button onClick={() => handleKirimKonsultasi(msg.id, msg.message)} disabled={konsultasiStatus[msg.id] === "loading"} className={styles.konsultasiBtn}>
-                            {konsultasiStatus[msg.id] === "loading" ? "Meneruskan ke Ahli Gizi..." : "Eskalasi ke Ahli Gizi Klinis →"}
+                          <button
+                            onClick={() => handleKirimKonsultasi(msg.id, msg.message)}
+                            disabled={konsultasiStatus[msg.id] === "loading"}
+                            className="mt-3 py-2.5 px-3.5 bg-primary hover:bg-primary-container text-on-primary border-none rounded-md font-body text-xs font-semibold cursor-pointer w-full transition-colors"
+                          >
+                            {konsultasiStatus[msg.id] === "loading"
+                              ? "Meneruskan ke Ahli Gizi..."
+                              : "Eskalasi ke Ahli Gizi Klinis →"}
                           </button>
                         )}
                         {msg.needs_consultation && konsultasiStatus[msg.id] === "sent" && (
-                          <div className={styles.konsultasiSent}>Permintaan terkirim — periksa bagian &quot;Konsultasi Ahli Gizi&quot; di sidebar.</div>
+                          <div className="mt-2.5 py-2 px-3 rounded-[6px] bg-primary/8 text-xs text-primary font-semibold">
+                            Permintaan terkirim — periksa bagian &quot;Konsultasi Ahli Gizi&quot; di sidebar.
+                          </div>
                         )}
                       </div>
                     </div>
                   ))}
 
                   {isTyping && (
-                    <div className={`${styles.msgRow} ${styles.msgRowAi}`}>
-                      <div className={`${styles.bubble} ${styles.bubbleAi}`}>
-                        <div className={styles.typingDots}>
-                          <span />
-                          <span />
-                          <span />
+                    <div className="flex w-full justify-start">
+                      <div className="py-3.5 px-4.5 rounded-lg bg-surface-lowest border border-surface-high rounded-bl-[4px]">
+                        <div className="flex gap-1.5 py-1 px-0.5">
+                          <span className="w-1.5 h-1.5 bg-outline rounded-full animate-bounce [animation-delay:-0.32s]" />
+                          <span className="w-1.5 h-1.5 bg-outline rounded-full animate-bounce [animation-delay:-0.16s]" />
+                          <span className="w-1.5 h-1.5 bg-outline rounded-full animate-bounce" />
                         </div>
                       </div>
                     </div>
@@ -638,30 +727,51 @@ export default function NutriCoachPage() {
           {viewMode === "consultation" && (
             <>
               {!activeConsultation ? (
-                <div className={styles.emptyState}>
-                  <div className={styles.emptyIconBox}>
+                <div className="flex flex-col items-center justify-center h-full text-on-surface-variant text-center p-6">
+                  <div className="w-13 h-13 rounded-lg bg-surface-lowest border border-surface-high text-primary flex items-center justify-center mb-4">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
                     </svg>
                   </div>
-                  <h3>Konsultasi Ahli Gizi</h3>
-                  <p>Pilih sesi konsultasi di sidebar kiri untuk membuka riwayat pesan klinis.</p>
+                  <h3 className="font-headline text-lg font-bold m-0 mb-1.5 text-on-surface">
+                    Konsultasi Ahli Gizi
+                  </h3>
+                  <p className="text-[13px] max-w-[360px] leading-relaxed">
+                    Pilih sesi konsultasi di sidebar kiri untuk membuka riwayat pesan klinis.
+                  </p>
                 </div>
               ) : (
                 <>
                   {consultationChats.length === 0 && (
-                    <div className={styles.welcomeState}>
+                    <div className="text-center my-4 mx-auto max-w-[540px] text-on-surface-variant text-[13px]">
                       <p>Menunggu respons dari Ahli Gizi yang bertugas...</p>
-                      <p style={{ fontSize: "12px", color: "var(--outline)", marginTop: "6px" }}>Pesan disinkronisasikan secara langsung melalui WebSocket.</p>
+                      <p className="text-xs text-outline mt-1.5">
+                        Pesan disinkronisasikan secara langsung melalui WebSocket.
+                      </p>
                     </div>
                   )}
 
                   {consultationChats.map((msg, i) => (
-                    <div key={msg.id || i} className={`${styles.msgRow} ${msg.sender === "user" ? styles.msgRowUser : styles.msgRowAi}`}>
-                      <div className={`${styles.bubble} ${msg.sender === "user" ? styles.bubbleUser : styles.bubbleDoctor}`}>
-                        {msg.sender === "nutritionist" && <div className={styles.senderLabel}>AHLI GIZI KLINIS</div>}
-                        <p>{msg.message}</p>
-                        <span className={styles.msgTime}>{formatTime(msg.sent_at)}</span>
+                    <div
+                      key={msg.id || i}
+                      className={`flex w-full ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      <div
+                        className={`max-w-[75%] sm:max-w-[72%] py-3.5 px-4.5 rounded-lg text-sm leading-relaxed ${
+                          msg.sender === "user"
+                            ? "bg-primary text-on-primary rounded-br-[4px]"
+                            : "bg-surface-lowest text-on-surface rounded-bl-[4px] border border-surface-high border-l-3 border-l-macro-fat"
+                        }`}
+                      >
+                        {msg.sender === "nutritionist" && (
+                          <div className="font-mono text-[10px] font-semibold tracking-wider text-macro-fat mb-1.5">
+                            AHLI GIZI KLINIS
+                          </div>
+                        )}
+                        <p className="m-0 whitespace-pre-wrap">{msg.message}</p>
+                        <span className="block font-mono text-[10px] mt-2 opacity-65 text-right">
+                          {formatTime(msg.sent_at)}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -675,10 +785,24 @@ export default function NutriCoachPage() {
 
         {/* Input Area */}
         {viewMode === "coach" && activeSession && (
-          <form onSubmit={handleSubmit} className={styles.inputArea}>
-            <input type="text" placeholder="Tanyakan analisis gizi atau rencana diet..." value={input} onChange={(e) => setInput(e.target.value)} className={styles.inputField} disabled={isTyping} />
-            <button type="submit" className={styles.sendBtn} disabled={!input.trim() || isTyping}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <form
+            onSubmit={handleSubmit}
+            className="flex px-6 py-3.5 bg-surface-lowest border-t border-surface-high gap-2.5"
+          >
+            <input
+              type="text"
+              placeholder="Tanyakan analisis gizi atau rencana diet..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              className="flex-1 py-2.5 px-4 border border-surface-high rounded-md bg-surface-low font-body text-sm text-on-surface outline-none transition-all focus:border-primary focus:bg-surface-lowest focus:ring-3 focus:ring-primary/10"
+              disabled={isTyping}
+            />
+            <button
+              type="submit"
+              className="w-[42px] h-[42px] rounded-md bg-primary hover:bg-primary-container text-on-primary border-none flex items-center justify-center cursor-pointer transition-colors shrink-0 disabled:bg-surface-highest disabled:text-outline disabled:cursor-not-allowed"
+              disabled={!input.trim() || isTyping}
+            >
+              <svg className="w-[17px] h-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="22" y1="2" x2="11" y2="13" />
                 <polygon points="22 2 15 22 11 13 2 9 22 2" />
               </svg>
@@ -687,14 +811,30 @@ export default function NutriCoachPage() {
         )}
 
         {viewMode === "consultation" && activeConsultation && (
-          <form onSubmit={handleSendConsultationChat} className={styles.inputArea}>
+          <form
+            onSubmit={handleSendConsultationChat}
+            className="flex px-6 py-3.5 bg-surface-lowest border-t border-surface-high gap-2.5"
+          >
             {consultations.find((c) => c.id === activeConsultation)?.status === "completed" ? (
-              <div className={styles.closedNotice}>Sesi konsultasi ini telah diselesaikan oleh Ahli Gizi.</div>
+              <div className="w-full py-2.5 px-3.5 text-center text-on-surface-variant text-[13px] bg-surface-low border border-surface-high rounded-md">
+                Sesi konsultasi ini telah diselesaikan oleh Ahli Gizi.
+              </div>
             ) : (
               <>
-                <input type="text" placeholder="Ketik balasan untuk Ahli Gizi..." value={consultationInput} onChange={(e) => setConsultationInput(e.target.value)} className={styles.inputField} disabled={consultationSending} />
-                <button type="submit" className={styles.sendBtn} disabled={!consultationInput.trim() || consultationSending}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <input
+                  type="text"
+                  placeholder="Ketik balasan untuk Ahli Gizi..."
+                  value={consultationInput}
+                  onChange={(e) => setConsultationInput(e.target.value)}
+                  className="flex-1 py-2.5 px-4 border border-surface-high rounded-md bg-surface-low font-body text-sm text-on-surface outline-none transition-all focus:border-primary focus:bg-surface-lowest focus:ring-3 focus:ring-primary/10"
+                  disabled={consultationSending}
+                />
+                <button
+                  type="submit"
+                  className="w-[42px] h-[42px] rounded-md bg-primary hover:bg-primary-container text-on-primary border-none flex items-center justify-center cursor-pointer transition-colors shrink-0 disabled:bg-surface-highest disabled:text-outline disabled:cursor-not-allowed"
+                  disabled={!consultationInput.trim() || consultationSending}
+                >
+                  <svg className="w-[17px] h-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <line x1="22" y1="2" x2="11" y2="13" />
                     <polygon points="22 2 15 22 11 13 2 9 22 2" />
                   </svg>

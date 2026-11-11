@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef, FormEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import styles from "./chat.module.css";
 import {
   apiGetPatientDetails,
   apiListChat,
@@ -317,120 +316,170 @@ export default function ConsultationChatPage() {
 
   if (loading) {
     return (
-      <div className={styles.loadingPage}>
-        <div className={styles.spinner} />
-        <p>Memuat rekam medis pasien...</p>
+      <div className="flex h-[80vh] flex-col items-center justify-center gap-3 text-outline">
+        <div className="h-7 w-7 animate-spin rounded-full border-3 border-surface-high border-t-primary" />
+        <p className="text-sm">Memuat rekam medis pasien...</p>
       </div>
     );
   }
 
   return (
-    <div className={styles.chatPage}>
+    <div className="flex h-[calc(100vh-64px)] min-h-[560px] overflow-hidden rounded-xl border border-surface-high bg-surface-lowest">
       {/* ── Left: Patient Info Panel ── */}
-      <aside className={styles.infoPanel}>
-        <div className={styles.infoPanelHeader}>
-          <Link href="/ahli-gizi/pasien" className={styles.backBtn}>
+      <aside className="flex w-[360px] shrink-0 flex-col border-r border-surface-high bg-surface-low">
+        <div className="border-b border-surface-high bg-surface-lowest p-5">
+          <Link
+            href="/ahli-gizi/pasien"
+            className="mb-2 inline-flex items-center gap-1 font-mono text-xs font-medium text-primary hover:underline"
+          >
             ← Kembali ke Antrean
           </Link>
-          <h2>{profile?.full_name || "Pasien"}</h2>
-          <p className={styles.infoEmail}>{profile?.email}</p>
+          <h2 className="font-headline text-[19px] font-bold tracking-[-0.02em] text-on-surface">
+            {profile?.full_name || "Pasien"}
+          </h2>
+          <p className="mt-0.5 text-xs text-on-surface-variant">{profile?.email}</p>
         </div>
 
-        <div className={styles.tabBar}>
+        <div className="flex border-b border-surface-high bg-surface-lowest">
           <button
-            className={`${styles.tab} ${sidebarTab === "profile" ? styles.tabActive : ""}`}
+            className={`flex-1 cursor-pointer border-b-2 py-2.5 text-xs font-semibold transition-all ${
+              sidebarTab === "profile"
+                ? "border-primary text-primary"
+                : "border-transparent text-outline hover:text-on-surface"
+            }`}
             onClick={() => setSidebarTab("profile")}
           >
             Antropometri
           </button>
           <button
-            className={`${styles.tab} ${sidebarTab === "food" ? styles.tabActive : ""}`}
+            className={`flex-1 cursor-pointer border-b-2 py-2.5 text-xs font-semibold transition-all ${
+              sidebarTab === "food"
+                ? "border-primary text-primary"
+                : "border-transparent text-outline hover:text-on-surface"
+            }`}
             onClick={() => setSidebarTab("food")}
           >
             Log Konsumsi
           </button>
         </div>
 
-        <div className={styles.infoContent}>
+        <div className="flex-1 overflow-y-auto p-4">
           {sidebarTab === "profile" && (
-            <div className={styles.profileSection}>
-              <div className={styles.profileGrid}>
-                <div className={styles.profileItem}>
-                  <span className={styles.profileLabel}>Usia</span>
-                  <span className={styles.profileValue}>{profile?.age ?? "—"} thn</span>
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="flex flex-col gap-1 rounded-md border border-surface-high bg-surface-lowest p-3">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">
+                    Usia
+                  </span>
+                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">
+                    {profile?.age ?? "—"} thn
+                  </span>
                 </div>
-                <div className={styles.profileItem}>
-                  <span className={styles.profileLabel}>Berat</span>
-                  <span className={styles.profileValue}>{profile?.weight ?? "—"} kg</span>
+                <div className="flex flex-col gap-1 rounded-md border border-surface-high bg-surface-lowest p-3">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">
+                    Berat
+                  </span>
+                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">
+                    {profile?.weight ?? "—"} kg
+                  </span>
                 </div>
-                <div className={styles.profileItem}>
-                  <span className={styles.profileLabel}>Tinggi</span>
-                  <span className={styles.profileValue}>{profile?.height ?? "—"} cm</span>
+                <div className="flex flex-col gap-1 rounded-md border border-surface-high bg-surface-lowest p-3">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">
+                    Tinggi
+                  </span>
+                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">
+                    {profile?.height ?? "—"} cm
+                  </span>
                 </div>
-                <div className={styles.profileItem}>
-                  <span className={styles.profileLabel}>IMT (BMI)</span>
-                  <span className={styles.profileValue}>{bmi ?? "—"}</span>
+                <div className="flex flex-col gap-1 rounded-md border border-surface-high bg-surface-lowest p-3">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">
+                    IMT (BMI)
+                  </span>
+                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">
+                    {bmi ?? "—"}
+                  </span>
                 </div>
-                <div className={styles.profileItem}>
-                  <span className={styles.profileLabel}>Gender</span>
-                  <span className={styles.profileValue}>
+                <div className="flex flex-col gap-1 rounded-md border border-surface-high bg-surface-lowest p-3">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">
+                    Gender
+                  </span>
+                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">
                     {profile?.gender === "male" ? "Laki-laki" : profile?.gender === "female" ? "Perempuan" : "—"}
                   </span>
                 </div>
-                <div className={styles.profileItem}>
-                  <span className={styles.profileLabel}>Aktivitas</span>
-                  <span className={styles.profileValue}>
+                <div className="flex flex-col gap-1 rounded-md border border-surface-high bg-surface-lowest p-3">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">
+                    Aktivitas
+                  </span>
+                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">
                     {activityLabels[profile?.activity_level || ""] || "—"}
                   </span>
                 </div>
-                <div className={styles.profileItem}>
-                  <span className={styles.profileLabel}>Orientasi</span>
-                  <span className={styles.profileValue}>
+                <div className="flex flex-col gap-1 rounded-md border border-surface-high bg-surface-lowest p-3">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">
+                    Orientasi
+                  </span>
+                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">
                     {goalLabels[profile?.goal || ""] || "—"}
                   </span>
                 </div>
-                <div className={styles.profileItem}>
-                  <span className={styles.profileLabel}>Target TDEE</span>
-                  <span className={styles.profileValue}>
+                <div className="flex flex-col gap-1 rounded-md border border-surface-high bg-surface-lowest p-3">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-outline">
+                    Target TDEE
+                  </span>
+                  <span className="font-mono text-sm font-bold tabular-nums text-on-surface">
                     {profile?.daily_calorie_target ?? "—"} kkal
                   </span>
                 </div>
               </div>
 
               {/* Today's Summary */}
-              <div className={styles.todaySummary}>
-                <h4>TELEMETRI ASUPAN HARI INI</h4>
-                <div className={styles.nutriGrid}>
-                  <div className={styles.nutriItem}>
-                    <span className={styles.nutriVal}>{Math.round(todayCal)}</span>
-                    <span className={styles.nutriLabel}>kkal</span>
+              <div className="rounded-md border border-surface-high bg-surface-lowest p-3.5">
+                <h4 className="mb-3 font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-on-surface-variant">
+                  TELEMETRI ASUPAN HARI INI
+                </h4>
+                <div className="grid grid-cols-4 gap-2">
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span className="font-mono text-[15px] font-bold tabular-nums text-primary">
+                      {Math.round(todayCal)}
+                    </span>
+                    <span className="font-mono text-[10px] text-outline">kkal</span>
                   </div>
-                  <div className={styles.nutriItem}>
-                    <span className={styles.nutriVal} style={{ color: "var(--macro-protein)" }}>{Math.round(todayProtein)}g</span>
-                    <span className={styles.nutriLabel}>Protein</span>
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span className="font-mono text-[15px] font-bold tabular-nums text-macro-protein">
+                      {Math.round(todayProtein)}g
+                    </span>
+                    <span className="font-mono text-[10px] text-outline">Protein</span>
                   </div>
-                  <div className={styles.nutriItem}>
-                    <span className={styles.nutriVal} style={{ color: "var(--macro-carbs)" }}>{Math.round(todayCarbs)}g</span>
-                    <span className={styles.nutriLabel}>Karbo</span>
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span className="font-mono text-[15px] font-bold tabular-nums text-macro-carbs">
+                      {Math.round(todayCarbs)}g
+                    </span>
+                    <span className="font-mono text-[10px] text-outline">Karbo</span>
                   </div>
-                  <div className={styles.nutriItem}>
-                    <span className={styles.nutriVal} style={{ color: "var(--macro-fat)" }}>{Math.round(todayFat)}g</span>
-                    <span className={styles.nutriLabel}>Lemak</span>
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span className="font-mono text-[15px] font-bold tabular-nums text-macro-fat">
+                      {Math.round(todayFat)}g
+                    </span>
+                    <span className="font-mono text-[10px] text-outline">Lemak</span>
                   </div>
                 </div>
               </div>
 
-              <div className={styles.notesSection} style={{ marginBottom: "16px" }}>
-                <h4>CATATAN KLINIS AHLI GIZI</h4>
+              {/* Notes Section */}
+              <div className="mb-4 flex flex-col gap-2 rounded-md border border-surface-high bg-surface-lowest p-3.5">
+                <h4 className="font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-on-surface-variant">
+                  CATATAN KLINIS AHLI GIZI
+                </h4>
                 <textarea
                   value={catatan}
                   onChange={(e) => setCatatan(e.target.value)}
                   placeholder="Tuliskan observasi klinis dan rekomendasi diet pasien..."
-                  className={styles.notesInput}
+                  className="w-full resize-y rounded-sm border border-outline-variant bg-surface-low p-2.5 text-xs leading-[1.5] text-on-surface outline-none transition-colors focus:border-primary"
                   rows={4}
                 />
-                <button 
-                  className={styles.saveNotesBtn} 
+                <button
+                  className="cursor-pointer rounded-sm bg-primary px-3 py-2 text-xs font-semibold text-on-primary transition-colors hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-60"
                   onClick={handleSaveNotes}
                   disabled={savingCatatan}
                 >
@@ -439,7 +488,10 @@ export default function ConsultationChatPage() {
               </div>
 
               {consultationStatus !== "completed" && (
-                <button className={styles.selesaiBtn} onClick={handleSelesai}>
+                <button
+                  className="w-full cursor-pointer rounded-md border border-outline-variant bg-surface-lowest p-2.5 text-xs font-semibold text-on-surface transition-all hover:border-primary hover:bg-primary/[0.06] hover:text-primary"
+                  onClick={handleSelesai}
+                >
                   Selesaikan Sesi Konsultasi
                 </button>
               )}
@@ -447,22 +499,31 @@ export default function ConsultationChatPage() {
           )}
 
           {sidebarTab === "food" && (
-            <div className={styles.foodSection}>
+            <div className="flex flex-col">
               {foodHistory.length === 0 ? (
-                <p className={styles.emptyFood}>Belum ada rekaman konsumsi pasien.</p>
+                <p className="py-10 text-center text-xs text-outline">
+                  Belum ada rekaman konsumsi pasien.
+                </p>
               ) : (
-                <div className={styles.foodList}>
+                <div className="flex flex-col gap-2">
                   {foodHistory.map((f) => (
-                    <div key={f.id} className={styles.foodItem}>
-                      <div className={styles.foodIconBox}>
-                        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>restaurant</span>
+                    <div
+                      key={f.id}
+                      className="flex items-start gap-2.5 rounded-md border border-surface-high bg-surface-lowest p-3"
+                    >
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-surface-container text-primary">
+                        <span className="material-symbols-outlined text-[16px]">restaurant</span>
                       </div>
-                      <div className={styles.foodInfo}>
-                        <span className={styles.foodName}>{formatFoodLabel(f.food_name)}</span>
-                        <span className={styles.foodMeta}>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[13px] font-semibold text-on-surface">
+                          {formatFoodLabel(f.food_name)}
+                        </span>
+                        <span className="font-mono text-[11px] text-on-surface-variant">
                           {f.calories} kkal · P {f.protein || 0}g · K {f.carbs || 0}g · L {f.fat || 0}g
                         </span>
-                        <span className={styles.foodDate}>{formatDateShort(f.recorded_at)}</span>
+                        <span className="font-mono text-[10px] text-outline">
+                          {formatDateShort(f.recorded_at)}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -474,19 +535,21 @@ export default function ConsultationChatPage() {
       </aside>
 
       {/* ── Right: Chat Area ── */}
-      <main className={styles.chatMain}>
-        <header className={styles.chatHeader}>
-          <div className={styles.chatHeaderLeft}>
-            <div className={styles.chatAvatarBox}>
-              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>forum</span>
+      <main className="flex flex-1 flex-col bg-surface">
+        <header className="flex items-center justify-between border-b border-surface-high bg-surface-lowest px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-on-primary">
+              <span className="material-symbols-outlined text-[18px]">forum</span>
             </div>
             <div>
-              <h3>Konsultasi: {profile?.full_name || "Pasien"}</h3>
-              <span className={styles.wsStatus}>
+              <h3 className="font-headline text-[15px] font-bold text-on-surface">
+                Konsultasi: {profile?.full_name || "Pasien"}
+              </h3>
+              <span className="mt-0.5 flex items-center gap-1.5 font-mono text-[11px] text-outline">
                 <span
-                  className={
-                    wsConnected ? styles.wsDotGreen : styles.wsDotRed
-                  }
+                  className={`inline-block h-1.5 w-1.5 rounded-full ${
+                    wsConnected ? "bg-macro-protein" : "bg-error"
+                  }`}
                 />
                 {wsConnected ? "WebSocket Real-time Aktif" : "Offline"}
               </span>
@@ -494,9 +557,9 @@ export default function ConsultationChatPage() {
           </div>
         </header>
 
-        <div className={styles.chatMessages}>
+        <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-6">
           {chatMsgs.length === 0 && (
-            <div className={styles.chatEmpty}>
+            <div className="flex flex-1 items-center justify-center text-[13px] text-outline">
               <p>Belum ada pesan percakapan dengan pasien ini.</p>
             </div>
           )}
@@ -504,21 +567,29 @@ export default function ConsultationChatPage() {
           {chatMsgs.map((msg) => (
             <div
               key={msg.id}
-              className={`${styles.msgRow} ${msg.sender === "nutritionist" ? styles.msgRowRight : styles.msgRowLeft}`}
+              className={`flex ${
+                msg.sender === "nutritionist" ? "justify-end" : "justify-start"
+              }`}
             >
               <div
-                className={`${styles.msgBubble} ${msg.sender === "nutritionist" ? styles.msgBubbleRight : styles.msgBubbleLeft}`}
+                className={`max-w-[65%] px-4 py-3 text-[13px] leading-[1.55] ${
+                  msg.sender === "nutritionist"
+                    ? "rounded-[12px_12px_2px_12px] bg-primary text-on-primary"
+                    : "rounded-[12px_12px_12px_2px] border border-surface-high bg-surface-lowest text-on-surface"
+                }`}
               >
                 <p>{msg.message}</p>
-                <div className={styles.msgFooter}>
-                  <span className={styles.msgTime}>{formatDateShort(msg.sent_at)}</span>
+                <div className="mt-1.5 flex items-center justify-end gap-2">
+                  <span className="font-mono text-[10px] opacity-65">
+                    {formatDateShort(msg.sent_at)}
+                  </span>
                   {msg.sender === "nutritionist" && (
                     <button
-                      className={styles.msgDeleteBtn}
+                      className="flex cursor-pointer items-center p-0.5 text-inherit opacity-55 transition-opacity hover:opacity-100"
                       onClick={() => handleDeleteMsg(msg.id)}
                       title="Hapus pesan"
                     >
-                      <span className="material-symbols-outlined" style={{ fontSize: 14 }}>delete</span>
+                      <span className="material-symbols-outlined text-[14px]">delete</span>
                     </button>
                   )}
                 </div>
@@ -529,28 +600,34 @@ export default function ConsultationChatPage() {
         </div>
 
         {consultationStatus === "pending" ? (
-          <div className={styles.chatInputBar} style={{ justifyContent: "center", padding: "18px" }}>
+          <div className="flex justify-center border-t border-surface-high bg-surface-lowest p-4.5">
             <button
               onClick={handleTangani}
-              className={styles.chatSendBtn}
-              style={{ padding: "11px 24px" }}
+              className="cursor-pointer rounded-md bg-primary px-6 py-2.5 text-[13px] font-semibold text-on-primary transition-colors hover:bg-primary-container"
             >
               Ambil Alih & Tangani Pasien
             </button>
           </div>
         ) : (
-          <form className={styles.chatInputBar} onSubmit={handleSend}>
+          <form
+            className="flex gap-2.5 border-t border-surface-high bg-surface-lowest px-5 py-3.5"
+            onSubmit={handleSend}
+          >
             <input
               type="text"
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
-              placeholder={consultationStatus === "completed" ? "Sesi konsultasi telah diselesaikan" : "Ketik arahan klinis untuk pasien..."}
-              className={styles.chatInput}
+              placeholder={
+                consultationStatus === "completed"
+                  ? "Sesi konsultasi telah diselesaikan"
+                  : "Ketik arahan klinis untuk pasien..."
+              }
+              className="flex-1 rounded-md border border-outline-variant bg-surface-low px-3.5 py-2.5 text-[13px] text-on-surface outline-none transition-colors focus:border-primary focus:bg-surface-lowest"
               disabled={chatSending || consultationStatus === "completed"}
             />
             <button
               type="submit"
-              className={styles.chatSendBtn}
+              className="cursor-pointer rounded-md bg-primary px-5 py-2.5 text-[13px] font-semibold text-on-primary transition-colors hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-45"
               disabled={chatSending || !chatInput.trim() || consultationStatus === "completed"}
             >
               {chatSending ? "..." : "Kirim"}

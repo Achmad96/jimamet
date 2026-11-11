@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import styles from "./dashboard.module.css";
 import { apiDashboardSummary, apiGetMe } from "@/lib/api";
 import { SkeletonDashboard } from "@/components/Skeleton";
 import { formatFoodLabel } from "@/lib/food-labels";
@@ -109,7 +108,7 @@ export default function DashboardPage() {
     let offset = 0;
 
     return (
-      <div className={styles.donutWrapper}>
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-7">
         <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
           <circle
             cx={cx}
@@ -138,8 +137,7 @@ export default function DashboardPage() {
                   strokeDasharray={`${Math.max(0, dash - 3)} ${circumference}`}
                   strokeDashoffset={-offset}
                   transform={`rotate(-90 ${cx} ${cy})`}
-                  className={styles.donutSegment}
-                  style={{ cursor: "pointer", transition: "all 0.2s ease" }}
+                  className="cursor-pointer transition-all duration-200"
                   opacity={opacity}
                   onMouseEnter={() => setHoveredMacro(seg.name)}
                   onMouseLeave={() => setHoveredMacro(null)}
@@ -200,12 +198,12 @@ export default function DashboardPage() {
             </>
           )}
         </svg>
-        <div className={styles.donutLegend}>
+        <div className="flex flex-col gap-3 min-w-[140px]">
           {nutrientDonut.map((seg) => (
-            <div key={seg.name} className={styles.legendItem}>
-              <span className={styles.legendDot} style={{ background: seg.color }} />
-              <span className={styles.legendLabel}>{seg.name}</span>
-              <span className={styles.legendValue}>{seg.pct}%</span>
+            <div key={seg.name} className="flex items-center gap-2.5 text-[13px]">
+              <span className="w-2.5 h-2.5 rounded-[2px] shrink-0" style={{ background: seg.color }} />
+              <span className="text-on-surface-variant flex-1">{seg.name}</span>
+              <span className="font-mono font-semibold text-on-surface tabular-nums">{seg.pct}%</span>
             </div>
           ))}
         </div>
@@ -223,7 +221,7 @@ export default function DashboardPage() {
     const chartW = calorieData.length * (barW + gap);
 
     return (
-      <svg viewBox={`0 0 ${chartW + 44} ${chartH + 40}`} className={styles.chartSvg}>
+      <svg viewBox={`0 0 ${chartW + 44} ${chartH + 40}`} className="w-full h-auto">
         {[0, 0.25, 0.5, 0.75, 1].map((pct) => (
           <g key={pct}>
             <line
@@ -265,7 +263,7 @@ export default function DashboardPage() {
               key={d.day}
               onMouseEnter={() => setHoveredDay(d.day)}
               onMouseLeave={() => setHoveredDay(null)}
-              style={{ cursor: "pointer", transition: "opacity 0.15s ease" }}
+              className="cursor-pointer transition-opacity duration-150"
               opacity={opacity}
             >
               <rect x={x - gap / 2} y="0" width={barW + gap} height={chartH + 30} fill="transparent" />
@@ -284,7 +282,7 @@ export default function DashboardPage() {
                     ? "#c85a32"
                     : "#1b4332"
                 }
-                className={styles.bar}
+                className="transition-all duration-300"
               />
 
               <text
@@ -338,19 +336,21 @@ export default function DashboardPage() {
   if (loading) return <SkeletonDashboard />;
 
   return (
-    <div className={styles.dashboard}>
-      <div className={styles.header}>
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 pb-4 border-b border-surface-high">
         <div>
-          <span className={styles.headerKicker}>TELEMETRI ASUPAN HARIAN</span>
-          <h1 className={styles.greeting}>
+          <span className="block font-mono text-[11px] font-semibold tracking-wider text-primary mb-1.5">
+            TELEMETRI ASUPAN HARIAN
+          </span>
+          <h1 className="font-headline text-2xl sm:text-[28px] font-bold text-on-surface tracking-tight">
             {greeting}, {user?.full_name?.split(" ")[0] || user?.username || "Pasien"}
           </h1>
-          <p className={styles.subtitle}>
+          <p className="text-sm text-on-surface-variant mt-1">
             Ringkasan keseimbangan energi dan makronutrien berdasarkan catatan konsumsi Anda.
           </p>
         </div>
-        <div className={styles.headerActions}>
-          <span className={styles.dateBadge}>
+        <div className="flex items-center gap-3">
+          <span className="inline-flex items-center gap-2 font-mono text-xs font-medium text-on-surface-variant px-3.5 py-2 bg-surface-lowest rounded-md border border-surface-high">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
               <line x1="16" y1="2" x2="16" y2="6" />
@@ -368,79 +368,109 @@ export default function DashboardPage() {
       </div>
 
       {/* ── 4-Column Clinical Telemetry Strip ── */}
-      <div className={styles.statCards}>
-        <div className={styles.statCard}>
-          <div className={styles.statTopRow}>
-            <span className={styles.statLabel}>ENERGI HARI INI</span>
-            <span className={styles.statPctBadge}>{Math.round(calPct)}%</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-surface-lowest border border-surface-high rounded-lg p-5 flex flex-col gap-2.5 hover:border-outline-variant transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[11px] font-semibold tracking-wider text-on-surface-variant">
+              ENERGI HARI INI
+            </span>
+            <span className="font-mono text-[11px] font-semibold text-primary px-2 py-0.5 bg-primary-fixed rounded-sm">
+              {Math.round(calPct)}%
+            </span>
           </div>
-          <div className={styles.statInfo}>
-            <span className={styles.statValue}>{cals.toLocaleString("id-ID")}</span>
-            <span className={styles.statMeta}>target {target.toLocaleString("id-ID")} kkal</span>
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="font-mono text-[26px] font-semibold text-on-surface tracking-tight leading-tight tabular-nums">
+              {cals.toLocaleString("id-ID")}
+            </span>
+            <span className="font-mono text-[11px] text-outline">
+              target {target.toLocaleString("id-ID")} kkal
+            </span>
           </div>
-          <div className={styles.statProgress}>
-            <div style={{ width: `${calPct}%`, background: "var(--macro-cal)" }} />
-          </div>
-        </div>
-
-        <div className={styles.statCard}>
-          <div className={styles.statTopRow}>
-            <span className={styles.statLabel}>PROTEIN</span>
-            <span className={styles.statDot} style={{ background: "var(--macro-protein)" }} />
-          </div>
-          <div className={styles.statInfo}>
-            <span className={styles.statValue}>{prot}g</span>
-            <span className={styles.statMeta}>target {DEFAULT_PROTEIN_TARGET}g</span>
-          </div>
-          <div className={styles.statProgress}>
-            <div style={{ width: `${protPct}%`, background: "var(--macro-protein)" }} />
+          <div className="w-full h-1 bg-surface-container rounded-full overflow-hidden mt-1">
+            <div className="h-full rounded-full transition-all duration-500 bg-macro-cal" style={{ width: `${calPct}%` }} />
           </div>
         </div>
 
-        <div className={styles.statCard}>
-          <div className={styles.statTopRow}>
-            <span className={styles.statLabel}>KARBOHIDRAT</span>
-            <span className={styles.statDot} style={{ background: "var(--macro-carbs)" }} />
+        <div className="bg-surface-lowest border border-surface-high rounded-lg p-5 flex flex-col gap-2.5 hover:border-outline-variant transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[11px] font-semibold tracking-wider text-on-surface-variant">
+              PROTEIN
+            </span>
+            <span className="w-2 h-2 rounded-[2px] bg-macro-protein" />
           </div>
-          <div className={styles.statInfo}>
-            <span className={styles.statValue}>{carbs}g</span>
-            <span className={styles.statMeta}>target {DEFAULT_CARB_TARGET}g</span>
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="font-mono text-[26px] font-semibold text-on-surface tracking-tight leading-tight tabular-nums">
+              {prot}g
+            </span>
+            <span className="font-mono text-[11px] text-outline">
+              target {DEFAULT_PROTEIN_TARGET}g
+            </span>
           </div>
-          <div className={styles.statProgress}>
-            <div style={{ width: `${carbPct}%`, background: "var(--macro-carbs)" }} />
+          <div className="w-full h-1 bg-surface-container rounded-full overflow-hidden mt-1">
+            <div className="h-full rounded-full transition-all duration-500 bg-macro-protein" style={{ width: `${protPct}%` }} />
           </div>
         </div>
 
-        <div className={styles.statCard}>
-          <div className={styles.statTopRow}>
-            <span className={styles.statLabel}>LEMAK</span>
-            <span className={styles.statDot} style={{ background: "var(--macro-fat)" }} />
+        <div className="bg-surface-lowest border border-surface-high rounded-lg p-5 flex flex-col gap-2.5 hover:border-outline-variant transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[11px] font-semibold tracking-wider text-on-surface-variant">
+              KARBOHIDRAT
+            </span>
+            <span className="w-2 h-2 rounded-[2px] bg-macro-carbs" />
           </div>
-          <div className={styles.statInfo}>
-            <span className={styles.statValue}>{fat}g</span>
-            <span className={styles.statMeta}>target {DEFAULT_FAT_TARGET}g</span>
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="font-mono text-[26px] font-semibold text-on-surface tracking-tight leading-tight tabular-nums">
+              {carbs}g
+            </span>
+            <span className="font-mono text-[11px] text-outline">
+              target {DEFAULT_CARB_TARGET}g
+            </span>
           </div>
-          <div className={styles.statProgress}>
-            <div style={{ width: `${fatPct}%`, background: "var(--macro-fat)" }} />
+          <div className="w-full h-1 bg-surface-container rounded-full overflow-hidden mt-1">
+            <div className="h-full rounded-full transition-all duration-500 bg-macro-carbs" style={{ width: `${carbPct}%` }} />
+          </div>
+        </div>
+
+        <div className="bg-surface-lowest border border-surface-high rounded-lg p-5 flex flex-col gap-2.5 hover:border-outline-variant transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[11px] font-semibold tracking-wider text-on-surface-variant">
+              LEMAK
+            </span>
+            <span className="w-2 h-2 rounded-[2px] bg-macro-fat" />
+          </div>
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="font-mono text-[26px] font-semibold text-on-surface tracking-tight leading-tight tabular-nums">
+              {fat}g
+            </span>
+            <span className="font-mono text-[11px] text-outline">
+              target {DEFAULT_FAT_TARGET}g
+            </span>
+          </div>
+          <div className="w-full h-1 bg-surface-container rounded-full overflow-hidden mt-1">
+            <div className="h-full rounded-full transition-all duration-500 bg-macro-fat" style={{ width: `${fatPct}%` }} />
           </div>
         </div>
       </div>
 
       {/* ── Charts Row ── */}
-      <div className={styles.chartsRow}>
-        <div className={styles.chartCard}>
-          <div className={styles.chartHeader}>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div className="lg:col-span-7 bg-surface-lowest border border-surface-high rounded-lg p-6">
+          <div className="flex flex-wrap justify-between items-start gap-3 mb-5 pb-3.5 border-b border-surface-container">
             <div>
-              <h3>Tren Asupan Energi (7 Hari)</h3>
-              <p>Perbandingan asupan harian terhadap batas target kalori</p>
+              <h3 className="font-headline text-base font-bold text-on-surface tracking-tight">
+                Tren Asupan Energi (7 Hari)
+              </h3>
+              <p className="text-xs text-outline mt-0.5">
+                Perbandingan asupan harian terhadap batas target kalori
+              </p>
             </div>
-            <div className={styles.chartLegendInline}>
-              <span>
-                <i className={styles.legendDotInline} style={{ background: "#1b4332" }} />
+            <div className="flex items-center gap-3.5 font-mono text-[11px] text-on-surface-variant">
+              <span className="inline-flex items-center gap-1.5">
+                <i className="w-2 h-2 rounded-[2px] inline-block bg-macro-cal" />
                 Terkendali
               </span>
-              <span>
-                <i className={styles.legendDotInline} style={{ background: "#c85a32" }} />
+              <span className="inline-flex items-center gap-1.5">
+                <i className="w-2 h-2 rounded-[2px] inline-block bg-macro-protein" />
                 Melebihi Target
               </span>
             </div>
@@ -448,11 +478,15 @@ export default function DashboardPage() {
           {renderBarChart()}
         </div>
 
-        <div className={styles.chartCard}>
-          <div className={styles.chartHeader}>
+        <div className="lg:col-span-5 bg-surface-lowest border border-surface-high rounded-lg p-6">
+          <div className="flex justify-between items-start mb-5 pb-3.5 border-b border-surface-container">
             <div>
-              <h3>Proporsi Makronutrien</h3>
-              <p>Rasio distribusi gramasi hari ini</p>
+              <h3 className="font-headline text-base font-bold text-on-surface tracking-tight">
+                Proporsi Makronutrien
+              </h3>
+              <p className="text-xs text-outline mt-0.5">
+                Rasio distribusi gramasi hari ini
+              </p>
             </div>
           </div>
           {renderDonutChart()}
@@ -460,29 +494,44 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Bottom Row ── */}
-      <div className={styles.bottomRow}>
-        <div className={styles.mealsCard}>
-          <div className={styles.chartHeader}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="bg-surface-lowest border border-surface-high rounded-lg p-6">
+          <div className="flex justify-between items-start mb-5 pb-3.5 border-b border-surface-container">
             <div>
-              <h3>Log Konsumsi Hari Ini</h3>
-              <p>{summary.meals.length} entri makanan tercatat</p>
+              <h3 className="font-headline text-base font-bold text-on-surface tracking-tight">
+                Log Konsumsi Hari Ini
+              </h3>
+              <p className="text-xs text-outline mt-0.5">
+                {summary.meals.length} entri makanan tercatat
+              </p>
             </div>
-            <Link href="/dashboard/food-analysis" className={styles.addBtn}>
+            <Link
+              href="/dashboard/food-analysis"
+              className="px-3.5 py-2 bg-primary hover:bg-primary-container text-on-primary border-none rounded-md text-xs font-semibold font-headline no-underline transition-colors"
+            >
               + Catat Makanan
             </Link>
           </div>
-          <div className={styles.mealsList}>
+          <div className="flex flex-col gap-2">
             {summary.meals.length === 0 ? (
-              <div className={styles.emptyMeals}>
-                <p>Belum ada makanan yang dicatat hari ini.</p>
-                <Link href="/dashboard/food-analysis" className={styles.emptyMealsLink}>
+              <div className="py-9 px-4 text-center bg-surface-low border border-dashed border-surface-high rounded-md">
+                <p className="text-[13px] text-on-surface-variant mb-2">
+                  Belum ada makanan yang dicatat hari ini.
+                </p>
+                <Link
+                  href="/dashboard/food-analysis"
+                  className="text-xs font-semibold text-primary no-underline hover:underline"
+                >
                   Mulai analisis foto atau kamera →
                 </Link>
               </div>
             ) : (
               summary.meals.map((meal, i) => (
-                <div key={i} className={styles.mealItem}>
-                  <div className={styles.mealIconBox}>
+                <div
+                  key={i}
+                  className="flex items-center gap-3.5 px-3.5 py-3 rounded-md bg-surface-low border border-transparent hover:border-surface-high hover:bg-surface-container transition-all"
+                >
+                  <div className="w-9 h-9 rounded-md bg-surface-lowest border border-surface-high text-primary flex items-center justify-center shrink-0">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
                       <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
@@ -491,45 +540,51 @@ export default function DashboardPage() {
                       <line x1="14" y1="1" x2="14" y2="4" />
                     </svg>
                   </div>
-                  <div className={styles.mealInfo}>
-                    <span className={styles.mealName}>
+                  <div className="flex-1 min-w-0">
+                    <span className="block text-sm font-semibold text-on-surface truncate">
                       {formatFoodLabel(meal.food_name || meal.nama_makanan)}
                     </span>
-                    <span className={styles.mealTime}>
+                    <span className="font-mono text-[11px] text-outline">
                       {formatTime(meal.recorded_at || meal.tanggal)}
                     </span>
                   </div>
-                  <span className={styles.mealCal}>{meal.calories || meal.kalori} kkal</span>
+                  <span className="font-mono text-[13px] font-semibold text-primary shrink-0 tabular-nums">
+                    {meal.calories || meal.kalori} kkal
+                  </span>
                 </div>
               ))
             )}
           </div>
         </div>
 
-        <div className={styles.macroCard}>
-          <div className={styles.chartHeader}>
+        <div className="bg-surface-lowest border border-surface-high rounded-lg p-6">
+          <div className="flex justify-between items-start mb-5 pb-3.5 border-b border-surface-container">
             <div>
-              <h3>Target Kecukupan Makronutrien</h3>
-              <p>Pencapaian gramasi harian per kategori gizi</p>
+              <h3 className="font-headline text-base font-bold text-on-surface tracking-tight">
+                Target Kecukupan Makronutrien
+              </h3>
+              <p className="text-xs text-outline mt-0.5">
+                Pencapaian gramasi harian per kategori gizi
+              </p>
             </div>
           </div>
-          <div className={styles.macroList}>
+          <div className="flex flex-col gap-4">
             {macroData.map((m) => (
-              <div key={m.name} className={styles.macroItem}>
-                <div className={styles.macroTop}>
-                  <span className={styles.macroName}>{m.name}</span>
-                  <span className={styles.macroValue}>
+              <div key={m.name} className="flex flex-col gap-1.5">
+                <div className="flex justify-between items-center">
+                  <span className="text-[13px] font-semibold text-on-surface">{m.name}</span>
+                  <span className="font-mono text-xs font-semibold text-on-surface tabular-nums">
                     {m.value}
                     {m.unit}{" "}
-                    <span className={styles.macroTarget}>
+                    <span className="font-normal text-outline">
                       / {m.target}
                       {m.unit}
                     </span>
                   </span>
                 </div>
-                <div className={styles.macroTrack}>
+                <div className="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
                   <div
-                    className={styles.macroFill}
+                    className="h-full rounded-full transition-all duration-500"
                     style={{
                       width: `${Math.min((m.value / m.target) * 100, 100)}%`,
                       background: m.color,

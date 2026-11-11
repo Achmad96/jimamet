@@ -1,80 +1,73 @@
 "use client";
 
 /**
- * Skeleton loading components that mirror actual page layouts.
- * Each skeleton uses the same CSS module classes as the real page
- * to guarantee structural alignment.
+ * Skeleton loading components that mirror actual page layouts
+ * using Tailwind CSS utility classes.
  */
 
-import dashStyles from "@/app/dashboard/dashboard.module.css";
-import histStyles from "@/app/dashboard/history/history.module.css";
-import profStyles from "@/app/dashboard/profile/profile.module.css";
-
-/* ── Base building blocks ── */
-
 export function SkeletonLine({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
-  return <div className={`animate-pulse rounded-md bg-[var(--surface-container-high)] ${className}`} style={style} />;
+  return <div className={`animate-pulse rounded-md bg-surface-high ${className}`} style={style} />;
 }
 
 export function SkeletonCircle({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-full bg-[var(--surface-container-high)] ${className}`} />;
+  return <div className={`animate-pulse rounded-full bg-surface-high ${className}`} />;
 }
 
 /* ── Dashboard Skeleton ── */
 
 export function SkeletonDashboard() {
   return (
-    <div className={dashStyles.dashboard}>
+    <div className="flex flex-col gap-6">
       {/* Header — greeting + date badge */}
-      <div className={dashStyles.header}>
+      <div className="flex items-end justify-between gap-6 border-b border-surface-high pb-6 max-[600px]:flex-col max-[600px]:items-start">
         <div className="space-y-2">
           <SkeletonLine className="h-3 w-36" />
           <SkeletonLine className="h-8 w-64" />
           <SkeletonLine className="h-4 w-72" />
         </div>
-        <div className={dashStyles.headerActions}>
+        <div className="flex items-center gap-3">
           <SkeletonLine className="h-9 w-48 rounded-md" />
         </div>
       </div>
 
-      {/* 4 Stat cards (Energi + Protein + Karbohidrat + Lemak) */}
-      <div className={dashStyles.statCards}>
+      {/* 4 Stat cards */}
+      <div className="grid grid-cols-4 gap-4 max-[1024px]:grid-cols-2 max-[600px]:grid-cols-1">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className={dashStyles.statCard}>
-            <div className={dashStyles.statTopRow}>
+          <div key={i} className="flex flex-col gap-3.5 rounded-xl border border-surface-high bg-surface-lowest p-5">
+            <div className="flex items-center justify-between">
               <SkeletonLine className="h-3 w-24" />
               <SkeletonLine className="h-8 w-8 rounded-md" />
             </div>
-            <div className={dashStyles.statInfo}>
+            <div className="flex flex-col gap-1.5">
               <SkeletonLine className="h-7 w-24" />
               <SkeletonLine className="h-3 w-20" />
             </div>
-            <div className={dashStyles.statProgress}>
+            <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-surface-container">
               <SkeletonLine className="h-full w-1/3 rounded-full" />
             </div>
           </div>
         ))}
       </div>
 
-      {/* Charts row — 1.5fr + 1fr */}
-      <div className={dashStyles.chartsRow}>
+      {/* Charts row — 1.55fr + 1fr */}
+      <div className="grid grid-cols-[1.55fr_1fr] gap-5 max-[1024px]:grid-cols-1">
         {/* Bar chart card */}
-        <div className={dashStyles.chartCard}>
-          <div className={dashStyles.chartHeader}>
+        <div className="rounded-xl border border-surface-high bg-surface-lowest p-6">
+          <div className="mb-5 flex items-start justify-between">
             <SkeletonLine className="h-5 w-52" />
           </div>
-          <div className="flex items-end gap-3 h-40">
+          <div className="flex h-40 items-end gap-3">
             {[40, 65, 50, 80, 55, 70, 45].map((h, i) => (
               <SkeletonLine key={i} className="flex-1 rounded-t-md" style={{ height: `${h}%` }} />
             ))}
           </div>
         </div>
         {/* Donut chart card */}
-        <div className={dashStyles.chartCard}>
-          <div className={dashStyles.chartHeader}>
+        <div className="rounded-xl border border-surface-high bg-surface-lowest p-6">
+          <div className="mb-5 flex items-start justify-between">
             <SkeletonLine className="h-5 w-44" />
           </div>
-          <div className={dashStyles.donutWrapper}>
+          <div className="flex items-center justify-center gap-7 py-2">
             <SkeletonCircle className="h-32 w-32" />
             <div className="space-y-3">
               {[...Array(3)].map((_, i) => (
@@ -90,21 +83,21 @@ export function SkeletonDashboard() {
       </div>
 
       {/* Bottom row — 1fr + 1fr */}
-      <div className={dashStyles.bottomRow}>
+      <div className="grid grid-cols-2 gap-5 max-[1024px]:grid-cols-1">
         {/* Meals list card */}
-        <div className={dashStyles.mealsCard}>
-          <div className={dashStyles.chartHeader}>
+        <div className="rounded-xl border border-surface-high bg-surface-lowest p-6">
+          <div className="mb-5 flex items-start justify-between">
             <div className="space-y-1">
               <SkeletonLine className="h-5 w-44" />
               <SkeletonLine className="h-3 w-28" />
             </div>
             <SkeletonLine className="h-8 w-20 rounded-md" />
           </div>
-          <div className={dashStyles.mealsList}>
+          <div className="flex flex-col">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className={dashStyles.mealItem}>
-                <SkeletonLine className="h-10 w-10 rounded-md shrink-0" />
-                <div className={dashStyles.mealInfo} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <div key={i} className="flex items-center gap-3.5 border-b border-surface-container py-3 last:border-b-0">
+                <SkeletonLine className="h-10 w-10 shrink-0 rounded-md" />
+                <div className="flex flex-1 flex-col gap-1">
                   <SkeletonLine className="h-4 w-36" />
                   <SkeletonLine className="h-3 w-20" />
                 </div>
@@ -115,18 +108,18 @@ export function SkeletonDashboard() {
         </div>
 
         {/* Macro progress card */}
-        <div className={dashStyles.macroCard}>
-          <div className={dashStyles.chartHeader}>
+        <div className="rounded-xl border border-surface-high bg-surface-lowest p-6">
+          <div className="mb-5 flex items-start justify-between">
             <SkeletonLine className="h-5 w-44" />
           </div>
-          <div className={dashStyles.macroList}>
+          <div className="flex flex-col gap-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className={dashStyles.macroItem}>
-                <div className={dashStyles.macroTop}>
+              <div key={i} className="flex flex-col gap-2">
+                <div className="flex justify-between">
                   <SkeletonLine className="h-4 w-20" />
                   <SkeletonLine className="h-4 w-24" />
                 </div>
-                <div className={dashStyles.macroTrack}>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-container">
                   <SkeletonLine className="h-full rounded-full" style={{ width: `${30 + i * 15}%` }} />
                 </div>
               </div>
@@ -142,9 +135,9 @@ export function SkeletonDashboard() {
 
 export function SkeletonProfile() {
   return (
-    <div className={profStyles.page}>
+    <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className={profStyles.header}>
+      <div className="border-b border-surface-high pb-5">
         <div className="space-y-1">
           <SkeletonLine className="h-3 w-40" />
           <SkeletonLine className="h-7 w-44" />
@@ -153,16 +146,16 @@ export function SkeletonProfile() {
       </div>
 
       {/* Content grid: 1fr 340px */}
-      <div className={profStyles.content}>
+      <div className="grid grid-cols-[1fr_340px] gap-6 max-[960px]:grid-cols-1">
         {/* ROW 1 LEFT: Informasi Pribadi card */}
-        <div className={profStyles.card}>
+        <div className="flex flex-col gap-5 rounded-xl border border-surface-high bg-surface-lowest p-6">
           <div className="flex items-center gap-2.5">
             <SkeletonLine className="h-[18px] w-[18px] rounded" />
             <SkeletonLine className="h-4 w-32" />
           </div>
-          <div className={profStyles.fieldGrid}>
+          <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className={profStyles.field}>
+              <div key={i} className="flex flex-col gap-1.5">
                 <SkeletonLine className="h-3 w-24" />
                 <SkeletonLine className="h-10 w-full rounded-md" />
               </div>
@@ -171,21 +164,21 @@ export function SkeletonProfile() {
         </div>
 
         {/* ROW 1 RIGHT: Avatar card */}
-        <div className={profStyles.avatarCard}>
+        <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-surface-high bg-surface-lowest p-7 text-center">
           <SkeletonLine className="h-16 w-16 rounded-lg" />
-          <SkeletonLine className="h-5 w-32 mt-2" />
+          <SkeletonLine className="mt-2 h-5 w-32" />
           <SkeletonLine className="h-3 w-24" />
         </div>
 
         {/* ROW 2 LEFT: Metrik Tubuh card */}
-        <div className={profStyles.card}>
+        <div className="flex flex-col gap-5 rounded-xl border border-surface-high bg-surface-lowest p-6">
           <div className="flex items-center gap-2.5">
             <SkeletonLine className="h-[18px] w-[18px] rounded" />
             <SkeletonLine className="h-4 w-24" />
           </div>
-          <div className={profStyles.fieldGrid}>
+          <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className={profStyles.field}>
+              <div key={i} className="flex flex-col gap-1.5">
                 <SkeletonLine className="h-3 w-20" />
                 <SkeletonLine className="h-10 w-full rounded-md" />
               </div>
@@ -194,13 +187,13 @@ export function SkeletonProfile() {
         </div>
 
         {/* ROW 2 RIGHT: BMI card */}
-        <div className={profStyles.bmiCard}>
+        <div className="flex flex-col items-center justify-center gap-2.5 rounded-xl border border-surface-high bg-surface-lowest p-6 text-center">
           <SkeletonLine className="h-3 w-36" />
           <SkeletonLine className="h-10 w-20" />
           <SkeletonLine className="h-5 w-24 rounded-md" />
-          <div className="w-full mt-2">
+          <div className="mt-2 w-full">
             <SkeletonLine className="h-2 w-full rounded-full" />
-            <div className="flex justify-between mt-1.5">
+            <div className="mt-1.5 flex justify-between">
               {[...Array(5)].map((_, i) => (
                 <SkeletonLine key={i} className="h-2 w-4" />
               ))}
@@ -209,14 +202,14 @@ export function SkeletonProfile() {
         </div>
 
         {/* ROW 3 LEFT: Target Kesehatan card */}
-        <div className={profStyles.card}>
+        <div className="flex flex-col gap-5 rounded-xl border border-surface-high bg-surface-lowest p-6">
           <div className="flex items-center gap-2.5">
             <SkeletonLine className="h-[18px] w-[18px] rounded" />
             <SkeletonLine className="h-4 w-32" />
           </div>
-          <div className={profStyles.goalOptions}>
+          <div className="grid grid-cols-3 gap-3 max-[640px]:grid-cols-1">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className={profStyles.goalCard}>
+              <div key={i} className="flex flex-col items-center gap-1.5 rounded-lg border border-surface-high bg-surface-low p-4">
                 <SkeletonLine className="h-8 w-8 rounded-md" />
                 <SkeletonLine className="h-4 w-24" />
                 <SkeletonLine className="h-3 w-20" />
@@ -226,15 +219,15 @@ export function SkeletonProfile() {
         </div>
 
         {/* ROW 3 RIGHT: Calorie Target card */}
-        <div className={profStyles.calorieCard}>
+        <div className="flex flex-col items-center justify-center gap-1 rounded-xl border border-surface-high bg-surface-lowest p-6 text-center">
           <SkeletonLine className="h-3 w-32" />
           <SkeletonLine className="h-9 w-24" />
           <SkeletonLine className="h-3 w-16" />
-          <SkeletonLine className="h-3 w-48 mt-2" />
+          <SkeletonLine className="mt-2 h-3 w-48" />
         </div>
 
         {/* Save button bar */}
-        <div className={profStyles.saveBar}>
+        <div className="col-span-full flex items-center gap-4">
           <SkeletonLine className="h-10 w-44 rounded-md" />
         </div>
       </div>
@@ -246,16 +239,16 @@ export function SkeletonProfile() {
 
 export function SkeletonCoach() {
   return (
-    <div className="flex bg-[var(--surface-container-lowest)] border border-[var(--surface-container-high)] rounded-xl overflow-hidden" style={{ height: "calc(100vh - 116px)", minHeight: 500 }}>
+    <div className="flex h-[calc(100vh-116px)] min-h-[500px] overflow-hidden rounded-xl border border-surface-high bg-surface-lowest">
       {/* Sidebar */}
-      <aside className="w-[280px] shrink-0 bg-[var(--surface-container-low)] border-r border-[var(--surface-container-high)] flex flex-col">
-        <div className="p-5 border-b border-[var(--surface-container-high)]">
-          <SkeletonLine className="h-5 w-32 mb-4" />
+      <aside className="flex w-[280px] shrink-0 flex-col border-r border-surface-high bg-surface-low">
+        <div className="border-b border-surface-high p-5">
+          <SkeletonLine className="mb-4 h-5 w-32" />
           <SkeletonLine className="h-10 w-full rounded-md" />
         </div>
-        <div className="flex-1 overflow-hidden p-3 space-y-2">
+        <div className="flex-1 space-y-2 overflow-hidden p-3">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="rounded-md p-3 space-y-2">
+            <div key={i} className="space-y-2 rounded-md p-3">
               <SkeletonLine className="h-4 w-36" />
               <SkeletonLine className="h-3 w-20" />
             </div>
@@ -264,9 +257,9 @@ export function SkeletonCoach() {
       </aside>
 
       {/* Chat area */}
-      <div className="flex-1 flex flex-col bg-[var(--surface)]">
+      <div className="flex flex-1 flex-col bg-surface">
         {/* Chat header */}
-        <header className="flex items-center gap-3 p-4 bg-[var(--surface-container-lowest)] border-b border-[var(--surface-container-high)]">
+        <header className="flex items-center gap-3 border-b border-surface-high bg-surface-lowest p-4">
           <SkeletonLine className="h-9 w-9 rounded-md" />
           <div className="space-y-1">
             <SkeletonLine className="h-4 w-28" />
@@ -275,22 +268,22 @@ export function SkeletonCoach() {
         </header>
 
         {/* Messages */}
-        <div className="flex-1 p-6 space-y-4 overflow-hidden">
+        <div className="flex-1 space-y-4 overflow-hidden p-6">
           <div className="flex justify-start">
-            <div className="rounded-xl bg-[var(--surface-container-lowest)] border border-[var(--surface-container-high)] p-4 max-w-[65%] space-y-2">
+            <div className="max-w-[65%] space-y-2 rounded-xl border border-surface-high bg-surface-lowest p-4">
               <SkeletonLine className="h-4 w-56" />
               <SkeletonLine className="h-4 w-40" />
             </div>
           </div>
           <div className="flex justify-end">
-            <div className="rounded-xl bg-[var(--surface-container)] p-4 max-w-[50%] space-y-2">
+            <div className="max-w-[50%] space-y-2 rounded-xl bg-surface-container p-4">
               <SkeletonLine className="h-4 w-44" />
             </div>
           </div>
         </div>
 
         {/* Input area */}
-        <div className="flex gap-3 p-4 bg-[var(--surface-container-lowest)] border-t border-[var(--surface-container-high)]">
+        <div className="flex gap-3 border-t border-surface-high bg-surface-lowest p-4">
           <SkeletonLine className="h-10 flex-1 rounded-md" />
           <SkeletonLine className="h-10 w-10 rounded-md" />
         </div>
@@ -303,9 +296,9 @@ export function SkeletonCoach() {
 
 export function SkeletonHistory() {
   return (
-    <div className={histStyles.page}>
+    <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className={histStyles.header}>
+      <div className="flex items-end justify-between border-b border-surface-high pb-5">
         <div className="space-y-1">
           <SkeletonLine className="h-3 w-36" />
           <SkeletonLine className="h-7 w-44" />
@@ -314,9 +307,9 @@ export function SkeletonHistory() {
       </div>
 
       {/* 4 Summary cards */}
-      <div className={histStyles.summaryCards}>
+      <div className="grid grid-cols-4 gap-4 max-[768px]:grid-cols-2">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className={histStyles.summaryCard}>
+          <div key={i} className="flex flex-col gap-1.5 rounded-xl border border-surface-high bg-surface-lowest px-5 py-[18px]">
             <SkeletonLine className="h-3 w-20" />
             <SkeletonLine className="h-7 w-16" />
           </div>
@@ -324,8 +317,8 @@ export function SkeletonHistory() {
       </div>
 
       {/* Toolbar — filter tabs + search */}
-      <div className={histStyles.toolbar}>
-        <div className="flex gap-1 bg-[var(--surface-container)] rounded-md p-1">
+      <div className="flex items-center justify-between gap-4 max-[768px]:flex-col max-[768px]:items-stretch">
+        <div className="flex gap-1 rounded-md bg-surface-container p-1">
           <SkeletonLine className="h-8 w-20 rounded" />
           <SkeletonLine className="h-8 w-20 rounded" />
           <SkeletonLine className="h-8 w-20 rounded" />
@@ -334,22 +327,22 @@ export function SkeletonHistory() {
       </div>
 
       {/* History grouped by date */}
-      <div className={histStyles.historyList}>
+      <div className="flex flex-col gap-5">
         {[...Array(2)].map((_, gi) => (
-          <div key={gi} className={histStyles.dateGroup}>
-            <div className={histStyles.dateHeader}>
+          <div key={gi} className="flex flex-col gap-2.5">
+            <div className="flex items-center justify-between px-1">
               <SkeletonLine className="h-4 w-32" />
               <SkeletonLine className="h-3 w-20" />
             </div>
-            <div className={histStyles.mealsTable}>
+            <div className="overflow-hidden rounded-xl border border-surface-high bg-surface-lowest">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className={histStyles.mealRow}>
-                  <SkeletonLine className="h-10 w-10 rounded-md shrink-0" />
-                  <div className={histStyles.mealInfo} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <div key={i} className="flex items-center gap-3.5 border-b border-surface-container px-5 py-3.5 last:border-b-0">
+                  <SkeletonLine className="h-10 w-10 shrink-0 rounded-md" />
+                  <div className="flex flex-1 flex-col gap-1">
                     <SkeletonLine className="h-4 w-36" />
                     <SkeletonLine className="h-3 w-16" />
                   </div>
-                  <div className="flex gap-1.5 shrink-0">
+                  <div className="flex shrink-0 gap-1.5">
                     <SkeletonLine className="h-5 w-12 rounded-md" />
                     <SkeletonLine className="h-5 w-12 rounded-md" />
                     <SkeletonLine className="h-5 w-12 rounded-md" />
@@ -380,17 +373,17 @@ export function SkeletonFoodAnalysis() {
       {/* Two-column layout */}
       <div className="grid grid-cols-2 items-start gap-8 max-[900px]:grid-cols-1">
         {/* Left: Upload area */}
-        <div className="bg-[var(--surface-container-lowest)] border border-[var(--surface-container-high)] rounded-xl p-8">
-          <div className="border border-dashed border-[var(--outline-variant)] rounded-lg flex flex-col items-center justify-center text-center py-20 px-12 gap-4">
+        <div className="rounded-xl border border-surface-high bg-surface-lowest p-8">
+          <div className="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-outline-variant px-12 py-20 text-center">
             <SkeletonLine className="h-14 w-14 rounded-lg" />
             <SkeletonLine className="h-5 w-48" />
             <SkeletonLine className="h-4 w-64" />
-            <SkeletonLine className="h-10 w-36 rounded-md mt-2" />
+            <SkeletonLine className="mt-2 h-10 w-36 rounded-md" />
           </div>
         </div>
 
         {/* Right: Empty results placeholder */}
-        <div className="bg-[var(--surface-container-lowest)] border border-[var(--surface-container-high)] rounded-xl flex flex-col items-center justify-center text-center py-24 px-12 gap-3">
+        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-surface-high bg-surface-lowest px-12 py-24 text-center">
           <SkeletonLine className="h-14 w-14 rounded-lg" />
           <SkeletonLine className="h-5 w-44" />
           <SkeletonLine className="h-4 w-56" />
@@ -404,9 +397,9 @@ export function SkeletonFoodAnalysis() {
 
 export function SkeletonLayout() {
   return (
-    <div className="flex items-center justify-center h-screen bg-[var(--surface)]">
+    <div className="flex h-screen items-center justify-center bg-surface">
       <div className="flex flex-col items-center gap-4">
-        <div className="animate-spin h-7 w-7 rounded-full border-3 border-[var(--surface-container-high)] border-t-[var(--primary)]" />
+        <div className="h-7 w-7 animate-spin rounded-full border-3 border-surface-high border-t-primary" />
         <SkeletonLine className="h-3.5 w-24" />
       </div>
     </div>
