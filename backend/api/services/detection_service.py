@@ -614,7 +614,7 @@ class DetectionService:
                 "Content-Type": "application/json",
             }
             payload = {
-                "model": "google/gemini-2.5-flash",
+                "model": "google/gemini-3.8-flash",
                 "messages": [{"role": "system", "content": prompt_text}],
             }
             resp = requests_mod.post(
@@ -713,7 +713,7 @@ class DetectionService:
             "source": "unavailable",
         }
 
-    _GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash"]
+    _GEMINI_MODELS = ["gemini-3.8-flash"]
 
     @classmethod
     def _call_gemini_nutrition(cls, genai, api_key: str, prompt: str, food_name: str) -> dict | None:
@@ -759,7 +759,7 @@ class DetectionService:
                 "Content-Type": "application/json",
             }
             payload = {
-                "model": "google/gemini-2.5-flash",
+                "model": "google/gemini-3.8-flash",
                 "messages": [{"role": "system", "content": prompt}],
             }
             resp = requests_mod.post(

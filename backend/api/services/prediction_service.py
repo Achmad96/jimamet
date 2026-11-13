@@ -19,38 +19,98 @@ from api import cache as app_cache
 # Consultation trigger keywords
 _CONSULTATION_TRIGGERS = [
     # Penyakit kronis
-    "diabetes", "diabetik", "gula darah", "kencing manis",
-    "hipertensi", "darah tinggi", "tekanan darah",
-    "kolesterol", "trigliserida", "ldl", "hdl",
-    "jantung", "serangan jantung", "gagal jantung", "aritmia",
-    "ginjal", "gagal ginjal", "batu ginjal", "cuci darah",
-    "kanker", "tumor", "kemoterapi", "onkologi",
-    "asam urat", "gout", "rematik", "arthritis",
-    "stroke", "lumpuh",
-    "liver", "hati", "hepatitis", "sirosis",
-    "tiroid", "hipotiroid", "hipertiroid",
-    "anemia", "kekurangan darah",
-    "osteoporosis", "tulang rapuh",
-    "autoimun", "lupus",
+    "diabetes",
+    "diabetik",
+    "gula darah",
+    "kencing manis",
+    "hipertensi",
+    "darah tinggi",
+    "tekanan darah",
+    "kolesterol",
+    "trigliserida",
+    "ldl",
+    "hdl",
+    "jantung",
+    "serangan jantung",
+    "gagal jantung",
+    "aritmia",
+    "ginjal",
+    "gagal ginjal",
+    "batu ginjal",
+    "cuci darah",
+    "kanker",
+    "tumor",
+    "kemoterapi",
+    "onkologi",
+    "asam urat",
+    "gout",
+    "rematik",
+    "arthritis",
+    "stroke",
+    "lumpuh",
+    "liver",
+    "hati",
+    "hepatitis",
+    "sirosis",
+    "tiroid",
+    "hipotiroid",
+    "hipertiroid",
+    "anemia",
+    "kekurangan darah",
+    "osteoporosis",
+    "tulang rapuh",
+    "autoimun",
+    "lupus",
     # Kondisi khusus
-    "hamil", "kehamilan", "trimester", "ibu hamil",
-    "menyusui", "asi",
-    "obesitas", "kegemukan", "bmi tinggi",
-    "kurus ekstrem", "underweight", "kurang gizi", "malnutrisi",
+    "hamil",
+    "kehamilan",
+    "trimester",
+    "ibu hamil",
+    "menyusui",
+    "asi",
+    "obesitas",
+    "kegemukan",
+    "bmi tinggi",
+    "kurus ekstrem",
+    "underweight",
+    "kurang gizi",
+    "malnutrisi",
     # Gejala serius
-    "penyakit", "sakit parah", "rawat inap", "opname",
-    "sesak napas", "nyeri dada", "pingsan", "kejang",
-    "mual parah", "muntah darah", "bab berdarah",
-    "luka tidak sembuh", "infeksi",
-    "alergi", "anafilaksis",
+    "penyakit",
+    "sakit parah",
+    "rawat inap",
+    "opname",
+    "sesak napas",
+    "nyeri dada",
+    "pingsan",
+    "kejang",
+    "mual parah",
+    "muntah darah",
+    "bab berdarah",
+    "luka tidak sembuh",
+    "infeksi",
+    "alergi",
+    "anafilaksis",
     # Diet medis
-    "diet khusus", "diet dokter", "pantangan", "tidak boleh makan",
-    "suplemen", "vitamin dosis tinggi", "obat",
-    "interaksi makanan", "makanan terlarang",
+    "diet khusus",
+    "diet dokter",
+    "pantangan",
+    "tidak boleh makan",
+    "suplemen",
+    "vitamin dosis tinggi",
+    "obat",
+    "interaksi makanan",
+    "makanan terlarang",
     # Kondisi mental terkait makan
-    "anoreksia", "bulimia", "binge eating", "gangguan makan",
+    "anoreksia",
+    "bulimia",
+    "binge eating",
+    "gangguan makan",
     # Kondisi olahraga/ekstrem
-    "atlet profesional", "kompetisi", "cutting", "bulking ekstrem",
+    "atlet profesional",
+    "kompetisi",
+    "cutting",
+    "bulking ekstrem",
 ]
 
 _SYSTEM_PROMPT_TEMPLATE = """
@@ -82,10 +142,7 @@ class PredictionService:
     @classmethod
     def create_session(cls, user_id: str, title: str = "New Consultation") -> dict:
         """Create a new AI chat session. Invalidates session list cache."""
-        result = CoachSessionModel.create({
-            "user_id": user_id,
-            "title": title
-        })
+        result = CoachSessionModel.create({"user_id": user_id, "title": title})
         app_cache.delete(app_cache.key_coach_sessions(user_id))
         return result
 
@@ -125,7 +182,7 @@ class PredictionService:
         """
         if not message:
             raise ValueError("Pesan tidak boleh kosong")
-            
+
         session = CoachSessionModel.find_by_id_and_user(session_id, user_id)
         if not session:
             raise ValueError("Session not found")
@@ -150,13 +207,13 @@ class PredictionService:
         """
 
         system_prompt = _SYSTEM_PROMPT_TEMPLATE.format(nutrition_context=nutrition_context)
-        
+
         # Build chat history context
         history_context = ""
         for msg in messages[-5:]:  # Last 5 messages for context
             role = "AI" if msg["sender"] == "ai" else "User"
             history_context += f"{role}: {msg['message']}\n"
-            
+
         full_prompt = f"{system_prompt}\n\nRiwayat percakapan:\n{history_context}\n\nPesan pengguna: {message}\n\nJawaban Anda:"
 
         # Try Gemini first, fallback to OpenRouter
@@ -175,7 +232,7 @@ class PredictionService:
             openrouter_key = os.environ.get("OPENROUTER_API_KEY")
             if not openrouter_key:
                 raise RuntimeError(f"{fallback_error} | OpenRouter juga tidak bisa digunakan " f"karena OPENROUTER_API_KEY belum diatur.")
-            
+
             # Send simplified prompt to OpenRouter
             or_prompt = f"{system_prompt}\n\nRiwayat percakapan:\n{history_context}"
             ai_reply = cls._call_openrouter(or_prompt, message, openrouter_key)
@@ -183,25 +240,18 @@ class PredictionService:
                 raise RuntimeError(f"{fallback_error} | OpenRouter juga gagal merespons.")
 
         # Append automatic disclaimer
-        disclaimer = "Rekomendasi ini berdasarkan data konsumsi dan goal kamu. Untuk kondisi kesehatan khusus, disarankan konsultasi dengan Nutritionist."
+        disclaimer = (
+            "Rekomendasi ini berdasarkan data konsumsi dan goal kamu. Untuk kondisi kesehatan khusus, disarankan konsultasi dengan Nutritionist."
+        )
         ai_reply = f"{ai_reply.strip()}\n\n{disclaimer}"
 
         # Check if consultation is needed
         needs_consultation = any(t in message.lower() for t in _CONSULTATION_TRIGGERS)
 
         # Save to database
-        CoachMessageModel.create({
-            "session_id": session_id,
-            "sender": "user", 
-            "message": message
-        })
-        CoachMessageModel.create({
-            "session_id": session_id,
-            "sender": "ai", 
-            "message": ai_reply,
-            "needs_consultation": needs_consultation
-        })
-        
+        CoachMessageModel.create({"session_id": session_id, "sender": "user", "message": message})
+        CoachMessageModel.create({"session_id": session_id, "sender": "ai", "message": ai_reply, "needs_consultation": needs_consultation})
+
         # Update session updated_at
         updated_session = CoachSessionModel.update(session_id, {"updated_at": datetime.utcnow().isoformat() + "Z"})
 
@@ -209,11 +259,7 @@ class PredictionService:
         app_cache.delete(app_cache.key_coach_sessions(user_id))
         app_cache.delete(app_cache.key_coach_session_detail(session_id))
 
-        return {
-            "reply": ai_reply, 
-            "needs_consultation": needs_consultation,
-            "session": updated_session
-        }
+        return {"reply": ai_reply, "needs_consultation": needs_consultation, "session": updated_session}
 
     @classmethod
     def _build_nutrition_context(cls, user_id) -> dict:
@@ -283,7 +329,7 @@ class PredictionService:
         try:
             client = genai.Client(api_key=api_key)
             response = client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-3.8-flash",
                 contents=full_prompt,
             )
             return response.text.strip()
@@ -300,7 +346,7 @@ class PredictionService:
                 "Content-Type": "application/json",
             }
             data = {
-                "model": "google/gemini-2.5-flash",
+                "model": "google/gemini-3.8-flash",
                 "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_message},
