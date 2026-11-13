@@ -1,51 +1,48 @@
 import type { Metadata } from "next";
+import { DM_Sans, Crimson_Pro, Space_Mono } from "next/font/google";
 import "./globals.css";
 
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  display: "swap",
+});
+
+const crimsonPro = Crimson_Pro({
+  subsets: ["latin"],
+  variable: "--font-crimson-pro",
+  display: "swap",
+});
+
+const spaceMono = Space_Mono({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-space-mono",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Jimamet — Medical Nutrition Platform",
-  description:
-    "Transformasikan kesehatan Anda dengan analisis nutrisi berbasis AI yang presisi. Pantau asupan makanan secara klinis dan profesional.",
-  keywords: [
-    "nutrisi",
-    "medical nutrition",
-    "AI food analysis",
-    "diet tracking",
-    "kesehatan",
-    "jimamet",
-  ],
+  title: "Jimamet — Pencatat Kalori & Gizi Praktis",
+  description: "Kenali kalori dan kandungan gizi makanan Anda cukup dengan sekali foto. Hitung nutrisi otomatis sesuai standar Kemenkes RI dan konsultasi langsung bersama Ahli Gizi.",
+  keywords: ["nutrisi", "kalori makanan indonesia", "hitung kalori foto", "tabel komposisi pangan indonesia", "pola makan sehat", "diet sehat", "ahli gizi", "jimamet"],
   authors: [{ name: "Jimamet Team" }],
   openGraph: {
-    title: "Jimamet — Medical Nutrition Platform",
-    description:
-      "Analisis nutrisi berbasis AI dengan presisi klinis.",
+    title: "Jimamet — Pencatat Kalori & Gizi Praktis",
+    description: "Kenali kalori dan kandungan gizi makanan Anda cukup dengan sekali foto.",
     type: "website",
-    locale: "id_ID",
-  },
+    locale: "id_ID"
+  }
 };
 
 export default function RootLayout({
-  children,
+  children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id">
-      <head>
-        <link
-          rel="preconnect"
-          href="https://fonts.googleapis.com"
-        />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="id" className={`${dmSans.variable} ${crimsonPro.variable} ${spaceMono.variable}`}>
       <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }
+

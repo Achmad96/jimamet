@@ -1,424 +1,295 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
+import { LandingNavbar } from "@/components/landing/LandingNavbar";
+import { InteractiveMealShowcase } from "@/components/landing/InteractiveMealShowcase";
+import { FaqAccordion } from "@/components/landing/FaqAccordion";
+import { FEATURES, STEPS, FOOD_CATEGORIES, STATS } from "@/lib/landing-data";
 
-const capabilities = [
-  {
-    index: "01",
-    tag: "COMPUTER VISION",
-    title: "Deteksi Hidangan Multi-Modal",
-    desc: "Mengidentifikasi berbagai hidangan khas Indonesia melalui kamera real-time, unggahan foto, maupun pemindaian video menggunakan model deteksi objek YOLOv8 yang dikalibrasi khusus.",
-    specLabel: "Input Didukung",
-    specValue: "Live Stream · JPG/PNG · MP4"
-  },
-  {
-    index: "02",
-    tag: "MONITORING GIZI",
-    title: "Kuantifikasi Makro & Mikronutrien",
-    desc: "Setiap hidangan yang terdeteksi dipetakan langsung ke basis data komposisi pangan untuk menghitung kalori, protein, karbohidrat, lemak, serat, dan gula secara proporsional.",
-    specLabel: "Parameter",
-    specValue: "Energi (kkal) · P / K / L · Serat & Gula"
-  },
-  {
-    index: "03",
-    tag: "PENDAMPINGAN KLINIS",
-    title: "NutriCoach AI & Eskalasi Ahli Gizi",
-    desc: "Asisten gizi kontekstual yang mengevaluasi riwayat asupan harian Anda dan secara otomatis mengarahkan kasus klinis ke Ahli Gizi terdaftar melalui sesi konsultasi real-time.",
-    specLabel: "Protokol",
-    specValue: "AI Triage + Konsultasi WebSocket"
-  }
-];
-
-const protocolSteps = [
-  {
-    code: "TAHAP 01",
-    title: "Akuisisi Citra Hidangan",
-    desc: "Arahkan kamera perangkat secara langsung ke piring makan atau unggah dokumentasi foto dan video makanan sebelum dikonsumsi.",
-    artifact: "Frame terkalibrasi & lokalisasi bounding box"
-  },
-  {
-    code: "TAHAP 02",
-    title: "Verifikasi Komposisi & Takaran",
-    desc: "Sistem mencocokkan label hidangan terhadap tabel komposisi gizi Indonesia dan menampilkan rincian makronutrien per porsi standar.",
-    artifact: "Profil kalori, protein, karbohidrat, lemak, serat"
-  },
-  {
-    code: "TAHAP 03",
-    title: "Pencatatan Rekam Gizi & Evaluasi",
-    desc: "Simpan hasil analisis ke jurnal harian untuk memantau tren defisit/surplus kalori atau diskusikan langsung bersama NutriCoach dan Ahli Gizi.",
-    artifact: "Log harian, grafik mingguan & rujukan klinis"
-  }
-];
-
-const benchmarks = [
-  {
-    metric: "98.5%",
-    label: "Presisi Identifikasi",
-    detail: "Akurasi pengenalan visual pada pengujian hidangan Nusantara"
-  },
-  {
-    metric: "500+",
-    label: "Indeks Pangan Lokal",
-    detail: "Basis data nutrisi mencakup makanan pokok, lauk, dan jajanan"
-  },
-  {
-    metric: "<120ms",
-    label: "Inferensi Real-Time",
-    detail: "Deteksi kamera langsung berlatensi rendah via WebSocket"
-  },
-  {
-    metric: "2-Tier",
-    label: "Arsitektur Konsultasi",
-    detail: "Kombinasi asisten AI instan dan rujukan Ahli Gizi Klinik"
-  }
-];
-
-export default function LandingPage() {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 24);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+export default function HomePage() {
+  const currentYear = new Date().getFullYear();
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-surface text-on-surface">
-      {/* ── NAVBAR ── */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 border-b ${scrolled ? "bg-surface/92 backdrop-blur-md border-surface-high py-3" : "bg-surface/80 backdrop-blur-sm border-transparent py-4"}`}>
-        <div className="max-w-[1240px] mx-auto px-6 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5 no-underline text-on-surface">
-            <Image src="/jimamet_logo.webp" alt="Jimamet Logo" width={36} height={36} className="object-contain" />
-            <span className="font-headline text-[19px] font-bold tracking-tight text-primary">Jimamet</span>
-            <span className="w-px h-4 bg-outline-variant hidden sm:inline-block" />
-            <span className="font-mono text-[11px] font-medium uppercase tracking-wider text-outline hidden sm:inline-block">Clinical Nutrition</span>
-          </Link>
+    <div className="min-h-screen bg-surface text-on-surface antialiased">
+      {/* ── CLIENT NAVBAR (Smooth scroll & mobile drawer) ── */}
+      <LandingNavbar />
 
-          <nav className={`${mobileMenuOpen ? "flex fixed inset-0 bg-surface flex-col justify-center items-center gap-6 z-50" : "hidden md:flex items-center gap-8"}`}>
-            <a href="#features" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">
-              Kapabilitas
-            </a>
-            <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">
-              Protokol Kerja
-            </a>
-            <a href="#stats" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">
-              Standar Data
-            </a>
-            <div className="flex flex-col md:flex-row items-center gap-3 md:ml-2 md:pl-5 md:border-l md:border-surface-high">
-              <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="text-sm font-semibold text-on-surface px-3.5 py-2 rounded-md hover:bg-surface-container transition-colors">
-                Masuk
-              </Link>
-              <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="inline-flex items-center justify-center px-4 py-2.5 bg-primary hover:bg-primary-container text-on-primary rounded-md font-headline text-[13px] font-semibold transition-colors">
-                Mulai Analisis
-              </Link>
-            </div>
-          </nav>
+      {/* ── HERO SECTION (SSR Rendered) ── */}
+      <section className="pt-32 pb-20 lg:pt-38 lg:pb-28 relative overflow-hidden">
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[380px] bg-primary-fixed/20 blur-[130px] rounded-full pointer-events-none -z-10" />
 
-          <button className="flex md:hidden items-center justify-center w-9 h-9 bg-transparent border border-surface-high rounded-md cursor-pointer z-[60]" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
-            {mobileMenuOpen ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
-            )}
-          </button>
-        </div>
-      </header>
+        <div className="max-w-[1200px] mx-auto px-5 sm:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center">
+            {/* Left Content */}
+            <div className="lg:col-span-7 flex flex-col items-start">
+              <h1 className="font-headline text-3xl sm:text-4xl md:text-5xl lg:text-[52px] font-extrabold leading-[1.12] tracking-[-0.03em] text-on-surface mb-5">
+                Cek nutrisi makanan cukup dengan{" "}
+                <span className="text-primary font-serif italic font-normal underline decoration-primary-fixed-dim decoration-wavy decoration-2 underline-offset-4">
+                  sekali foto.
+                </span>
+              </h1>
 
-      {/* ── HERO ── */}
-      <section className="pt-32 pb-20 lg:pt-36 lg:pb-24 border-b border-surface-high">
-        <div className="max-w-[1240px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center">
-          <div className="lg:col-span-7 flex flex-col items-start">
-            <div className="inline-flex items-center gap-2.5 px-3 py-1.5 bg-surface-lowest border border-surface-high rounded-sm font-mono text-[11px] font-medium text-on-surface-variant mb-6">
-              <span className="text-primary font-semibold tracking-wider">SYS // NUTRI-VISION v2.4</span>
-              <span className="text-outline-variant">·</span>
-              <span>YOLOv8 + Basis Data Gizi Indonesia</span>
-            </div>
+              <p className="text-base sm:text-lg leading-[1.65] text-on-surface-variant max-w-[560px] mb-8 font-normal">
+                Tak perlu repot menimbang dan mencatat manual. Cukup arahkan kamera ke piring Anda, Jimamet langsung mengenali hidangan, menghitung kalori, serta menyediakan pendampingan bersama Ahli Gizi.
+              </p>
 
-            <h1 className="font-headline text-4xl sm:text-5xl lg:text-[54px] font-bold leading-[1.08] tracking-[-0.03em] text-on-surface mb-5">
-              Pemantauan nutrisi klinis dengan <span className="font-serif italic font-normal text-primary text-[1.08em]">presisi terukur.</span>
-            </h1>
-
-            <p className="text-base sm:text-[17px] leading-[1.65] text-on-surface-variant max-w-[540px] mb-8">Jimamet menggabungkan deteksi visual hidangan Nusantara secara real-time dengan pencatatan makronutrien terstruktur dan akses konsultasi langsung bersama Ahli Gizi.</p>
-
-            <div className="flex flex-wrap items-center gap-3 mb-12 w-full sm:w-auto">
-              <Link href="/register" className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-primary hover:bg-primary-container text-on-primary rounded-md font-headline text-sm font-semibold transition-all hover:-translate-y-px">
-                Buat Akun Pasien
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </Link>
-              <Link href="/login" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-surface-lowest hover:bg-surface-low text-on-surface border border-surface-high hover:border-outline rounded-md font-headline text-sm font-semibold transition-colors">
-                Masuk ke Portal
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 w-full pt-6 border-t border-surface-high">
-              <div className="flex flex-col gap-1">
-                <span className="font-mono text-[10px] font-semibold tracking-widest text-outline uppercase">DETEKSI OBJEK</span>
-                <span className="text-[13px] font-semibold text-on-surface">Kamera Live, Foto & Video</span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="font-mono text-[10px] font-semibold tracking-widest text-outline uppercase">VALIDASI DATA</span>
-                <span className="text-[13px] font-semibold text-on-surface">Tabel Komposisi Pangan</span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="font-mono text-[10px] font-semibold tracking-widest text-outline uppercase">PENDAMPINGAN</span>
-                <span className="text-[13px] font-semibold text-on-surface">AI & Ahli Gizi Klinik</span>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 w-full sm:w-auto">
+                <Link
+                  href="/login?tab=register"
+                  className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-primary hover:bg-primary-hover text-on-primary rounded-xl font-headline text-sm font-semibold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0"
+                >
+                  <span>Mulai Sekarang — Gratis</span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </Link>
+                <a
+                  href="#cara-kerja"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-surface-lowest hover:bg-surface-low text-on-surface border border-surface-high hover:border-outline-variant rounded-xl font-headline text-sm font-semibold transition-colors shadow-xs"
+                >
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                    <circle cx="12" cy="12" r="10" />
+                    <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" />
+                  </svg>
+                  <span>Lihat Cara Kerja</span>
+                </a>
               </div>
             </div>
-          </div>
 
-          {/* ── Right Column: Clinical Specimen Frame ── */}
-          <div className="lg:col-span-5 w-full">
-            <div className="bg-surface-lowest border border-surface-high rounded-lg overflow-hidden shadow-md">
-              <div className="flex items-center justify-between px-4 py-3 bg-surface-low border-b border-surface-high">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-macro-fiber" />
-                  <span className="font-mono text-[11px] font-semibold text-on-surface-variant tracking-wider">SAMPEL ANALISIS // ID-042</span>
-                </div>
-                <span className="font-mono text-[11px] font-semibold text-primary px-2 py-0.5 bg-primary-fixed rounded-sm">98.4% CONFIDENCE</span>
-              </div>
-
-              <div className="relative bg-surface-container aspect-[16/10] overflow-hidden">
-                <Image src="/hero-nutrition.png" alt="Visualisasi deteksi nutrisi makanan" width={600} height={420} priority className="w-full h-full object-cover block" />
-                <div className="absolute left-3.5 bottom-3.5 right-3.5 flex items-center justify-between px-3.5 py-2.5 bg-inverse-surface/88 backdrop-blur-md border border-white/12 rounded-md text-inverse-on-surface">
-                  <span className="font-headline text-[13px] font-semibold">Hidangan Seimbang Terdeteksi</span>
-                  <span className="font-mono text-[11px] text-primary-fixed-dim">Estimasi porsi: 380g</span>
-                </div>
-              </div>
-
-              <div className="p-5 flex flex-col gap-4">
-                <div className="flex items-baseline justify-between pb-3.5 border-b border-surface-container">
-                  <div>
-                    <span className="block font-mono text-[10px] font-semibold tracking-widest text-outline mb-1">ESTIMASI ENERGI</span>
-                    <div className="font-mono text-[28px] font-semibold text-on-surface leading-none tracking-tight tabular-nums">
-                      524 <small className="text-[13px] font-medium text-outline">kkal</small>
-                    </div>
-                  </div>
-                  <div className="font-mono text-[11px] font-medium text-on-surface-variant px-2.5 py-1 bg-surface-low border border-surface-high rounded-sm">26% dari target 2.000 kkal</div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-1.5 text-xs">
-                      <span className="w-2 h-2 rounded-[2px] shrink-0 bg-macro-protein" />
-                      <span className="text-on-surface-variant font-medium flex-1">Protein</span>
-                      <span className="font-mono font-semibold text-on-surface text-xs tabular-nums">32.4g</span>
-                    </div>
-                    <div className="h-1 bg-surface-container rounded-full overflow-hidden">
-                      <div className="h-full rounded-full bg-macro-protein" style={{ width: "64%" }} />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-1.5 text-xs">
-                      <span className="w-2 h-2 rounded-[2px] shrink-0 bg-macro-carbs" />
-                      <span className="text-on-surface-variant font-medium flex-1">Karbohidrat</span>
-                      <span className="font-mono font-semibold text-on-surface text-xs tabular-nums">54.0g</span>
-                    </div>
-                    <div className="h-1 bg-surface-container rounded-full overflow-hidden">
-                      <div className="h-full rounded-full bg-macro-carbs" style={{ width: "52%" }} />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-1.5 text-xs">
-                      <span className="w-2 h-2 rounded-[2px] shrink-0 bg-macro-fat" />
-                      <span className="text-on-surface-variant font-medium flex-1">Lemak</span>
-                      <span className="font-mono font-semibold text-on-surface text-xs tabular-nums">16.8g</span>
-                    </div>
-                    <div className="h-1 bg-surface-container rounded-full overflow-hidden">
-                      <div className="h-full rounded-full bg-macro-fat" style={{ width: "38%" }} />
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {/* Right Column: Interactive Meal Scanner Widget */}
+            <div className="lg:col-span-5 w-full">
+              <InteractiveMealShowcase />
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── CAPABILITIES ── */}
-      <section id="features" className="py-24 bg-surface border-b border-surface-high">
-        <div className="max-w-[1240px] mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-end mb-14">
-            <div className="lg:col-span-7">
-              <span className="block font-mono text-[11px] font-semibold tracking-widest uppercase text-primary mb-2.5">01 // ARSITEKTUR PLATFORM</span>
-              <h2 className="font-headline text-2xl sm:text-3xl lg:text-[34px] font-bold leading-[1.16] tracking-[-0.025em] text-on-surface">Dirancang untuk akurasi pencatatan gizi harian.</h2>
-            </div>
-            <p className="lg:col-span-5 text-[15px] leading-[1.65] text-on-surface-variant">Menggantikan pencatatan manual yang rumit dengan pengenalan visual otomatis dan parameter gizi yang terstandarisasi.</p>
+      {/* ── STATS STRIP ── */}
+      <section className="py-12 bg-surface-lowest border-y border-surface-high">
+        <div className="max-w-[1200px] mx-auto px-5 sm:px-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
+            {STATS.map((stat) => (
+              <div key={stat.label} className="flex flex-col">
+                <div className="text-3xl sm:text-4xl font-extrabold text-primary tracking-tight mb-1">{stat.value}</div>
+                <div className="font-headline text-sm font-bold text-on-surface mb-1">{stat.label}</div>
+                <p className="text-xs leading-relaxed text-on-surface-variant">{stat.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FEATURES / KEUNGGULAN ── */}
+      <section id="fitur" className="py-24 bg-surface scroll-mt-20">
+        <div className="max-w-[1200px] mx-auto px-5 sm:px-6">
+          <div className="max-w-[680px] mb-16">
+            <span className="inline-block text-xs font-bold tracking-wider uppercase text-primary mb-2">Keunggulan Jimamet</span>
+            <h2 className="font-headline text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-on-surface mb-4">Semua kemudahan untuk menjaga pola makan sehat keluarga.</h2>
+            <p className="text-base text-on-surface-variant leading-relaxed">Didesain sederhana agar mudah digunakan siapa saja. Anda tidak perlu lagi mengingat atau menghitung kalori manual setiap kali menyantap makanan.</p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 bg-surface-high border border-surface-high rounded-lg overflow-hidden gap-px">
-            {capabilities.map((item) => (
-              <article key={item.index} className="bg-surface-lowest p-8 flex flex-col justify-between min-h-[290px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+            {FEATURES.map((item, idx) => (
+              <div key={item.title} className="bg-surface-lowest p-7 sm:p-8 rounded-2xl border border-surface-high hover:border-outline-variant shadow-xs hover:shadow-md transition-all flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <span className="font-mono text-[13px] font-semibold text-primary">{item.index}</span>
-                    <span className="font-mono text-[10px] font-semibold tracking-wider text-outline px-2 py-1 bg-surface-low rounded-sm">{item.tag}</span>
+                  <div className="w-12 h-12 rounded-xl bg-surface-low flex items-center justify-center border border-surface-high text-primary font-bold mb-5">
+                    {idx === 0 && (
+                      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                        <circle cx="12" cy="13" r="4" />
+                      </svg>
+                    )}
+                    {idx === 1 && (
+                      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                      </svg>
+                    )}
+                    {idx === 2 && (
+                      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                      </svg>
+                    )}
+                    {idx === 3 && (
+                      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                      </svg>
+                    )}
                   </div>
-                  <h3 className="font-headline text-xl font-bold text-on-surface tracking-tight mb-3">{item.title}</h3>
-                  <p className="text-sm leading-[1.65] text-on-surface-variant mb-7">{item.desc}</p>
+                  <h3 className="font-headline text-xl font-bold text-on-surface tracking-tight mb-2.5">{item.title}</h3>
+                  <p className="text-sm leading-relaxed text-on-surface-variant">{item.description}</p>
                 </div>
-                <div className="pt-4 border-t border-surface-container flex items-center justify-between gap-3">
-                  <span className="font-mono text-[11px] text-outline">{item.specLabel}</span>
-                  <span className="font-mono text-[11px] font-semibold text-on-surface">{item.specValue}</span>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── PROTOCOL / HOW IT WORKS ── */}
-      <section id="how-it-works" className="py-24 bg-surface-low border-b border-surface-high">
-        <div className="max-w-[1240px] mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-            <div className="lg:col-span-5 lg:sticky lg:top-28">
-              <span className="block font-mono text-[11px] font-semibold tracking-widest uppercase text-primary mb-2.5">02 // PROTOKOL ANALISIS</span>
-              <h2 className="font-headline text-2xl sm:text-3xl lg:text-[34px] font-bold leading-[1.16] tracking-[-0.025em] text-on-surface">Dari bidikan kamera hingga rekam nutrisi klinis.</h2>
-              <p className="text-[15px] leading-[1.65] text-on-surface-variant mt-4">Setiap analisis melewati tiga tahapan terstruktur untuk memastikan estimasi kalori dan makronutrien dapat dipertanggungjawabkan secara praktis.</p>
-              <Link href="/register" className="inline-flex items-center gap-2 mt-6 font-headline text-sm font-bold text-primary hover:gap-3 transition-all">
-                Coba Analisis Sekarang
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </Link>
-            </div>
-
-            <div className="lg:col-span-7 flex flex-col border-t border-surface-high">
-              {protocolSteps.map((step) => (
-                <div key={step.code} className="grid grid-cols-1 sm:grid-cols-[120px_1fr] gap-3 sm:gap-6 py-7 border-b border-surface-high">
-                  <div className="pt-1">
-                    <span className="font-mono text-xs font-semibold text-primary tracking-wider">{step.code}</span>
-                  </div>
-                  <div>
-                    <h3 className="font-headline text-xl font-bold text-on-surface mb-2 tracking-tight">{step.title}</h3>
-                    <p className="text-[15px] leading-[1.6] text-on-surface-variant mb-3.5">{step.desc}</p>
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-lowest border border-surface-high rounded-sm font-mono text-[11px] text-on-surface-variant">
-                      <span className="font-semibold text-primary">OUTPUT:</span>
-                      <span>{step.artifact}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── BENCHMARKS / STATS ── */}
-      <section id="stats" className="py-20 bg-primary text-on-primary">
-        <div className="max-w-[1240px] mx-auto px-6">
-          <div className="mb-12 max-w-[580px]">
-            <span className="block font-mono text-[11px] font-semibold tracking-widest text-primary-fixed-dim mb-2.5">03 // PARAMETER & CAKUPAN</span>
-            <h2 className="font-headline text-2xl sm:text-3xl font-bold leading-snug tracking-tight text-white">Spesifikasi teknis yang mendukung pemantauan nutrisi Anda.</h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-t border-white/15">
-            {benchmarks.map((b, idx) => (
-              <div key={b.label} className={`py-7 pr-6 ${idx < benchmarks.length - 1 ? "lg:border-r lg:border-white/15" : ""} ${idx > 0 ? "lg:pl-7" : ""} border-b sm:border-b-0 border-white/12`}>
-                <div className="font-mono text-3xl sm:text-4xl font-semibold text-white tracking-tight mb-2 tabular-nums">{b.metric}</div>
-                <div className="font-headline text-[15px] font-semibold text-primary-fixed mb-1.5">{b.label}</div>
-                <p className="text-[13px] leading-relaxed text-white/70">{b.detail}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── CTA ── */}
-      <section className="py-20 bg-surface border-b border-surface-high">
-        <div className="max-w-[1240px] mx-auto px-6">
-          <div className="bg-surface-lowest border border-surface-high rounded-lg p-8 sm:p-12 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
-            <div className="max-w-[580px]">
-              <span className="block font-mono text-[11px] font-semibold tracking-widest uppercase text-primary mb-2.5">MULAI PEMANTAUAN</span>
-              <h2 className="font-headline text-2xl sm:text-3xl font-bold text-on-surface tracking-tight mb-2.5">Kelola asupan gizi harian dengan data yang terukur.</h2>
-              <p className="text-[15px] leading-relaxed text-on-surface-variant">Buat akun gratis untuk mengakses deteksi makanan berbasis kamera, log nutrisi harian, serta konsultasi terintegrasi dengan Ahli Gizi.</p>
+      {/* ── HOW IT WORKS / CARA KERJA ── */}
+      <section id="cara-kerja" className="py-24 bg-surface-low border-y border-surface-high scroll-mt-20">
+        <div className="max-w-[1200px] mx-auto px-5 sm:px-6">
+          <div className="text-center max-w-[640px] mx-auto mb-16">
+            <span className="inline-block text-xs font-bold tracking-wider uppercase text-primary mb-2">Cara Penggunaan</span>
+            <h2 className="font-headline text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-on-surface mb-4">Hanya 3 langkah praktis mengetahui kandungan gizi makanan Anda.</h2>
+            <p className="text-base text-on-surface-variant leading-relaxed">Mulai dari mengambil foto hingga mendapatkan panduan dari ahli gizi, seluruh proses berjalan cepat dan mudah dipahami.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+            {STEPS.map((s) => (
+              <div key={s.step} className="bg-surface-lowest p-7 rounded-2xl border border-surface-high shadow-xs relative flex flex-col justify-between">
+                <div>
+                  <div className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center font-mono font-bold text-sm mb-5 shadow-xs">{s.step}</div>
+                  <h3 className="font-headline text-lg font-bold text-on-surface tracking-tight mb-2.5">{s.title}</h3>
+                  <p className="text-sm leading-relaxed text-on-surface-variant mb-6">{s.desc}</p>
+                </div>
+                <div className="pt-4 border-t border-surface-container flex items-center gap-2 text-xs font-medium text-primary">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  <span>{s.highlight}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <Link href="/login?tab=register" className="inline-flex items-center gap-2 font-headline text-sm font-bold text-primary hover:text-primary-hover transition-colors">
+              <span>Coba gratis sekarang tanpa kartu kredit</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── NUSANTARA FOOD CATEGORIES ── */}
+      <section id="menu-nusantara" className="py-24 bg-surface scroll-mt-20">
+        <div className="max-w-[1200px] mx-auto px-5 sm:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-end mb-14">
+            <div className="lg:col-span-7">
+              <span className="inline-block text-xs font-bold tracking-wider uppercase text-primary mb-2">Cakupan Menu</span>
+              <h2 className="font-headline text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-on-surface">Dirancang khusus untuk makanan yang biasa Anda santap setiap hari.</h2>
             </div>
-            <div className="flex flex-wrap items-center gap-3 shrink-0 w-full sm:w-auto">
-              <Link href="/register" className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-primary hover:bg-primary-container text-on-primary rounded-md font-headline text-sm font-semibold transition-colors">
-                Daftar Akun Gratis
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </Link>
-              <Link href="/login" className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3.5 bg-surface-lowest hover:bg-surface-low text-on-surface border border-surface-high rounded-md font-headline text-sm font-semibold transition-colors">
-                Masuk ke Akun
-              </Link>
+            <p className="lg:col-span-5 text-base text-on-surface-variant leading-relaxed">Bukan hanya makanan barat atau salad ala luar negeri. Jimamet mengenali menu warung, masakan rumahan, hingga makanan tradisional Indonesia.</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {FOOD_CATEGORIES.map((cat) => (
+              <div key={cat.title} className="bg-surface-lowest p-6 rounded-2xl border border-surface-high shadow-xs">
+                <div className="w-8 h-8 rounded-lg bg-surface-low border border-surface-high flex items-center justify-center text-primary mb-4 font-bold text-sm">🍱</div>
+                <h3 className="font-headline text-base font-bold text-on-surface mb-3.5 tracking-tight">{cat.title}</h3>
+                <ul className="flex flex-col gap-2">
+                  {cat.items.map((it) => (
+                    <li key={it} className="text-xs text-on-surface-variant flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-macro-fiber shrink-0" />
+                      <span>{it}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ SECTION (SSR Accordion) ── */}
+      <section id="faq" className="py-24 bg-surface-low border-t border-surface-high scroll-mt-20">
+        <div className="max-w-[900px] mx-auto px-5 sm:px-6">
+          <div className="text-center mb-14">
+            <span className="inline-block text-xs font-bold tracking-wider uppercase text-primary mb-2">Pertanyaan yang Sering Diajukan</span>
+            <h2 className="font-headline text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-on-surface mb-3">Ada pertanyaan seputar Jimamet?</h2>
+            <p className="text-base text-on-surface-variant max-w-[560px] mx-auto">Berikut jawaban atas beberapa pertanyaan umum yang sering ditanyakan oleh pengguna baru.</p>
+          </div>
+
+          <FaqAccordion />
+        </div>
+      </section>
+
+      {/* ── CALL TO ACTION BANNER ── */}
+      <section className="py-20 bg-surface">
+        <div className="max-w-[1200px] mx-auto px-5 sm:px-6">
+          <div className="bg-primary text-on-primary rounded-3xl p-8 sm:p-14 relative overflow-hidden shadow-xl">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-primary-fixed-dim/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-macro-fiber/20 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 max-w-[620px]">
+              <span className="inline-block text-xs font-bold tracking-widest uppercase text-primary-fixed-dim mb-3">Mulai Langkah Hidup Sehat</span>
+              <h2 className="font-headline text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white mb-4">Makan lebih teratur, tahu gizinya, tanpa ribet menimbang.</h2>
+              <p className="text-base sm:text-lg text-white/80 leading-relaxed mb-8">Daftar sekarang secara gratis. Arahkan kamera ponsel Anda ke piring makanan, dan biarkan Jimamet mengurus catatan nutrisi harian Anda.</p>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
+                <Link href="/login?tab=register" className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-white text-primary hover:bg-primary-fixed rounded-xl font-headline text-sm font-bold shadow-md hover:shadow-lg transition-all">
+                  <span>Daftar Akun Gratis</span>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </Link>
+                <Link href="/login" className="inline-flex items-center justify-center px-6 py-3.5 bg-primary-container hover:bg-primary-hover text-white rounded-xl font-headline text-sm font-semibold border border-white/20 transition-colors">
+                  Sudah Punya Akun? Masuk
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="pt-14 pb-9 bg-surface-low text-on-surface-variant">
-        <div className="max-w-[1240px] mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pb-10 border-b border-surface-high">
-            <div className="lg:col-span-5">
-              <div className="flex items-center gap-2.5">
-                <Image src="/jimamet_logo.webp" alt="Jimamet Logo" width={32} height={32} className="object-contain" />
-                <span className="font-headline text-lg font-bold text-on-surface">Jimamet</span>
-              </div>
-              <p className="mt-3 text-[13px] leading-relaxed text-outline max-w-[340px]">Platform analisis nutrisi dan monitoring diet berbasis visi komputer untuk pemantauan kesehatan klinis maupun mandiri.</p>
+      <footer className="pt-16 pb-12 bg-surface-low border-t border-surface-high text-on-surface-variant">
+        <div className="max-w-[1200px] mx-auto px-5 sm:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-surface-high">
+            <div className="md:col-span-5 flex flex-col items-start">
+              <Link href="/" className="flex items-center gap-2.5 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-surface-lowest border border-surface-high flex items-center justify-center p-1">
+                  <Image src="/jimamet_logo.webp" alt="Logo Jimamet" width={24} height={24} className="object-contain" />
+                </div>
+                <span className="font-headline text-xl font-extrabold text-primary">Jimamet</span>
+              </Link>
+              <p className="text-sm leading-relaxed text-outline max-w-[360px]">Platform pemantauan nutrisi dan pola makan sehat berbasis kamera cerdas, dirancang khusus untuk berbagai hidangan khas Indonesia.</p>
             </div>
 
-            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-6">
               <div className="flex flex-col gap-2.5">
-                <h4 className="font-mono text-[11px] font-semibold uppercase tracking-wider text-on-surface mb-1">Platform</h4>
-                <a href="#features" className="text-[13px] text-outline hover:text-on-surface transition-colors">
-                  Kapabilitas
+                <span className="text-xs font-bold uppercase tracking-wider text-on-surface mb-1 font-mono">Navigasi</span>
+                <a href="#fitur" className="text-sm text-outline hover:text-primary transition-colors">
+                  Keunggulan
                 </a>
-                <a href="#how-it-works" className="text-[13px] text-outline hover:text-on-surface transition-colors">
-                  Protokol Kerja
+                <a href="#cara-kerja" className="text-sm text-outline hover:text-primary transition-colors">
+                  Cara Kerja
                 </a>
-                <a href="#stats" className="text-[13px] text-outline hover:text-on-surface transition-colors">
-                  Standar Data
+                <a href="#menu-nusantara" className="text-sm text-outline hover:text-primary transition-colors">
+                  Menu Makanan
+                </a>
+                <a href="#faq" className="text-sm text-outline hover:text-primary transition-colors">
+                  Tanya Jawab
                 </a>
               </div>
+
               <div className="flex flex-col gap-2.5">
-                <h4 className="font-mono text-[11px] font-semibold uppercase tracking-wider text-on-surface mb-1">Akses</h4>
-                <Link href="/login" className="text-[13px] text-outline hover:text-on-surface transition-colors">
-                  Masuk Pasien
+                <span className="text-xs font-bold uppercase tracking-wider text-on-surface mb-1 font-mono">Akses Akun</span>
+                <Link href="/login" className="text-sm text-outline hover:text-primary transition-colors">
+                  Masuk ke Akun
                 </Link>
-                <Link href="/register" className="text-[13px] text-outline hover:text-on-surface transition-colors">
-                  Registrasi Baru
+                <Link href="/login?tab=register" className="text-sm text-outline hover:text-primary transition-colors">
+                  Daftar Pengguna Baru
                 </Link>
-                <Link href="/login" className="text-[13px] text-outline hover:text-on-surface transition-colors">
+                <Link href="/login" className="text-sm text-outline hover:text-primary transition-colors">
                   Portal Ahli Gizi
                 </Link>
               </div>
-              <div className="flex flex-col gap-2.5">
-                <h4 className="font-mono text-[11px] font-semibold uppercase tracking-wider text-on-surface mb-1">Informasi</h4>
-                <a href="#features" className="text-[13px] text-outline hover:text-on-surface transition-colors">
-                  Metodologi YOLOv8
-                </a>
-                <a href="#stats" className="text-[13px] text-outline hover:text-on-surface transition-colors">
-                  Basis Data Gizi
-                </a>
-                <a href="#how-it-works" className="text-[13px] text-outline hover:text-on-surface transition-colors">
-                  Panduan Penggunaan
-                </a>
+
+              <div className="flex flex-col gap-2.5 col-span-2 sm:col-span-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-on-surface mb-1 font-mono">Standar Gizi</span>
+                <span className="text-xs text-outline leading-relaxed">Mengacu pada Tabel Komposisi Pangan Indonesia (TKPI) dari Kementerian Kesehatan Republik Indonesia.</span>
               </div>
             </div>
           </div>
 
-          <div className="pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-outline">
-            <span>© {new Date().getFullYear()} Jimamet Clinical Nutrition System.</span>
-            <span className="font-mono text-[11px] tracking-wider">INDONESIAN FOOD NUTRITION TELEMETRY</span>
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-outline">
+            <span>© {currentYear} Jimamet. Hak cipta dilindungi undang-undang.</span>
+            <span className="font-mono text-[11px] text-outline/80">Pencatat Kalori & Gizi Praktis</span>
           </div>
         </div>
       </footer>
