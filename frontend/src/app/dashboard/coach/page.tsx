@@ -1,14 +1,10 @@
 import { CoachClient } from "@/components/coach/CoachClient";
-import {
-  getServerCoachSessions,
-  getServerCoachSession,
-  getServerConsultations,
-} from "@/lib/server-api";
+import { getServerCoachSessions, getServerCoachSession, getServerConsultations } from "@/lib/server-api";
 import { CoachSession, ChatMessage, Consultation } from "@/lib/coach-utils";
 
 export const metadata = {
   title: "NutriCoach AI | Jimamet",
-  description: "Konsultasi interaktif nutrisi berbasis AI dan rujukan ahli gizi.",
+  description: "Konsultasi interaktif nutrisi berbasis AI dan rujukan ahli gizi."
 };
 
 export default async function NutriCoachPage() {
@@ -17,10 +13,7 @@ export default async function NutriCoachPage() {
   let consultations: Consultation[] = [];
 
   try {
-    const [sessionsRes, consultRes] = await Promise.all([
-      getServerCoachSessions(),
-      getServerConsultations(),
-    ]);
+    const [sessionsRes, consultRes] = await Promise.all([getServerCoachSessions(), getServerConsultations()]);
 
     if (sessionsRes.ok && Array.isArray(sessionsRes.data)) {
       sessions = sessionsRes.data;
@@ -40,11 +33,5 @@ export default async function NutriCoachPage() {
     console.error("Error pre-fetching coach data on server:", error);
   }
 
-  return (
-    <CoachClient
-      initialSessions={sessions}
-      initialMessages={initialMessages}
-      initialConsultations={consultations}
-    />
-  );
+  return <CoachClient initialSessions={sessions} initialMessages={initialMessages} initialConsultations={consultations} />;
 }

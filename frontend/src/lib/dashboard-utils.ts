@@ -1,3 +1,16 @@
+export interface DashboardMeal {
+  id?: number | string;
+  food_name?: string;
+  nama_makanan?: string;
+  recorded_at?: string;
+  tanggal?: string;
+  calories?: number;
+  kalori?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+}
+
 export const DEFAULT_CALORIE_TARGET = 2000;
 export const DEFAULT_PROTEIN_TARGET = 60;
 export const DEFAULT_CARB_TARGET = 200;

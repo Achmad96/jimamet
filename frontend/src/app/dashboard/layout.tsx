@@ -98,7 +98,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen flex flex-col bg-surface">
       {/* ── TOP NAV ── */}
       <header className="sticky top-0 z-50 h-16 bg-surface-lowest/92 backdrop-blur-md border-b border-surface-high">
-        <div className="max-w-[1320px] mx-auto px-6 h-full flex items-center justify-between gap-5">
+        <div className="max-w-330 mx-auto px-6 h-full flex items-center justify-between gap-5">
           <div className="flex items-center gap-3">
             <button className="flex md:hidden items-center justify-center w-9 h-9 bg-transparent border border-surface-high rounded-md cursor-pointer text-on-surface" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -167,7 +167,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       {/* ── MAIN CONTENT ── */}
-      <main className="flex-1 max-w-[1320px] w-full mx-auto px-4 sm:px-6 pt-7 pb-14">{children}</main>
+      <main className="flex-1 max-w-330 w-full mx-auto px-4 sm:px-6 pt-7 pb-14">{children}</main>
     </div>
   );
 }

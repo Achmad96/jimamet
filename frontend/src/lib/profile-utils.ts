@@ -10,19 +10,43 @@ export interface ProfileData {
   goal: "lose" | "maintain" | "gain";
 }
 
-export function calculateBMI(weightKg: number, heightCm: number): {
+export interface BmiInfo {
+  value: number;
+  label: "Underweight" | "Normal" | "Overweight" | "Obese";
+  color: string;
   bmi: number;
   category: "Underweight" | "Normal" | "Overweight" | "Obese";
-  color: string;
-} | null {
+}
+
+export function calculateBMI(weightKg: number, heightCm: number): BmiInfo | null {
   if (!weightKg || !heightCm || heightCm <= 0) return null;
   const heightM = heightCm / 100;
-  const bmi = Math.round((weightKg / (heightM * heightM)) * 10) / 10;
+  const value = Math.round((weightKg / (heightM * heightM)) * 10) / 10;
 
-  if (bmi < 18.5) return { bmi, category: "Underweight", color: "#2b6f77" };
-  if (bmi < 25) return { bmi, category: "Normal", color: "#1b4332" };
-  if (bmi < 30) return { bmi, category: "Overweight", color: "#d9822b" };
-  return { bmi, category: "Obese", color: "#c85a32" };
+  let label: "Underweight" | "Normal" | "Overweight" | "Obese";
+  let color: string;
+
+  if (value < 18.5) {
+    label = "Underweight";
+    color = "#2b6f77";
+  } else if (value < 25) {
+    label = "Normal";
+    color = "#1b4332";
+  } else if (value < 30) {
+    label = "Overweight";
+    color = "#d9822b";
+  } else {
+    label = "Obese";
+    color = "#c85a32";
+  }
+
+  return {
+    value,
+    label,
+    color,
+    bmi: value,
+    category: label,
+  };
 }
 
 export function calculateBMR(

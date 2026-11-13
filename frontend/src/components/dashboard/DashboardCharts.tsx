@@ -1,10 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import {
-  buildWeeklyCalorieData,
-  buildNutrientDonutSegments,
-} from "@/lib/dashboard-utils";
+import { buildWeeklyCalorieData, buildNutrientDonutSegments } from "@/lib/dashboard-utils";
 
 interface DashboardChartsProps {
   weeklyData: Array<{ date: string; calories: number }>;
@@ -15,26 +12,13 @@ interface DashboardChartsProps {
   fat: number;
 }
 
-export function DashboardCharts({
-  weeklyData,
-  todayCalories,
-  targetCalories,
-  protein,
-  carbs,
-  fat,
-}: DashboardChartsProps) {
+export function DashboardCharts({ weeklyData, todayCalories, targetCalories, protein, carbs, fat }: DashboardChartsProps) {
   const [hoveredDay, setHoveredDay] = useState<string | null>(null);
   const [hoveredMacro, setHoveredMacro] = useState<string | null>(null);
 
-  const calorieData = useMemo(
-    () => buildWeeklyCalorieData(weeklyData, todayCalories, targetCalories),
-    [weeklyData, todayCalories, targetCalories]
-  );
+  const calorieData = useMemo(() => buildWeeklyCalorieData(weeklyData, todayCalories, targetCalories), [weeklyData, todayCalories, targetCalories]);
 
-  const { rawSum: rawMacroSum, segments: nutrientDonut } = useMemo(
-    () => buildNutrientDonutSegments(protein, carbs, fat),
-    [protein, carbs, fat]
-  );
+  const { rawSum: rawMacroSum, segments: nutrientDonut } = useMemo(() => buildNutrientDonutSegments(protein, carbs, fat), [protein, carbs, fat]);
 
   const handleDayEnter = useCallback((date: string) => {
     setHoveredDay(date);
@@ -113,10 +97,10 @@ export function DashboardCharts({
             </>
           )}
         </svg>
-        <div className="flex flex-col gap-3 min-w-[140px]">
+        <div className="flex flex-col gap-3 min-w-35">
           {nutrientDonut.map((seg) => (
             <div key={seg.name} className="flex items-center gap-2.5 text-[13px]">
-              <span className="w-2.5 h-2.5 rounded-[2px] shrink-0" style={{ background: seg.color }} />
+              <span className="w-2.5 h-2.5 rounded-xs shrink-0" style={{ background: seg.color }} />
               <span className="text-on-surface-variant flex-1">{seg.name}</span>
               <span className="font-mono font-semibold text-on-surface tabular-nums">{seg.pct}%</span>
             </div>
@@ -156,16 +140,7 @@ export function DashboardCharts({
             <g key={d.day} onMouseEnter={() => handleDayEnter(d.day)} onMouseLeave={handleDayLeave} className="cursor-pointer transition-opacity duration-150" opacity={opacity}>
               <rect x={x - gap / 2} y="0" width={barW + gap} height={chartH + 30} fill="transparent" />
 
-              <rect
-                x={x}
-                y={chartH - h + 12}
-                width={barW}
-                height={h}
-                rx="4"
-                ry="4"
-                fill={d.value === 0 ? "var(--surface-container-high)" : d.value > d.target ? "#c85a32" : "#1b4332"}
-                className="transition-all duration-300"
-              />
+              <rect x={x} y={chartH - h + 12} width={barW} height={h} rx="4" ry="4" fill={d.value === 0 ? "var(--surface-container-high)" : d.value > d.target ? "#c85a32" : "#1b4332"} className="transition-all duration-300" />
 
               <text x={x + barW / 2} y={chartH + 30} textAnchor="middle" fill={isHovered ? "var(--on-surface)" : "var(--on-surface-variant)"} fontSize="11.5" fontWeight={isHovered || i === 6 ? "600" : "400"}>
                 {d.day}
@@ -202,11 +177,11 @@ export function DashboardCharts({
           </div>
           <div className="flex items-center gap-3.5 font-mono text-[11px] text-on-surface-variant">
             <span className="inline-flex items-center gap-1.5">
-              <i className="w-2 h-2 rounded-[2px] inline-block bg-macro-cal" />
+              <i className="w-2 h-2 rounded-xs inline-block bg-macro-cal" />
               Terkendali
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <i className="w-2 h-2 rounded-[2px] inline-block bg-macro-protein" />
+              <i className="w-2 h-2 rounded-xs inline-block bg-macro-protein" />
               Melebihi Target
             </span>
           </div>

@@ -150,7 +150,7 @@ export function SkeletonProfile() {
         {/* ROW 1 LEFT: Informasi Pribadi card */}
         <div className="flex flex-col gap-5 rounded-xl border border-surface-high bg-surface-lowest p-6">
           <div className="flex items-center gap-2.5">
-            <SkeletonLine className="h-[18px] w-[18px] rounded" />
+            <SkeletonLine className="h-4.5 w-4.5 rounded" />
             <SkeletonLine className="h-4 w-32" />
           </div>
           <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
@@ -173,7 +173,7 @@ export function SkeletonProfile() {
         {/* ROW 2 LEFT: Metrik Tubuh card */}
         <div className="flex flex-col gap-5 rounded-xl border border-surface-high bg-surface-lowest p-6">
           <div className="flex items-center gap-2.5">
-            <SkeletonLine className="h-[18px] w-[18px] rounded" />
+            <SkeletonLine className="h-4.5 w-4.5 rounded" />
             <SkeletonLine className="h-4 w-24" />
           </div>
           <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
@@ -204,7 +204,7 @@ export function SkeletonProfile() {
         {/* ROW 3 LEFT: Target Kesehatan card */}
         <div className="flex flex-col gap-5 rounded-xl border border-surface-high bg-surface-lowest p-6">
           <div className="flex items-center gap-2.5">
-            <SkeletonLine className="h-[18px] w-[18px] rounded" />
+            <SkeletonLine className="h-4.5 w-4.5 rounded" />
             <SkeletonLine className="h-4 w-32" />
           </div>
           <div className="grid grid-cols-3 gap-3 max-[640px]:grid-cols-1">
@@ -239,9 +239,9 @@ export function SkeletonProfile() {
 
 export function SkeletonCoach() {
   return (
-    <div className="flex h-[calc(100vh-116px)] min-h-[500px] overflow-hidden rounded-xl border border-surface-high bg-surface-lowest">
+    <div className="flex h-[calc(100vh-116px)] min-h-125 overflow-hidden rounded-xl border border-surface-high bg-surface-lowest">
       {/* Sidebar */}
-      <aside className="flex w-[280px] shrink-0 flex-col border-r border-surface-high bg-surface-low">
+      <aside className="flex w-70 shrink-0 flex-col border-r border-surface-high bg-surface-low">
         <div className="border-b border-surface-high p-5">
           <SkeletonLine className="mb-4 h-5 w-32" />
           <SkeletonLine className="h-10 w-full rounded-md" />
@@ -309,7 +309,7 @@ export function SkeletonHistory() {
       {/* 4 Summary cards */}
       <div className="grid grid-cols-4 gap-4 max-[768px]:grid-cols-2">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="flex flex-col gap-1.5 rounded-xl border border-surface-high bg-surface-lowest px-5 py-[18px]">
+          <div key={i} className="flex flex-col gap-1.5 rounded-xl border border-surface-high bg-surface-lowest px-5 py-4.5">
             <SkeletonLine className="h-3 w-20" />
             <SkeletonLine className="h-7 w-16" />
           </div>
@@ -323,7 +323,7 @@ export function SkeletonHistory() {
           <SkeletonLine className="h-8 w-20 rounded" />
           <SkeletonLine className="h-8 w-20 rounded" />
         </div>
-        <SkeletonLine className="h-9 w-[260px] rounded-md" />
+        <SkeletonLine className="h-9 w-65 rounded-md" />
       </div>
 
       {/* History grouped by date */}
