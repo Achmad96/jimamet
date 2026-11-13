@@ -140,8 +140,8 @@ export function AuthForm() {
   );
 
   const handleRegister = useCallback(
-    async (e: FormEvent) => {
-      e.preventDefault();
+    async (event: FormEvent) => {
+      event.preventDefault();
       dispatch({ type: "SET_ERROR", error: "" });
       dispatch({ type: "SET_LOADING", loading: true });
 
