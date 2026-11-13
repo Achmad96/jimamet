@@ -4,40 +4,18 @@ import Image from "next/image";
 export function AuthHeroPanel() {
   return (
     <div className="hidden lg:flex relative overflow-hidden items-end p-12 border-r border-surface-high">
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0d2418]/95 via-[#143625]/82 to-[#143625]/68 z-10" />
-      <Image
-        src="/hero-nutrition.png"
-        alt="Healthy nutritious food"
-        fill
-        priority
-        className="object-cover saturate-85"
-        sizes="(min-width: 1024px) 50vw, 100vw"
-      />
-      <div className="relative z-20 text-white flex flex-col gap-9 max-w-[480px] w-full">
+      <div className="absolute inset-0 bg-linear-to-t from-[#0d2418]/95 via-primary/82 to-primary/68 z-10" />
+      <Image src="/hero-nutrition.png" alt="Healthy nutritious food" fill priority className="object-cover saturate-85" sizes="(min-width: 1024px) 50vw, 100vw" />
+      <div className="relative z-20 text-white flex flex-col gap-9 max-w-120 w-full">
         <Link href="/" className="inline-flex items-center gap-2.5 no-underline text-white">
-          <Image
-            src="/jimamet_logo.webp"
-            alt="Jimamet Logo"
-            width={40}
-            height={40}
-            className="object-contain"
-          />
+          <Image src="/jimamet_logo.webp" alt="Jimamet Logo" width={40} height={40} className="object-contain" />
           <span className="font-headline text-xl font-bold tracking-tight">Jimamet</span>
-          <span className="font-mono text-[10px] font-semibold tracking-widest px-2 py-0.5 rounded-sm bg-white/14 text-primary-fixed">
-            CLINICAL
-          </span>
+          <span className="font-mono text-[10px] font-semibold tracking-widest px-2 py-0.5 rounded-sm bg-white/14 text-primary-fixed">CLINICAL</span>
         </Link>
         <div>
-          <span className="block font-mono text-[11px] font-semibold tracking-widest text-primary-fixed-dim mb-2.5">
-            MONITORING NUTRISI & DIETETIKA
-          </span>
-          <h1 className="font-headline text-3xl xl:text-[34px] font-bold leading-[1.16] tracking-[-0.025em] mb-3.5">
-            Rekam gizi presisi untuk keputusan klinis harian.
-          </h1>
-          <p className="text-[15px] leading-[1.65] text-white/80">
-            Identifikasi komponen makronutrien makanan secara otomatis melalui visi komputer dan
-            terhubung langsung dengan evaluasi Ahli Gizi.
-          </p>
+          <span className="block font-mono text-[11px] font-semibold tracking-widest text-primary-fixed-dim mb-2.5">MONITORING NUTRISI & DIETETIKA</span>
+          <h1 className="font-headline text-3xl xl:text-[34px] font-bold leading-[1.16] tracking-tight mb-3.5">Rekam gizi presisi untuk keputusan klinis harian.</h1>
+          <p className="text-[15px] leading-[1.65] text-white/80">Identifikasi komponen makronutrien makanan secara otomatis melalui visi komputer dan terhubung langsung dengan evaluasi Ahli Gizi.</p>
         </div>
         <div className="flex items-center gap-6 px-5 py-4 bg-black/28 border border-white/14 rounded-lg backdrop-blur-md">
           <div className="flex flex-col gap-0.5">
