@@ -28,7 +28,7 @@ export function CoachInputBar({
   onSubmitCoach,
   onSubmitConsultation,
 }: CoachInputBarProps) {
-  if (viewMode === "coach" && activeSessionId) {
+  if (viewMode === "coach") {
     return (
       <form
         onSubmit={onSubmitCoach}

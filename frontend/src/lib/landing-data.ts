@@ -1,3 +1,10 @@
+export interface DetectionBox {
+  label: string;
+  confidence: number;
+  // [top, left, width, height] in percentage
+  box: [number, number, number, number];
+}
+
 export interface SampleMeal {
   id: string;
   name: string;
@@ -8,6 +15,7 @@ export interface SampleMeal {
   dailyPercent: number;
   tags: string[];
   note: string;
+  detections?: DetectionBox[];
   macros: {
     protein: { value: string; percent: number };
     carbs: { value: string; percent: number };
@@ -27,6 +35,12 @@ export const SAMPLE_MEALS: SampleMeal[] = [
     dailyPercent: 26,
     tags: ["Nasi Putih", "Ayam Goreng Dada", "Tempe Orek", "Tumis Kangkung"],
     note: "Pilihan sangat baik! Asupan protein tinggi untuk pembentukan otot, didukung serat dari kangkung.",
+    detections: [
+      { label: "Nasi Putih", confidence: 99, box: [20, 45, 45, 45] },
+      { label: "Ayam Goreng", confidence: 98, box: [65, 52, 32, 32] },
+      { label: "Tumis Kangkung", confidence: 94, box: [22, 10, 38, 40] },
+      { label: "Tempe Orek", confidence: 95, box: [60, 10, 32, 32] },
+    ],
     macros: {
       protein: { value: "34g", percent: 68 },
       carbs: { value: "56g", percent: 54 },
@@ -44,6 +58,12 @@ export const SAMPLE_MEALS: SampleMeal[] = [
     dailyPercent: 20,
     tags: ["Sayuran Kukus", "Tahu & Tempe", "Telur Rebus", "Saus Kacang"],
     note: "Menu padat serat dan vitamin. Saus kacang menyumbang lemak sehat nabati yang baik untuk jantung.",
+    detections: [
+      { label: "Telur Rebus", confidence: 98, box: [30, 55, 30, 30] },
+      { label: "Saus Kacang", confidence: 97, box: [35, 25, 45, 45] },
+      { label: "Tahu & Tempe", confidence: 95, box: [58, 20, 34, 34] },
+      { label: "Sayuran Kukus", confidence: 93, box: [18, 20, 40, 35] },
+    ],
     macros: {
       protein: { value: "22g", percent: 44 },
       carbs: { value: "38g", percent: 38 },
@@ -61,6 +81,12 @@ export const SAMPLE_MEALS: SampleMeal[] = [
     dailyPercent: 17,
     tags: ["Ayam Suwir", "Kuah Kaldu Kuning", "Telur Rebus", "Kol & Tauge"],
     note: "Menu hangat rendah lemak jenuh. Tambahkan sedikit perasan jeruk nipis untuk membantu penyerapan zat besi.",
+    detections: [
+      { label: "Kuah Kaldu Kuning", confidence: 99, box: [15, 15, 70, 70] },
+      { label: "Ayam Suwir", confidence: 96, box: [35, 30, 35, 35] },
+      { label: "Telur Rebus", confidence: 97, box: [42, 60, 28, 28] },
+      { label: "Kol & Tauge", confidence: 93, box: [30, 20, 35, 35] },
+    ],
     macros: {
       protein: { value: "28g", percent: 56 },
       carbs: { value: "32g", percent: 32 },
@@ -74,7 +100,7 @@ export const FEATURES = [
   {
     badge: "Deteksi Otomatis",
     title: "Pindai Makanan dengan Kamera",
-    description: "Cukup arahkan kamera atau unggah foto piring Anda. Sistem cerdas Jimamet langsung mengenali lauk dan sayuran khas Nusantara tanpa perlu diketik manual.",
+    description: "Cukup arahkan kamera atau unggah foto piring Anda. Sistem cerdas Jimamet langsung mengenali makanan anda tanpa perlu diketik manual.",
   },
   {
     badge: "Data Standar Kemenkes",

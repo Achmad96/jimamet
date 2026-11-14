@@ -142,7 +142,7 @@ export function useCoachChat(options: UseCoachChatOptions = {}) {
 
   const [state, dispatch] = useReducer(coachChatReducer, {
     sessions: initialSessions,
-    activeSessionId: initialSessions.length > 0 ? initialSessions[0].id : null,
+    activeSessionId: initialSessions.length > 0 ? initialSessions[0].id : "draft",
     messages: initialMessages,
     isTyping: false,
     consultations: initialConsultations,
@@ -209,6 +209,9 @@ export function useCoachChat(options: UseCoachChatOptions = {}) {
             if (!ignore && res.ok) {
               dispatch({ type: "SET_MESSAGES", messages: res.data.messages || [] });
             }
+          } else {
+            dispatch({ type: "SELECT_SESSION", sessionId: "draft" });
+            dispatch({ type: "SET_MESSAGES", messages: [] });
           }
         }
       })
@@ -232,6 +235,10 @@ export function useCoachChat(options: UseCoachChatOptions = {}) {
     async (sessionId: string) => {
       closeWs();
       dispatch({ type: "SELECT_SESSION", sessionId });
+      if (sessionId === "draft") {
+        dispatch({ type: "SET_MESSAGES", messages: [] });
+        return;
+      }
       try {
         const { ok, data } = await apiGetCoachSession(sessionId);
         if (ok) {
@@ -244,22 +251,13 @@ export function useCoachChat(options: UseCoachChatOptions = {}) {
     [closeWs]
   );
 
-  const handleNewSession = useCallback(async () => {
-    try {
-      const { ok, data } = await apiCreateCoachSession("Sesi Konsultasi Baru");
-      if (ok && data) {
-        closeWs();
-        dispatch({ type: "SET_SESSIONS", sessions: [data, ...state.sessions] });
-        dispatch({ type: "SELECT_SESSION", sessionId: data.id });
-        dispatch({ type: "SET_MESSAGES", messages: [] });
-      } else {
-        alert(data?.error || "Gagal membuat sesi baru. Periksa backend.");
-      }
-    } catch (e) {
-      console.error(e);
-      alert("Terjadi kesalahan jaringan.");
-    }
-  }, [closeWs, state.sessions]);
+  // When creating a new session, do not persist to backend until first message is sent
+  const handleNewSession = useCallback(() => {
+    closeWs();
+    dispatch({ type: "SELECT_SESSION", sessionId: "draft" });
+    dispatch({ type: "SET_MESSAGES", messages: [] });
+    dispatch({ type: "SET_INPUT", input: "" });
+  }, [closeWs]);
 
   const handleDeleteSession = useCallback(
     async (e: React.MouseEvent, sessionId: string) => {
@@ -269,23 +267,52 @@ export function useCoachChat(options: UseCoachChatOptions = {}) {
         const { ok } = await apiDeleteCoachSession(sessionId);
         if (ok) {
           dispatch({ type: "REMOVE_SESSION", sessionId });
+          if (state.activeSessionId === sessionId) {
+            dispatch({ type: "SELECT_SESSION", sessionId: "draft" });
+            dispatch({ type: "SET_MESSAGES", messages: [] });
+          }
         }
       } catch (e) {
         console.error(e);
       }
     },
-    []
+    [state.activeSessionId]
   );
 
   const sendMessage = useCallback(
     async (text: string) => {
-      if (!text.trim() || !state.activeSessionId) return;
+      const trimmed = text.trim();
+      if (!trimmed) return;
+
+      let targetSessionId = state.activeSessionId;
+
+      // Lazy session creation: if in draft mode, persist the session to backend now!
+      if (!targetSessionId || targetSessionId === "draft") {
+        try {
+          const title = trimmed.length > 38 ? `${trimmed.slice(0, 35)}...` : trimmed;
+          const { ok, data } = await apiCreateCoachSession(title);
+          if (!ok || !data) {
+            alert(data?.error || "Gagal membuat sesi konsultasi.");
+            return;
+          }
+          const createdId: string = data.id;
+          targetSessionId = createdId;
+          dispatch({ type: "SET_SESSIONS", sessions: [data, ...state.sessions] });
+          dispatch({ type: "SELECT_SESSION", sessionId: createdId });
+        } catch (err) {
+          console.error("Failed to create session on first message:", err);
+          alert("Terjadi kesalahan jaringan.");
+          return;
+        }
+      }
+
+      if (!targetSessionId) return;
 
       const userMsg: ChatMessage = {
         id: generateTempId("temp"),
-        session_id: state.activeSessionId,
+        session_id: targetSessionId,
         sender: "user",
-        message: text,
+        message: trimmed,
         needs_consultation: false,
         sent_at: new Date().toISOString(),
       };
@@ -295,11 +322,11 @@ export function useCoachChat(options: UseCoachChatOptions = {}) {
       dispatch({ type: "SET_IS_TYPING", isTyping: true });
 
       try {
-        const res = await apiSendCoachMessage(state.activeSessionId, text);
+        const res = await apiSendCoachMessage(targetSessionId, trimmed);
         if (res.ok) {
           const aiMsg: ChatMessage = {
             id: generateTempId("temp-ai"),
-            session_id: state.activeSessionId,
+            session_id: targetSessionId,
             sender: "ai",
             message: res.data.reply,
             needs_consultation: res.data.needs_consultation,
@@ -315,7 +342,7 @@ export function useCoachChat(options: UseCoachChatOptions = {}) {
             type: "ADD_MESSAGE",
             message: {
               id: generateTempId("temp-err"),
-              session_id: state.activeSessionId,
+              session_id: targetSessionId,
               sender: "ai",
               message: "Maaf, sistem AI sedang mengalami kendala. Silakan coba beberapa saat lagi.",
               needs_consultation: false,
@@ -329,7 +356,7 @@ export function useCoachChat(options: UseCoachChatOptions = {}) {
         dispatch({ type: "SET_IS_TYPING", isTyping: false });
       }
     },
-    [state.activeSessionId]
+    [state.activeSessionId, state.sessions]
   );
 
   const loadConsultations = useCallback(async () => {

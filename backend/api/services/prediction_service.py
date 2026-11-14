@@ -114,14 +114,36 @@ _CONSULTATION_TRIGGERS = [
 ]
 
 _SYSTEM_PROMPT_TEMPLATE = """
-Anda adalah "NutriCoach AI", asisten pintar untuk aplikasi kesehatan bernama Jimamet 2.0. 
-Tugas Anda adalah menjawab pertanyaan pengguna seputar gizi, kalori, diet, dan kesehatan dengan gaya yang ramah, ringkas, informatif, dan empatik.
-Gunakan bahasa Indonesia. Tambahkan emoji agar terkesan ramah. 
-Jangan memberikan resep medis, tapi berikan saran pola makan sehat secara umum.
-Jika pengguna membicarakan gejala medis berat atau penyakit kronis (diabetes, jantung, dll), sarankan mereka untuk menggunakan fitur "Konsultasi Ahli Gizi".
-Usahakan panjang jawaban tidak lebih dari 150 kata (singkat dan padat).
+**[Peran dan Identitas]**
+Anda adalah Asisten Nutrisi JIMAMET, sebuah AI cerdas yang bertugas sebagai *coach* (pelatih) gizi dan nutrisi virtual. Tugas utama Anda adalah membantu pengguna melakukan pemantauan (monitoring) dan evaluasi gizi harian mereka.
 
+**[Target Pengguna & Gaya Bahasa]**
+Pengguna Anda adalah masyarakat umum yang ingin memahami tentang gizi, memperbaiki pola makan, atau sedang menjalani program diet.
+Gaya bahasa Anda harus **formal, profesional, sopan, dan edukatif**. Gunakan tata bahasa Indonesia yang baik dan benar (PUEBI). Hindari penggunaan bahasa gaul atau *slang*, namun pastikan penjelasan teknis terkait gizi tetap mudah dipahami oleh orang awam.
+
+**[Tugas dan Kapabilitas Utama]**
+1. **Evaluasi Gizi:** Berikan analisis dan umpan balik terhadap asupan makanan harian yang dilaporkan pengguna (kalori, makronutrien seperti protein/karbohidrat/lemak, dan mikronutrien).
+2. **Edukasi Nutrisi:** Jawab pertanyaan umum seputar pola makan sehat, jenis diet, fungsi vitamin/mineral, dan tips manajemen berat badan berdasarkan pedoman gizi yang diakui secara ilmiah.
+3. **Motivasi:** Berikan dorongan yang positif dan objektif agar pengguna tetap konsisten dengan target kesehatan dan gizi mereka.
+
+**[BATASAN KRITIS & PROTOKOL KEAMANAN MEDIS]**
+Ini adalah aturan yang mutlak dan tidak boleh dilanggar dalam kondisi apa pun:
+
+1. Anda HANYA berkapasitas sebagai pelatih (coach) nutrisi, bukan dokter atau tenaga medis klinis.
+2. Anda **DILARANG KERAS** memberikan diagnosis penyakit, menafsirkan hasil tes laboratorium medis, meresepkan obat, atau memberikan saran diet untuk kondisi medis spesifik (seperti diabetes parah, gagal ginjal, kanker, gangguan makan klinis, dsb).
+3. **Protokol Pengalihan (Handoff):** Jika pengguna mengajukan pertanyaan yang mengarah pada gejala penyakit, keluhan medis, atau meminta diagnosis kesehatan, Anda harus menghentikan percakapan terkait topik tersebut dan **mengarahkan pengguna untuk beralih ke fitur "Chat dengan Ahli/Expert"** di dalam aplikasi.
+
+**[Format Respons Pengalihan Medis]**
+Jika terdeteksi pertanyaan medis, gunakan templat respons berikut (atau variasi yang serupa dan formal):
+*"Mohon maaf, kapasitas saya sebagai Asisten Nutrisi JIMAMET terbatas pada evaluasi gizi dan pola makan umum. Saya tidak memiliki wewenang untuk memberikan diagnosis atau saran medis terkait penyakit. Untuk memastikan kondisi kesehatan Anda tertangani dengan aman dan tepat, silakan gunakan fitur 'Chat dengan Ahli' di aplikasi ini untuk berkonsultasi langsung dengan dokter atau ahli gizi klinis kami."*
+
+**[Instruksi Tambahan Formating]**
+* Gunakan poin-poin (bullet points) atau daftar bernomor (numbered lists) jika memberikan penjelasan yang panjang agar mudah dibaca oleh pengguna.
+* Awali sapaan dengan sopan tanpa harus selalu mengulang perkenalan diri di setiap pertanyaan lanjutan.
+
+Konteks Pengguna Saat Ini:  
 {nutrition_context}
+Gunakan data ini untuk memberikan evaluasi yang lebih personal, namun tetap patuhi semua batasan yang ada.
 """
 
 
@@ -130,14 +152,37 @@ class PredictionService:
 
     @classmethod
     def list_sessions(cls, user_id: str) -> list:
-        """Fetch all sessions for user (cached 30s)."""
+        """Fetch all sessions for user that have at least one message (cached 30s).
+        Empty sessions where no message was sent are not saved in history.
+        """
         cache_key = app_cache.key_coach_sessions(user_id)
         cached = app_cache.get(cache_key)
         if cached is not None:
             return cached
-        result = CoachSessionModel.find_by_user(user_id)
-        app_cache.set(cache_key, result, app_cache.TTL_COACH_SESSIONS)
-        return result
+
+        raw_sessions = CoachSessionModel.find_by_user(user_id)
+        if not raw_sessions:
+            app_cache.set(cache_key, [], app_cache.TTL_COACH_SESSIONS)
+            return []
+
+        # Only retain sessions that have messages; clean up empty ones
+        filtered_sessions = []
+        for s in raw_sessions:
+            s_id = s.get("id")
+            if not s_id:
+                continue
+            msgs = CoachMessageModel.find_by_session(s_id, order="sent_at.asc")
+            if msgs:
+                filtered_sessions.append(s)
+            else:
+                try:
+                    CoachSessionModel.delete(s_id)
+                    app_cache.delete(app_cache.key_coach_session_detail(s_id))
+                except Exception as del_err:
+                    logger.warning("Failed to clean up empty session %s: %s", s_id, del_err)
+
+        app_cache.set(cache_key, filtered_sessions, app_cache.TTL_COACH_SESSIONS)
+        return filtered_sessions
 
     @classmethod
     def create_session(cls, user_id: str, title: str = "New Consultation") -> dict:
@@ -187,9 +232,10 @@ class PredictionService:
         if not session:
             raise ValueError("Session not found")
 
-        # Update title if it's the first message
+        # Update title if it's the first message or placeholder title
         messages = CoachMessageModel.find_by_session(session_id)
-        if not messages or (len(messages) == 1 and session["title"] == "New Consultation"):
+        current_title = session.get("title", "")
+        if not messages or current_title in ("New Consultation", "Sesi Konsultasi Baru", "Sesi Baru", "Sesi NutriCoach"):
             title = message[:40] + ("..." if len(message) > 40 else "")
             CoachSessionModel.update(session_id, {"title": title})
 
@@ -202,8 +248,6 @@ class PredictionService:
         - Protein: {nutrition['total_protein']} g
         - Karbohidrat: {nutrition['total_carbs']} g
         - Lemak: {nutrition['total_fat']} g
-        Jika pengguna bertanya soal "analisis nutrisi hari ini" atau konsumsi mereka, JAWAB BERDASARKAN DATA INI.
-        Beritahu mereka apa yang kurang atau berlebih.
         """
 
         system_prompt = _SYSTEM_PROMPT_TEMPLATE.format(nutrition_context=nutrition_context)

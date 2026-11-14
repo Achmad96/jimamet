@@ -3,7 +3,7 @@ import { STEPS } from "@/lib/landing-data";
 
 export function LandingStepsSection() {
   return (
-    <section id="cara-kerja" className="py-24 bg-surface-low border-y border-surface-high scroll-mt-20">
+    <section id="cara-kerja" className="py-24 bg-surface-low border-y border-surface-high scroll-mt-24">
       <div className="max-w-300 mx-auto px-5 sm:px-6">
         <div className="text-center max-w-160 mx-auto mb-16">
           <span className="inline-block text-xs font-bold tracking-wider uppercase text-primary mb-2">Cara Penggunaan</span>

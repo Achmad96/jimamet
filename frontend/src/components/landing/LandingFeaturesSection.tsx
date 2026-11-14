@@ -2,7 +2,7 @@ import { FEATURES } from "@/lib/landing-data";
 
 export function LandingFeaturesSection() {
   return (
-    <section id="fitur" className="py-24 bg-surface scroll-mt-20">
+    <section id="fitur" className="py-24 bg-surface scroll-mt-24">
       <div className="max-w-300 mx-auto px-5 sm:px-6">
         <div className="max-w-170 mb-16">
           <span className="inline-block text-xs font-bold tracking-wider uppercase text-primary mb-2">Keunggulan Jimamet</span>

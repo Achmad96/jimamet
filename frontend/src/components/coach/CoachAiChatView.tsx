@@ -12,32 +12,29 @@ interface CoachAiChatViewProps {
 }
 
 export function CoachAiChatView({ activeSessionId, messages, isTyping, konsultasiStatus, onNewSession, onSendMessage, onKirimKonsultasi }: CoachAiChatViewProps) {
-  if (!activeSessionId) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-on-surface-variant text-center p-6">
-        <div className="w-13 h-13 rounded-lg bg-surface-lowest border border-surface-high text-primary flex items-center justify-center mb-4">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
-        </div>
-        <h3 className="font-headline text-lg font-bold m-0 mb-1.5 text-on-surface">Mulai Konsultasi NutriCoach AI</h3>
-        <p className="text-[13px] max-w-90 leading-relaxed">Diskusikan hasil pemindaian nutrisi, target kalori, atau keluhan dietetika Anda.</p>
-        <button className="mt-4 py-2.5 px-5 bg-primary hover:bg-primary-container text-on-primary border-none rounded-md text-[13px] font-semibold cursor-pointer transition-colors" onClick={onNewSession}>
-          Buat Sesi Konsultasi
-        </button>
-      </div>
-    );
-  }
+  const isDraftOrEmpty = !activeSessionId || activeSessionId === "draft" || messages.length === 0;
 
   return (
     <>
-      {messages.length === 0 && (
-        <div className="text-center my-4 mx-auto max-w-135 text-on-surface-variant text-[13px]">
-          <span className="block font-mono text-[10px] font-semibold tracking-wider text-primary mb-1.5">TOPIK CEPAT</span>
-          <p>Pilih topik diskusi di bawah atau ketik pertanyaan spesifik Anda:</p>
-          <div className="flex flex-wrap gap-2 justify-center mt-3.5">
+      {isDraftOrEmpty && messages.length === 0 && (
+        <div className="flex flex-col items-center justify-center my-auto mx-auto max-w-135 text-on-surface-variant text-center p-6 py-10">
+          <div className="w-13 h-13 rounded-xl bg-surface-lowest border border-surface-high text-primary flex items-center justify-center mb-4 shadow-xs">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+          </div>
+          <h3 className="font-headline text-lg font-bold m-0 mb-1.5 text-on-surface">Mulai Konsultasi NutriCoach AI</h3>
+          <p className="text-[13px] max-w-105 leading-relaxed text-on-surface-variant mb-6">
+            Diskusikan hasil pemindaian makanan, evaluasi nutrisi, atau tanyakan saran pola makan sehat. Pilih topik cepat di bawah atau langsung ketik pertanyaan Anda.
+          </p>
+
+          <span className="block font-mono text-[10px] font-semibold tracking-wider text-primary mb-2 uppercase">TOPIK CEPAT</span>
+          <div className="flex flex-wrap gap-2 justify-center">
             {quickReplies.map((q) => (
-              <button key={q} className="py-2 px-3.5 bg-surface-lowest border border-surface-high hover:border-primary hover:text-primary text-on-surface rounded-md font-body text-xs font-medium cursor-pointer transition-colors" onClick={() => onSendMessage(q)}>
+              <button
+                key={q}
+                className="py-2 px-3.5 bg-surface-lowest border border-surface-high hover:border-primary hover:text-primary text-on-surface rounded-md font-body text-xs font-medium cursor-pointer transition-colors shadow-xs"
+                onClick={() => onSendMessage(q)}>
                 {q}
               </button>
             ))}

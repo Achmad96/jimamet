@@ -1,7 +1,23 @@
+"use client";
+
 import Link from "next/link";
 import { InteractiveMealShowcase } from "./InteractiveMealShowcase";
 
 export function LandingHeroSection() {
+  const scrollToCaraKerja = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const el = document.getElementById("cara-kerja");
+    if (el) {
+      const navHeight = 80;
+      const elementPosition = el.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({
+        top: elementPosition - navHeight,
+        behavior: "smooth",
+      });
+      window.history.pushState(null, "", "#cara-kerja");
+    }
+  };
+
   return (
     <section className="pt-32 pb-20 lg:pt-38 lg:pb-28 relative overflow-hidden">
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-175 h-95 bg-primary-fixed/20 blur-[130px] rounded-full pointer-events-none -z-10" />
@@ -28,7 +44,10 @@ export function LandingHeroSection() {
                   <polyline points="12 5 19 12 12 19" />
                 </svg>
               </Link>
-              <a href="#cara-kerja" className="inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-surface-lowest hover:bg-surface-low text-on-surface border border-surface-high hover:border-outline-variant rounded-xl font-headline text-sm font-semibold transition-colors shadow-xs">
+              <a
+                href="#cara-kerja"
+                onClick={scrollToCaraKerja}
+                className="inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-surface-lowest hover:bg-surface-low text-on-surface border border-surface-high hover:border-outline-variant rounded-xl font-headline text-sm font-semibold transition-colors shadow-xs">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
                   <circle cx="12" cy="12" r="10" />
                   <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" />

@@ -32,7 +32,8 @@ export default function HomePage() {
       <LandingCategoriesSection />
 
       {/* ── FAQ Accordion Section ── */}
-      <section id="faq" className="py-24 bg-surface-low border-t border-surface-high scroll-mt-20">
+      <section id="faq" className="py-24 bg-surface-low border-t border-surface-high scroll-mt-24 relative">
+        <span id="tanya-jawab" className="absolute -top-24" />
         <div className="max-w-255 mx-auto px-5 sm:px-6">
           <div className="text-center mb-14">
             <span className="inline-block text-xs font-bold tracking-wider uppercase text-primary mb-2">

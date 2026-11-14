@@ -50,7 +50,11 @@ export function CoachSidebar({
             NutriCoach AI
           </h2>
           <button
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-3.5 bg-primary hover:bg-primary-container text-on-primary border-none rounded-md font-body text-[13px] font-semibold cursor-pointer transition-colors"
+            className={`w-full flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-md font-body text-[13px] font-semibold cursor-pointer transition-all border-none ${
+              viewMode === "coach" && activeSessionId === "draft"
+                ? "bg-primary text-on-primary ring-2 ring-primary/30 shadow-xs"
+                : "bg-primary hover:bg-primary-container text-on-primary"
+            }`}
             onClick={onNewSession}
           >
             <svg
