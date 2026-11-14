@@ -2,7 +2,7 @@ import { FOOD_CATEGORIES } from "@/lib/landing-data";
 
 export function LandingCategoriesSection() {
   return (
-    <section id="menu-nusantara" className="py-24 bg-surface scroll-mt-20">
+    <section id="cakupan-menu" className="py-24 bg-surface scroll-mt-20">
       <div className="max-w-300 mx-auto px-5 sm:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-end mb-14">
           <div className="lg:col-span-7">

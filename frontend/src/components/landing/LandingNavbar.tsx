@@ -37,8 +37,8 @@ export function LandingNavbar() {
           <a href="#cara-kerja" className="hover:text-primary transition-colors">
             Cara Kerja
           </a>
-          <a href="#contoh-menu" className="hover:text-primary transition-colors">
-            Contoh Makanan
+          <a href="#cakupan-menu" className="hover:text-primary transition-colors">
+            Cakupan Menu
           </a>
           <a href="#faq" className="hover:text-primary transition-colors">
             Tanya Jawab
@@ -72,8 +72,8 @@ export function LandingNavbar() {
           <a href="#cara-kerja" onClick={() => setMobileMenuOpen(false)} className="py-2 text-base font-semibold text-on-surface hover:text-primary transition-colors">
             Cara Kerja
           </a>
-          <a href="#contoh-menu" onClick={() => setMobileMenuOpen(false)} className="py-2 text-base font-semibold text-on-surface hover:text-primary transition-colors">
-            Contoh Makanan
+          <a href="#cakupan-menu" onClick={() => setMobileMenuOpen(false)} className="py-2 text-base font-semibold text-on-surface hover:text-primary transition-colors">
+            Cakupan Menu
           </a>
           <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="py-2 text-base font-semibold text-on-surface hover:text-primary transition-colors">
             Tanya Jawab
